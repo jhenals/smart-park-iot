@@ -2,26 +2,74 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Smart Park - Login</title>
-    <link rel="stylesheet" href="../styles/index.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Park Login</title>
+    <link rel="stylesheet" type="text/css" href="../assets/styles/index.css" />
+    <script
+      src="https://kit.fontawesome.com/fde79452b1.js"
+      crossorigin="anonymous"
+    ></script>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="../assets/styles/login-style.css"
+    />
+    <link
+      href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+      rel="stylesheet"
+      id="bootstrap-css"
+    />
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="../assets/js/index.js"></script>
   </head>
   <body>
-    <div class="login-card">
-      <h2>Identify Yourself</h2>
-      <div class="input-group">
-        <input type="text" id="username" placeholder="Your Name" />
-      </div>
-      <div class="input-group">
-        <select id="user-role">
-          <option value="visitor">Park Visitor</option>
-          <option value="admin">Park Administrator</option>
-        </select>
-      </div>
-      <button type="button" onclick="handleLogin()" class="btn-login">
-        Login
+    <section>
+      <button id="home-btn" class="main-button" onclick="goToHomePage()">
+        <span class="fa-sharp fa-solid fa-house"></span>
       </button>
-    </div>
+      <div class="login-reg-panel">
+        <div class="login-info-box">
+          <h2>Have an account?</h2>
+          <!-- <p>Lorem ipsum dolor sit amet</p> -->
+          <label id="label-register" for="log-reg-show">Login</label>
+          <input
+            type="radio"
+            name="active-log-panel"
+            id="log-reg-show"
+            checked="checked"
+          />
+        </div>
 
-    <script src="../assets/services/auth.js"></script>
+        <div class="register-info-box">
+          <h2>Don't have an account?</h2>
+          <!-- <p>Lorem ipsum dolor sit amet</p> -->
+          <label id="label-login" for="log-login-show">Register</label>
+          <input type="radio" name="active-log-panel" id="log-login-show" />
+        </div>
+
+        <div class="white-panel">
+          <div class="login-show">
+            <h2>LOGIN</h2>
+            <input type="text" id="email" placeholder="Email" />
+            <input type="password" id="password" placeholder="Password" />
+            <input type="button" value="Login" onclick="handleLogin()" />
+            <a href="">Forgot password?</a>
+          </div>
+          <div class="register-show">
+            <h2>REGISTER</h2>
+            <input type="text" id="email" placeholder="Email" />
+            <input type="password" id="password" placeholder="Password" />
+            <input
+              type="password"
+              id="confirm-password"
+              placeholder="Confirm Password"
+            />
+            <input type="button" value="Register" onclick="handleRegister()" />
+          </div>
+        </div>
+      </div>
+    </section>
+    <script src="../assets/js/auth.js"></script>
   </body>
 </html>
