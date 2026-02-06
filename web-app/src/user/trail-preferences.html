@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sila Park - Tailor Your Visit</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <div class="preferences-container">
+        <h2>How do you want to experience the Park?</h2>
+        <p>Our AI will suggest the best trail based on real-time sensor data.</p>
+
+        <form id="preferenceForm">
+            <label>I prefer a trail that is:</label>
+            <select id="difficulty">
+                <option value="easy">Relaxing (Low Slope)</option>
+                <option value="moderate">Active (Medium Slope)</option>
+                <option value="hard">Challenging (High Slope)</option>
+            </select>
+
+            <label>Environment Preference:</label>
+            <div class="radio-group">
+                <input type="radio" name="env" value="quiet" checked> 🤫 Quiet & Peaceful
+                <input type="radio" name="env" value="bright"> ☀️ Sunny & Bright
+            </div>
+
+            <label>I am interested in:</label>
+            <select id="interest">
+                <option value="history">Park History & Giants</option>
+                <option value="nature">Flora & Fauna</option>
+            </select>
+
+            <button type="button" onclick="getRecommendation()">Find My Trail</button>
+        </form>
+    </div>
+
+    <script src="scripts/recommendation.js"></script>
+</body>
+</html>
