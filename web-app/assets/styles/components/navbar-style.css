@@ -1,0 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&family=Roboto&display=swap');
+
+.navbar{
+  display: flex;
+  justify-content: space-between;
+  background: #4a7c59;
+  top: 0;
+  padding: 5px;
+
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+}
+
+.logo img {
+  width: 50px;
+  margin-top: 2px;
+  margin-left: 2px;
+  margin-bottom: 2px;
+  margin-right: 10px;
+}
+
+.logo .title {
+  font-family: "Orbitron", sans-serif;
+  font-size: 1.5rem;
+  color: var(--color-text-light);
+  font-weight: bold;
+}
+
+#pillNav2{
+  --bs-nav-link-color: var(--color-text-light);
+  --bs-nav-pills-link-active-color: var(--primary-color);
+  --bs-nav-pills-link-active-bg: var(--color-text-light);
+}
+
+
+
+.nav-link:hover {
+  color: var(--color-text-light);
+  background: var(--primary-color);
+
+}
+ 
+.datetimeloc span{
+  color: var(--color-text-light);
+  font-size: 0.9rem;
+}
+
+
+
+

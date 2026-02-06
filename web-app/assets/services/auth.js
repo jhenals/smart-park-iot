@@ -13,6 +13,6 @@ function handleLogin() {
   if (role === "admin") {
     window.location.href = "/admin.html";
   } else {
-    window.location.href = "../components/trail-preferences.html";
+    window.location.href = "/web-app/src/user//trail-preferences.html";
   }
 }

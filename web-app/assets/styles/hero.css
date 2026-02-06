@@ -1,0 +1,44 @@
+header h1{
+  text-align: center;
+  color: var(--color-text-light);
+  text-shadow:
+  0 0 15px var(--primary-color),
+  0 0 30px var(--background-color);
+  width: 100vw;
+}
+
+.hero {
+padding: 0;
+background: url("../../public/images/homepage-imgs/1.png")
+center/cover no-repeat;
+}
+
+.hero h1 {
+font-family: "Orbitron", sans-serif;
+font-size: 5rem;
+color: var(--color-text-primary);
+text-shadow:
+0 0 15px var(--primary-color),
+0 0 30px var(--primary-background-color);
+}
+
+.feature-highlights{
+  display: flex;
+  justify-content: center;
+}
+
+.feature-highlights span{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  padding: 20px;
+  height: 150px;
+  color: var(--color-text-light);
+  margin: 0 20px;
+  background-color: color-mix(in srgb, var(--background-color) 20%, transparent);
+}
+
+.hero button{
+  font-family: "Orbitron", sans-serif;
+}
