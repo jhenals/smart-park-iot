@@ -1,39 +1,79 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Sila Park - Tailor Your Visit</title>
-    <link rel="stylesheet" href="assets/css/style.css">
-</head>
-<body>
+    <link rel="stylesheet" href="assets/css/style.css" />
+  </head>
+  <body>
     <div class="preferences-container">
-        <h2>How do you want to experience the Park?</h2>
-        <p>Our AI will suggest the best trail based on real-time sensor data.</p>
-
-        <form id="preferenceForm">
-            <label>I prefer a trail that is:</label>
+      <h2>How do you want to experience the Park?</h2>
+      <p>Our AI will suggest the best trail based on real-time sensor data.</p>
+        <form id="preferencesForm">
+        <div class="input-group">
+            <label>Trail Difficulty:</label>
             <select id="difficulty">
-                <option value="easy">Relaxing (Low Slope)</option>
-                <option value="moderate">Active (Medium Slope)</option>
-                <option value="hard">Challenging (High Slope)</option>
+                <option value="easy">Easy (Flat & Relaxing)</option>
+                <option value="moderate">Moderate (Some inclines)</option>
+                <option value="hard">Challenging (Steep Slopes)</option>
             </select>
+        </div>
 
-            <label>Environment Preference:</label>
-            <div class="radio-group">
-                <input type="radio" name="env" value="quiet" checked> 🤫 Quiet & Peaceful
-                <input type="radio" name="env" value="bright"> ☀️ Sunny & Bright
-            </div>
+        <div class="input-group">
+            <label>Preferred Environment:</label>
+            <select id="environment">
+                <option value="quiet">Quiet & Serene</option>
+                <option value="bright">Sunny & Open</option>
+            </select>
+        </div>
 
-            <label>I am interested in:</label>
+        <div class="input-group">
+            <label>Primary Interest:</label>
             <select id="interest">
-                <option value="history">Park History & Giants</option>
-                <option value="nature">Flora & Fauna</option>
+                <option value="history">Ancient Pines & History</option>
+                <option value="botany">Local Flora & Fauna</option>
             </select>
+        </div>
 
-            <button type="button" onclick="getRecommendation()">Find My Trail</button>
-        </form>
+        <button type="button" onclick="generateMockRecommendation()">Get Recommendation</button>
+    </form>
+
+    <div id="recommendation-result" style="display:none; margin-top: 20px;">
+        <h3>Recommended for You:</h3>
+        <p id="trail-name" style="font-weight: bold; color: #2e7d32;"></p>
+        <button onclick="goToHomepage()">Start Hiking</button>
+    </div>
+</div>
+
+      <!-- Trail Preference Form 
+       <form id="preferenceForm">
+        <label>I prefer a trail that is:</label>
+        <select id="difficulty">
+          <option value="easy">Relaxing (Low Slope)</option>
+          <option value="moderate">Active (Medium Slope)</option>
+          <option value="hard">Challenging (High Slope)</option>
+        </select>
+
+        <label>Environment Preference:</label>
+        <div class="radio-group">
+          <input type="radio" name="env" value="quiet" checked /> 🤫 Quiet &
+          Peaceful <input type="radio" name="env" value="bright" /> ☀️ Sunny &
+          Bright
+        </div>
+
+        <label>I am interested in:</label>
+        <select id="interest">
+          <option value="history">Park History & Giants</option>
+          <option value="nature">Flora & Fauna</option>
+        </select>
+
+        <button type="button" onclick="getRecommendation()">
+          Find My Trail
+        </button>
+      </form>-->
+      
     </div>
 
-    <script src="scripts/recommendation.js"></script>
-</body>
+    <script src="../../assets/js/trail-preferences.js"></script>
+  </body>
 </html>
