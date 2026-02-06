@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Smart Park - Login</title>
+    <link rel="stylesheet" href="../styles/index.css" />
+  </head>
+  <body>
+    <div class="login-card">
+      <h2>Identify Yourself</h2>
+      <div class="input-group">
+        <input type="text" id="username" placeholder="Your Name" />
+      </div>
+      <div class="input-group">
+        <select id="user-role">
+          <option value="visitor">Park Visitor</option>
+          <option value="admin">Park Administrator</option>
+        </select>
+      </div>
+      <button type="button" onclick="handleLogin()" class="btn-login">
+        Login
+      </button>
+    </div>
+
+    <script src="../services/auth.js"></script>
+  </body>
+</html>
