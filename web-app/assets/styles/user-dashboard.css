@@ -8,17 +8,14 @@
 }
 
 body {
-  margin: 0;
-  font-family: 'Inter', sans-serif;
   background: linear-gradient(135deg, var(--background-color) 0%, var(--forest-light) 100%);
-  min-height: 100vh;
-  color: var(--color-text-dark);
 }
 
 
-.user-dashboard-section{
+.user-dashboard.container {
   display: flex;
   flex-direction: column;
+  color: var(--primary-color);
 }
 
 .alert-banner{
@@ -28,6 +25,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(--forest-dark);
 }
 
 .glass-header {
@@ -125,4 +123,30 @@ body {
   font-weight: bold;
   margin-top: 30px;
   margin-left: 40px
+}
+
+
+.discovery-fixed {
+    min-height: 150px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transition: background 0.3s ease;
+}
+
+/* Pulse effect for the scanning badge */
+.pulse {
+    animation: shadow-pulse 2s infinite;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+@keyframes shadow-pulse {
+    0% { box-shadow: 0 0 0 0px rgba(255, 255, 255, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
+    100% { box-shadow: 0 0 0 0px rgba(255, 255, 255, 0); }
+}
+
+.state-found h4 {
+    color: var(--accent-gold);
+    margin: 5px 0;
 }

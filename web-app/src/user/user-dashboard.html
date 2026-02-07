@@ -31,76 +31,111 @@
   <body>
     <nav id="dynamic-navbar" class="navbar-container"></nav>
 
-    <div id="safety-shield" class="safety-banner safe">
-      <span class="fa-solid fa-bed-pulse"></span>
-      <span id="safety-text">Park Conditions: Optimal for Hiking</span>
-    </div>
+    <div>
+      <div id="safety-shield" class="alert-banner">
+        <span class="fa-solid fa-bed-pulse"></span>
+        <span id="safety-text">Park Conditions: Optimal for Hiking</span>
+      </div>
 
-    <div class="user-dashboard-section">
-      <div class="dashboard-wrapper">
-        <div class="glass-header">
-          <div class="user-info">
-            <h1>Sila <span class="highlight">Giants</span></h1>
-            <p>Welcome back, <span id="display-username">Explorer</span></p>
-          </div>
-          <div class="trail-status">
-            <span id="active-trail">Ancient Pine Path</span>
-            <div class="progress-ring-container">
-              <svg width="40" height="40">
-                <circle class="bg" cx="20" cy="20" r="18"></circle>
-                <circle
-                  id="progress-circle"
-                  class="fg"
-                  cx="20"
-                  cy="20"
-                  r="18"
-                ></circle>
-              </svg>
-              <span id="progress-percent">0%</span>
+      <div class="user-dashboard-container">
+        <div class="dashboard-wrapper">
+          <div class="glass-header">
+            <div class="user-info">
+              <h1>Sila <span class="highlight">Giants</span></h1>
+              <p>Welcome back, <span id="display-username">Explorer</span></p>
             </div>
-          </div>
-        </div>
-
-        <div class="card-grid">
-          <div class="smart-card" id="comfort-card">
-            <div class="card-icon">🔇</div>
-            <div class="card-data">
-              <h4>Acoustic Comfort</h4>
-              <p id="noise-val">32 dB</p>
-              <div class="mini-bar">
-                <div id="noise-fill" style="width: 80%"></div>
+            <div class="trail-status">
+              <span id="active-trail">Ancient Pine Path</span>
+              <div class="progress-ring-container">
+                <svg width="40" height="40">
+                  <circle class="bg" cx="20" cy="20" r="18"></circle>
+                  <circle
+                    id="progress-circle"
+                    class="fg"
+                    cx="20"
+                    cy="20"
+                    r="18"
+                  ></circle>
+                </svg>
+                <span id="progress-percent">0%</span>
               </div>
             </div>
           </div>
 
-          <div class="smart-card">
-            <div class="card-icon">🌡️</div>
-            <div class="card-data">
-              <h4>Air Quality</h4>
-              <p id="temp-val">18.5°C</p>
-              <small>Pristine Forest Air</small>
+          <div class="card-grid">
+            <div class="smart-card" id="comfort-card">
+              <div class="card-icon">🔇</div>
+              <div class="card-data">
+                <h4>Acoustic Comfort</h4>
+                <p id="noise-val">32 dB</p>
+                <div class="mini-bar">
+                  <div id="noise-fill" style="width: 80%"></div>
+                </div>
+              </div>
             </div>
+
+            <div class="smart-card">
+              <div class="card-icon">🌡️</div>
+              <div class="card-data">
+                <h4>Air Quality</h4>
+                <p id="temp-val">18.5°C</p>
+                <small>Pristine Forest Air</small>
+              </div>
+            </div>
+
+            <div id="discovery-container" class="smart-card discovery-fixed">
+              <div id="discovery-content">
+                <div class="state-scanning">
+                  <span class="badge pulse">📡 Scanning</span>
+                  <h4>Searching for Giants...</h4>
+                  <p>
+                    Walk through the trail to discover ancient Laricio pines.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Example of an active discovery card
+
+            <div class="discovery-card active" id="discovery-alert">
+              <div class="discovery-content">
+                <span class="badge">NEARBY GIANT</span>
+                <h4>The Grand Laricio</h4>
+                <p>You are 15m away from a 400-year-old tree.</p>
+                <button onclick="openChatWithContext('The Grand Laricio')">
+                  Learn its Story
+                </button>
+              </div>
+            </div>
+
+            <div id="discovery-alert" class="discovery-card">
+              <div class="discovery-content">
+                <span class="badge">Nearby Discovery</span>
+                <h4>Tree Name</h4>
+                <p>Description goes here.</p>
+                <button
+                  onclick="
+                    openChatWithContext(
+                      document.querySelector('#discovery-alert h4').innerText,
+                    )
+                  "
+                >
+                  Learn its Story
+                </button>
+              </div>
+            </div>
+
+             -->
           </div>
 
-          <div class="discovery-card active" id="discovery-alert">
-            <div class="discovery-content">
-              <span class="badge">NEARBY GIANT</span>
-              <h4>The Grand Laricio</h4>
-              <p>You are 15m away from a 400-year-old tree.</p>
-              <button onclick="openChatWithContext('The Grand Laricio')">
-                Learn its Story
-              </button>
-            </div>
-          </div>
+          <button class="chat-fab" onclick="toggleChat()">
+            <img src="assets/ai-icon.svg" alt="Guide" />
+          </button>
         </div>
-
-        <button class="chat-fab" onclick="toggleChat()">
-          <img src="assets/ai-icon.svg" alt="Guide" />
-        </button>
       </div>
-    </div>
 
-    <span id="eta-label" class="eta-map">ETA to Exit: 24 mins</span>
-    <div id="map"></div>
+      <span id="eta-label" class="eta-map">ETA to Exit: 24 mins</span>
+      <div id="map"></div>
+    </div>
   </body>
 </html>

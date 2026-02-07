@@ -21,6 +21,17 @@ function initMap() {
     return;
   }
 
+  // Add this inside your initMap() function
+  MOCK_GIANTS.forEach((giant) => {
+    // Visualizes the 30-meter detection zone
+    L.circle([giant.lat, giant.lng], {
+      color: "rgba(255, 193, 7, 0.5)", // Gold
+      fillColor: "#ffc107",
+      fillOpacity: 0.2,
+      radius: 30, // 30 meters
+    }).addTo(map);
+  });
+
   map = L.map("map-container").setView([39.3685, 16.5982], 16);
   L.tileLayer(
     "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
@@ -107,17 +118,54 @@ function toggleChat() {
 }
 
 function checkProximity(userLat, userLng) {
-  const threshold = 0.0002; // Roughly 20 meters
+  const threshold = 0.0003;
+  const container = document.getElementById("discovery-content");
+  let foundGiant = null;
+
+  // Check if user is near any giant
   MOCK_GIANTS.forEach((giant) => {
     const dist = Math.sqrt(
       Math.pow(userLat - giant.lat, 2) + Math.pow(userLng - giant.lng, 2),
     );
     if (dist < threshold) {
-      document.getElementById("discovery-alert").style.display = "block";
-      document.getElementById("discovery-text").innerText =
-        `You've reached ${giant.name}!`;
+      foundGiant = giant;
     }
   });
+
+  if (foundGiant) {
+    // --- State: Giant Found ---
+    container.innerHTML = `
+            <div class="state-found">
+                <span class="badge" style="background: #ffc107; color: #1b3022;">📍 Landmark Reached</span>
+                <h4>${foundGiant.name}</h4>
+                <p>${foundGiant.desc}</p>
+                <button class="btn-small" onclick="openChatWithContext('${foundGiant.name}')">
+                    Ask Guide about this Tree
+                </button>
+            </div>
+        `;
+    document.getElementById("discovery-container").style.background =
+      "rgba(255, 193, 7, 0.1)";
+  } else {
+    // --- State: Default Scanning ---
+    container.innerHTML = `
+            <div class="state-scanning">
+                <span class="badge pulse">📡 Scanning</span>
+                <h4>Searching for Giants...</h4>
+                <p>Keep moving. Your GPS is active and tracking the trail.</p>
+            </div>
+        `;
+    document.getElementById("discovery-container").style.background =
+      "rgba(255, 255, 255, 0.15)";
+  }
+}
+
+function openChatWithContext(treeName) {
+  // This connects to Rima's role
+  // You could open a chat modal here and pre-fill the question
+  const message = `Tell me about ${treeName}`;
+  localStorage.setItem("pendingChatQuestion", message);
+  toggleChat(message);
 }
 
 // --- DYNAMIC DATA SIMULATOR ---
