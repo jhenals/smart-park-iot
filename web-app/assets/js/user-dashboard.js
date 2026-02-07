@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // 1. Initial Setup from LocalStorage
   const savedTrail =
     localStorage.getItem("recommendedTrail") || "Giant Pine Loop";
   const savedUser = localStorage.getItem("username") || "Visitor";
@@ -7,13 +6,53 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("active-trail").innerText = savedTrail;
   document.getElementById("display-username").innerText = savedUser;
 
-  // 2. Start Data Simulations
+  initMap();
+
   simulateSensors();
   simulateGPS();
   simulateWeather();
 });
 
-// Simulate S6000U Sensor Data (Temperature & Noise)
+function initMap() {
+  if (typeof L === "undefined") {
+    console.error(
+      "Leaflet library not found! Did you include the <link> and <script> tags in your HTML?",
+    );
+    return;
+  }
+
+  map = L.map("map-container").setView([39.3685, 16.5982], 16);
+  L.tileLayer(
+    "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+  ).addTo(map);
+  userMarker = L.marker([39.3685, 16.5982]).addTo(map);
+}
+
+function startGPSTracking() {
+  let progress = 0;
+  setInterval(() => {
+    if (progress < 100) {
+      progress += 2;
+      document.getElementById("progress-percent").innerText = `${progress}%`;
+
+      // Update Circle
+      const circle = document.getElementById("progress-circle");
+      const offset = 113 - (progress / 100) * 113;
+      circle.style.strokeDashoffset = offset;
+
+      // Move the marker on the map to simulate walking
+      const newLat = 39.3685 + progress * 0.00005;
+      const newLng = 16.5982 + progress * 0.00005;
+
+      if (userMarker) {
+        userMarker.setLatLng([newLat, newLng]);
+        map.panTo([newLat, newLng]); // Follow the user
+        checkProximity(newLat, newLng); // Check for trees
+      }
+    }
+  }, 3000);
+}
+
 function simulateSensors() {
   setInterval(() => {
     const temp = (15 + Math.random() * 5).toFixed(1); // 15°C - 20°C
@@ -22,13 +61,11 @@ function simulateSensors() {
     document.getElementById("temp-val").innerText = `${temp}°C`;
     document.getElementById("noise-val").innerText = `${noise} dB`;
 
-    // Dynamic status update
     document.getElementById("noise-status").innerText =
       noise > 35 ? "Moderate" : "Quiet";
   }, 3000);
 }
 
-// Simulate your GPS Localization Role
 let progress = 0;
 function simulateGPS() {
   setInterval(() => {
@@ -36,13 +73,11 @@ function simulateGPS() {
       progress += 5;
       document.getElementById("hike-progress").style.width = `${progress}%`;
 
-      // Mock Coordinates
       const lat = (39.368 + Math.random() * 0.001).toFixed(4);
       const lng = (16.598 + Math.random() * 0.001).toFixed(4);
       document.getElementById("gps-coords").innerText =
         `LAT: ${lat} | LNG: ${lng}`;
 
-      // Update AI Insight based on progress
       if (progress === 50) {
         document.getElementById("insight-text").innerText =
           "You are near 'The Twin Giants'!";
@@ -51,10 +86,9 @@ function simulateGPS() {
   }, 5000);
 }
 
-// Simulate Weather Forecast Overrides
 function simulateWeather() {
   const banner = document.getElementById("weather-alert");
-  // Simulate a clear status initially
+
   banner.innerText = "🌤️ Sky is clear. Trail is safe.";
   banner.style.backgroundColor = "#2e7d32";
 
@@ -147,7 +181,6 @@ function startSensorPolling() {
   }, 4000);
 }
 
-// 3. Safety Override (Sisay's Role)
 function updateSafetyUI(status) {
   const banner = document.getElementById("safety-shield");
   if (status === "danger") {
@@ -155,40 +188,4 @@ function updateSafetyUI(status) {
     document.getElementById("safety-text").innerText =
       "⚠️ EMERGENCY: Storm approaching. Evacuate.";
   }
-}
-
-// src/user/localization.js
-let map, userMarker;
-
-function initMap() {
-  const gigantiDellaSilaCenter = [39.2, 16.8];
-  var map = L.map("map").setView(gigantiDellaSilaCenter, 13);
-
-  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution:
-      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-  }).addTo(map);
-  // Watch the user's position
-  navigator.geolocation.watchPosition(updateLocation, handleError, {
-    enableHighAccuracy: true,
-  });
-}
-z;
-function updateLocation(position) {
-  const { latitude, longitude } = position.coords;
-
-  if (!userMarker) {
-    userMarker = L.marker([latitude, longitude])
-      .addTo(map)
-      .bindPopup("You are here")
-      .openPopup();
-  } else {
-    userMarker.setLatLng([latitude, longitude]);
-  }
-
-  // Auto-center map on user
-  map.panTo([latitude, longitude]);
-
-  // Call your proximity logic to see if they are near a "Giant"
-  checkProximity(latitude, longitude);
 }

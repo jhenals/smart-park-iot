@@ -1,15 +1,22 @@
 const loadingMessage = document.getElementById("loading-message");
 
 const gigantiDellaSilaCenter = [39.2, 16.8];
-var map = L.map("map").setView(gigantiDellaSilaCenter, 13);
+let map, userMarker;
 
-L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  attribution:
-    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-}).addTo(map);
+function initMap() {
+  map = L.map("map").setView(gigantiDellaSilaCenter, 13);
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  }).addTo(map);
 
-let userMarker = null;
+  userMarker = L.marker(gigantiDellaSilaCenter)
+    .addTo(map)
+    .bindPopup("📍 You are here")
+    .openPopup();
+}
 
+initMap();
 const DUMMY_USER_POSITION = {
   lat: 39.3305,
   lng: 16.4728,
