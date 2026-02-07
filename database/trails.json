@@ -1,0 +1,64 @@
+[
+  {
+    "id": 1,
+    "title": "Sentiero dei Giganti",
+    "difficulty": "moderate",
+    "difficultyLabel": "Moderate",
+    "matchScore": 85,
+    "duration": {
+      "value": 2,
+      "unit": "hours"
+    },
+    "distance": {
+      "value": 5,
+      "unit": "km"
+    },
+    "elevationGain": 200,
+    "features": [
+      "Scenic views",
+      "Wildlife spotting"
+    ]
+  },
+  {
+    "id": 2,
+    "title": "Bosco Antico",
+    "difficulty": "easy",
+    "difficultyLabel": "Easy",
+    "matchScore": 92,
+    "duration": {
+      "value": 1.5,
+      "unit": "hours"
+    },
+    "distance": {
+      "value": 3.2,
+      "unit": "km"
+    },
+    "elevationGain": 80,
+    "features": [
+      "Shaded trail",
+      "Family friendly",
+      "Picnic areas"
+    ]
+  },
+   {
+    "id": 3,
+    "title": "Alta Cresta",
+    "difficulty": "hard",
+    "difficultyLabel": "Challenging",
+    "matchScore": 74,
+    "duration": {
+      "value": 4,
+      "unit": "hours"
+    },
+    "distance": {
+      "value": 9.5,
+      "unit": "km"
+    },
+    "elevationGain": 650,
+    "features": [
+      "Panoramic views",
+      "Steep climbs",
+      "Rocky terrain"
+    ]
+  }
+]

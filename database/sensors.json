@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "name": "Sensor A",
+    "lat": 39.203,
+    "lng": 16.805,
+    "temperature": 22,
+    "humidity": 55,
+    "noise": 35,
+    "battery": 95,
+    "status": "normal",
+    "timestamp": "2026-01-26 10:00"
+  },
+  {
+    "id": 2,
+    "name": "Sensor B",
+    "lat": 39.207,
+    "lng": 16.81,
+    "temperature": 30,
+    "humidity": 40,
+    "noise": 70,
+    "battery": 85,  
+    "status": "warning",
+    "timestamp": "2026-01-26 10:05"
+  },
+  {
+    "id": 3,
+    "name": "Sensor C",
+    "lat": 39.21,
+    "lng": 16.815,
+    "temperature": 35,
+    "humidity": 30,
+    "noise": 85,
+    "battery": 60,
+    "status": "critical",
+    "timestamp": "2026-01-26 10:10"
+  }
+]

@@ -9,26 +9,121 @@
       rel="stylesheet"
       href="../../assets/styles/components/dynamic-navbar.css"
     />
+    <link rel="stylesheet" href="../../assets/styles/user-dashboard.css" />
+    <linkz2q
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
     <script src="../../assets/js/dynamic-navbar.js"></script>
+    <script src="../../assets/js/user-dashboard.js"></script>
+    <script src="../../assets/js/map.js"></script>
   </head>
   <body>
     <nav id="dynamic-navbar" class="navbar-container"></nav>
 
-    <section>
-      <div class="dashboard-container">
-        <div id="weather-alert" class="alert-banner">
-          Checking weather conditions...
+    <div id="safety-shield" class="safety-banner safe">
+      <span class="fa-solid fa-bed-pulse"></span>
+      <span id="safety-text">Park Conditions: Optimal for Hiking</span>
+    </div>
+
+    <section class="user-dashboard-section">
+      <div class="dashboard-wrapper">
+        <div class="glass-header">
+          <div class="user-info">
+            <h1>Sila <span class="highlight">Giants</span></h1>
+            <p>Welcome back, <span id="display-username">Explorer</span></p>
+          </div>
+          <div class="trail-status">
+            <span id="active-trail">Ancient Pine Path</span>
+            <div class="progress-ring-container">
+              <svg width="40" height="40">
+                <circle class="bg" cx="20" cy="20" r="18"></circle>
+                <circle
+                  id="progress-circle"
+                  class="fg"
+                  cx="20"
+                  cy="20"
+                  r="18"
+                ></circle>
+              </svg>
+              <span id="progress-percent">0%</span>
+            </div>
+          </div>
         </div>
 
-        <header>
-          <h1>Giganti della Sila: <span id="active-trail">Trail Name</span></h1>
+        <div id="map"></div>
+        <span id="eta-label">ETA to Exit: 24 mins</span>
+
+        <div class="card-grid">
+          <div class="smart-card" id="comfort-card">
+            <div class="card-icon">🔇</div>
+            <div class="card-data">
+              <h4>Acoustic Comfort</h4>
+              <p id="noise-val">32 dB</p>
+              <div class="mini-bar">
+                <div id="noise-fill" style="width: 80%"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="smart-card">
+            <div class="card-icon">🌡️</div>
+            <div class="card-data">
+              <h4>Air Quality</h4>
+              <p id="temp-val">18.5°C</p>
+              <small>Pristine Forest Air</small>
+            </div>
+          </div>
+
+          <div class="discovery-card active" id="discovery-alert">
+            <div class="discovery-content">
+              <span class="badge">NEARBY GIANT</span>
+              <h4>The Grand Laricio</h4>
+              <p>You are 15m away from a 400-year-old tree.</p>
+              <button onclick="openChatWithContext('The Grand Laricio')">
+                Learn its Story
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <button class="chat-fab" onclick="toggleChat()">
+          <img src="assets/ai-icon.svg" alt="Guide" />
+        </button>
+      </div>
+
+      <!-- The main container for the user dashboard 
+      <div class="container">
+        <h1>
+          Giganti della Sila: <span id="active-trail">Loading Trail...</span>
+        </h1>
+        <div class="user-meta">
           <p>Welcome, <span id="display-username">Explorer</span>!</p>
-        </header>
+          <div class="progress-wrap">
+            <small>Hike Progress</small>
+            <div class="progress-bar-bg">
+              <div
+                id="hike-progress"
+                class="progress-fill"
+                style="width: 0%"
+              ></div>
+            </div>
+          </div>
+        </div>
 
         <div class="main-layout">
           <div class="map-section">
             <div id="map-container">
-              <p>Loading GPS Tracking...</p>
+              <div id="mock-map-ui">
+                <span id="gps-coords">Searching for satellites...</span>
+              </div>
             </div>
           </div>
 
@@ -36,10 +131,36 @@
             <div class="stat-card">
               <h4>Local Temperature</h4>
               <p id="temp-val">--°C</p>
+              <small id="temp-trend">Stable</small>
             </div>
             <div class="stat-card">
               <h4>Noise Level</h4>
               <p id="noise-val">-- dB</p>
+              <small id="noise-status">Quiet</small>
+            </div>
+            <div id="ai-suggestion" class="ai-bubble">
+              <p>
+                💡 <em>AI Tip:</em>
+                <span id="insight-text">Walking to the Giants...</span>
+              </p>
+            </div>
+          </div>
+          <div class="insight-container">
+            <div class="card interactive-discovery">
+              <span class="badge">Nearby</span>
+              <h4>The Twin Giants</h4>
+              <p>You are 15m away! These trees have stood for 350 years.</p>
+              <button onclick="openChatWithContext('Twin Giants')">
+                Learn More
+              </button>
+            </div>
+
+            <div class="card comfort-meter">
+              <h4>Acoustic Comfort</h4>
+              <div class="gauge-bar">
+                <div id="comfort-fill" style="width: 85%"></div>
+              </div>
+              <small>Perfectly quiet, just as you requested.</small>
             </div>
           </div>
         </div>
@@ -48,6 +169,7 @@
           💬 Ask the Guide
         </button>
       </div>
+      -->
     </section>
 
     <script src="../../assets/js/user-dashboard.js"></script>

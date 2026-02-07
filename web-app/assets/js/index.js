@@ -7,3 +7,4 @@ document.addEventListener("DOMContentLoaded", () => {
 function goToHomePage() {
   window.location.href = "../index.html";
 }
+

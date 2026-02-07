@@ -1,0 +1,123 @@
+:root {
+  --forest-dark: #1b3022;
+  --forest-light: #2e7d32;
+  --accent-gold: #ffc107;
+  --glass-bg: rgba(255, 255, 255, 0.15);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --danger: #ff5252;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(135deg, var(--forest-dark) 0%, var(--forest-light) 100%);
+  min-height: 100vh;
+}
+
+.user-dashboard-section{
+  display: flex;
+  flex-direction: column;
+}
+.alert-banner{
+  margin-top: 5px;
+  height: 50px;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.glass-header {
+  width: 90%;
+  max-width: 1200px;
+  margin: 10px auto;
+  text-align: center;
+}
+
+.container{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.user-meta{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 20px;
+}
+
+/* Glassmorphism Card Style */
+.smart-card, .glass-header, .discovery-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* Safety Banner (Sisay's Role) */
+.safety-banner {
+  padding: 10px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 0.9rem;
+  transition: all 0.5s ease;
+}
+.safety-banner.safe { background: rgba(76, 175, 80, 0.4); }
+.safety-banner.danger { background: rgba(255, 82, 82, 0.6); animation: pulse 2s infinite; }
+
+/* Grid Layout */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 15px;
+  padding: 20px;
+}
+
+/* Progress Ring (Your GPS Role) */
+.progress-ring-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#progress-circle {
+  fill: none;
+  stroke: var(--accent-gold);
+  stroke-width: 3;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+  stroke-dasharray: 113; /* 2 * PI * R */
+  transition: stroke-dashoffset 0.5s ease;
+}
+
+/* Floating AI Assistant (Rima's Role) */
+.chat-fab {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--accent-gold);
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+  transition: transform 0.3s ease;
+}
+.chat-fab:hover { transform: scale(1.1); }
+
+
+#map {
+  flex: 1;
+  height: 50vh;
+  width: 100vw;
+  border: 2px solid var(--primary-color);
+  margin: 5px;
+}
