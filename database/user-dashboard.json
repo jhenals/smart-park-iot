@@ -1,0 +1,87 @@
+{
+  "user": {
+    "name": "Visitor",
+    "preferredTrail": "Giant Pine Loop",
+    "visitedGiants": [
+      "The Grand Laricio"
+    ]
+  },
+  "safety": {
+    "status": "safe",
+    "safeText": "Park Conditions: Optimal for Hiking",
+    "dangerText": "⚠️ EMERGENCY: Storm approaching. Evacuate."
+  },
+  "sensors": {
+    "intervalMs": 3000,
+    "temperatureRange": {
+      "min": 15,
+      "max": 20
+    },
+    "noiseRange": {
+      "min": 30,
+      "max": 45
+    },
+    "noiseThreshold": 40
+  },
+  "eta": {
+    "label": "ETA to Exit",
+    "time": "24 mins",
+    "items": [
+      {
+        "label": "Distance",
+        "value": "1.8 km"
+      },
+      {
+        "label": "Elevation",
+        "value": "+120 m"
+      },
+      {
+        "label": "Exit",
+        "value": "East Gate"
+      },
+      {
+        "label": "Pace",
+        "value": "4.5 km/h"
+      }
+    ]
+  },
+  "weather": {
+    "safe": {
+      "text": "🌤️ Sky is clear. Trail is safe.",
+      "color": "#2e7d32"
+    },
+    "alert": {
+      "text": "⚠️ CAUTION: Rain detected via API. Suggesting shorter route.",
+      "color": "#d32f2f",
+      "delayMs": 10000
+    }
+  },
+  "gps": {
+    "start": {
+      "lat": 39.3685,
+      "lng": 16.5982
+    },
+    "progressStep": 2,
+    "progressIntervalMs": 3000,
+    "markerStep": 0.00005
+  },
+  "discovery": {
+    "threshold": 0.0003
+  },
+  "visitedGiants": [
+    {
+      "id": 8,
+      "name": "Casa Pasquale Turkey Oak",
+      "lat": 39.3724,
+      "lng": 16.603,
+      "desc": "A majestic oak near the Casa Pasquale area."
+    },
+    {
+      "id": 9,
+      "name": "Ceraso Downy Oak",
+      "lat": 39.373,
+      "lng": 16.6036,
+      "desc": "A downy oak with a sprawling canopy."
+    }
+  ]
+}

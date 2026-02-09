@@ -23,6 +23,11 @@
     background: var(--background-color);
 }
 
+.navbar .nav-link.active {
+    color: var(--primary-color);
+    background: var(--background-color);
+}
+
 
 
 

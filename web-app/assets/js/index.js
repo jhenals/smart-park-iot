@@ -5,6 +5,8 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function goToHomePage() {
-  window.location.href = "../index.html";
+  const isLoggedIn = localStorage.getItem("loggedIn") === "true";
+  window.location.href = isLoggedIn
+    ? "/web-app/src/user/user-dashboard.html"
+    : "/web-app/index.html";
 }
-

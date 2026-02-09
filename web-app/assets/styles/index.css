@@ -6,19 +6,26 @@
 margin: 0;
 padding: 0;
 font-family: "Roboto", sans-serif;
---background-color: #faf3dd;
+
 --primary-color: #4a7c59;
 --secondary-color: #8fc0a9;
 --tertiary-color: #c8d5a9;
+--background-color: #faf3dd;
 
---color-text-light: #faf3dd;
---color-text-dark:#4a7c59;
+--text-light-color: #faf3dd;
+--text-dark-color:#4a7c59;
+
+--forest-dark: #1b3022;
+--forest-light: #2e7d32;
+--accent-gold: #ffc107;
+--glass-bg: rgba(255, 255, 255, 0.15);
+--glass-border: rgba(255, 255, 255, 0.2);
+--danger-color: #ff5252;
 }
 
 body {
-background: linear-gradient(to bottom, var(--background-color) 0%, #1a1a1a 100%);
-overflow-x: hidden;
-color: var(--color-text-light);
+  background: linear-gradient(135deg, var(--background-color) 0%, var(--forest-light) 100%);
+  overflow-x: hidden;
 }
 
 ::-webkit-scrollbar {
@@ -31,24 +38,40 @@ color: var(--color-text-light);
 nav{
   background: #4a7c59;
   opacity: 0.80;
+  color: var(--text-light-color);
 }
 
 nav span{
-  color: var(--color-text-light);
+  color: var(--text-light-color);
 }
 
 section {
   display: flex;
   flex-direction: column;
   width: 100%;
-  padding: 0;
+  align-items: center;
+  min-height: 100vh;
 }
+
 
 header{
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
 }
 
+header h1{
+  font-family: 'Orbitron', sans-serif;
+  color: var(--text-dark-color);
+  text-align: center;
+}
+
+header p{
+  color: var(--text-dark-color);
+  text-align: center;
+  margin-top: 10px;
+  font-size: 1.1rem;
+}
+ 
 #home-btn{
   position: absolute;
   top: 20px;
@@ -57,7 +80,7 @@ header{
 }
 
 .main-button {
-color: var(--color-text-light);
+color: var(--text-light-color);
 background: transparent;
 border: 2px solid var(--background-color);
 border-radius: 8px;
@@ -115,4 +138,36 @@ footer {
   padding: 8px 0;
   text-align: center;
   background-color: var(--primary-color);
+}
+
+.glass-header {
+  width: 90%;
+  max-width: 1200px;
+  margin: 10px auto;
+  text-align: center;
+}
+
+.card-icon {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+}
+
+.smart-card, .glass-header, .discovery-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 15px;
+  padding: 10px;
 }

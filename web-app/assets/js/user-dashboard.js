@@ -1,129 +1,168 @@
+const DASHBOARD_DATA_URL = "../../../database/user-dashboard.json";
+const GIANTS_DATA_URL = "../../../database/giants-sila.json";
+
 document.addEventListener("DOMContentLoaded", () => {
-  const savedTrail =
-    localStorage.getItem("recommendedTrail") || "Giant Pine Loop";
-  const savedUser = localStorage.getItem("username") || "Visitor";
-
-  document.getElementById("active-trail").innerText = savedTrail;
-  document.getElementById("display-username").innerText = savedUser;
-
-  initMap();
-
-  simulateSensors();
-  simulateGPS();
-  simulateWeather();
+  loadDashboardData();
 });
 
-function initMap() {
-  if (typeof L === "undefined") {
-    console.error(
-      "Leaflet library not found! Did you include the <link> and <script> tags in your HTML?",
-    );
-    return;
+async function loadDashboardData() {
+  try {
+    const [dashboardResponse, giantsResponse] = await Promise.all([
+      fetch(DASHBOARD_DATA_URL),
+      fetch(GIANTS_DATA_URL),
+    ]);
+
+    const data = await dashboardResponse.json();
+    const giantsData = await giantsResponse.json();
+
+    applyUserAndTrail(data.user, data.safety);
+    updateSafetyUI(data.safety);
+    setupWeather(data.weather);
+    setupEta(data.eta);
+    startSensorPolling(data.sensors);
+    startGPSTracking(data.gps, giantsData, data.discovery);
+  } catch (error) {
+    console.error("Failed to load dashboard data:", error);
   }
-
-  // Add this inside your initMap() function
-  MOCK_GIANTS.forEach((giant) => {
-    // Visualizes the 30-meter detection zone
-    L.circle([giant.lat, giant.lng], {
-      color: "rgba(255, 193, 7, 0.5)", // Gold
-      fillColor: "#ffc107",
-      fillOpacity: 0.2,
-      radius: 30, // 30 meters
-    }).addTo(map);
-  });
-
-  map = L.map("map-container").setView([39.3685, 16.5982], 16);
-  L.tileLayer(
-    "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
-  ).addTo(map);
-  userMarker = L.marker([39.3685, 16.5982]).addTo(map);
 }
 
-function startGPSTracking() {
-  let progress = 0;
-  setInterval(() => {
-    if (progress < 100) {
-      progress += 2;
-      document.getElementById("progress-percent").innerText = `${progress}%`;
+function applyUserAndTrail(user, safety) {
+  const savedTrail = localStorage.getItem("recommendedTrail");
+  const savedUser = localStorage.getItem("username");
 
-      // Update Circle
-      const circle = document.getElementById("progress-circle");
+  const displayUser = savedUser || user?.name || "Visitor";
+  const displayTrail = savedTrail || user?.preferredTrail || "Giant Pine Loop";
+
+  const trailEl = document.getElementById("active-trail");
+  const userEl = document.getElementById("display-username");
+
+  if (trailEl) trailEl.innerText = displayTrail;
+  if (userEl) userEl.innerText = displayUser;
+}
+
+function startGPSTracking(gpsConfig, giants, discoveryConfig) {
+  const progressEl = document.getElementById("progress-percent");
+  const circle = document.getElementById("progress-circle");
+
+  let progress = 0;
+  const intervalMs = gpsConfig?.progressIntervalMs ?? 3000;
+  const step = gpsConfig?.progressStep ?? 2;
+  const startLat = gpsConfig?.start?.lat ?? 39.3685;
+  const startLng = gpsConfig?.start?.lng ?? 16.5982;
+  const markerStep = gpsConfig?.markerStep ?? 0.00005;
+
+  setInterval(() => {
+    if (progress >= 100) return;
+
+    progress += step;
+
+    if (progressEl) progressEl.innerText = `${progress}%`;
+    if (circle) {
       const offset = 113 - (progress / 100) * 113;
       circle.style.strokeDashoffset = offset;
+    }
 
-      // Move the marker on the map to simulate walking
-      const newLat = 39.3685 + progress * 0.00005;
-      const newLng = 16.5982 + progress * 0.00005;
+    const newLat = startLat + progress * markerStep;
+    const newLng = startLng + progress * markerStep;
 
-      if (userMarker) {
-        userMarker.setLatLng([newLat, newLng]);
-        map.panTo([newLat, newLng]); // Follow the user
-        checkProximity(newLat, newLng); // Check for trees
+    if (typeof userMarker !== "undefined" && userMarker) {
+      userMarker.setLatLng([newLat, newLng]);
+    }
+    if (typeof map !== "undefined" && map) {
+      map.panTo([newLat, newLng]);
+    }
+
+    if (Array.isArray(giants) && giants.length > 0) {
+      checkProximity(newLat, newLng, giants, discoveryConfig);
+    }
+  }, intervalMs);
+}
+
+function startSensorPolling(sensorConfig) {
+  const tempEl = document.getElementById("temp-val");
+  const noiseEl = document.getElementById("noise-val");
+  const card = document.getElementById("comfort-card");
+  const noiseFill = document.getElementById("noise-fill");
+
+  const intervalMs = sensorConfig?.intervalMs ?? 3000;
+  const noiseThreshold = sensorConfig?.noiseThreshold ?? 40;
+  const tempRange = sensorConfig?.temperatureRange ?? { min: 15, max: 20 };
+  const noiseRange = sensorConfig?.noiseRange ?? { min: 30, max: 45 };
+
+  setInterval(() => {
+    const temp = randomBetween(tempRange.min, tempRange.max, 1);
+    const noise = randomBetween(noiseRange.min, noiseRange.max, 0);
+
+    if (tempEl) tempEl.innerText = `${temp}°C`;
+    if (noiseEl) noiseEl.innerText = `${noise} dB`;
+
+    if (card && noiseFill) {
+      if (noise > noiseThreshold) {
+        card.classList.add("warning");
+        noiseFill.style.backgroundColor = "#ff5252";
+      } else {
+        card.classList.remove("warning");
+        noiseFill.style.backgroundColor = "#4caf50";
       }
     }
-  }, 3000);
+  }, intervalMs);
 }
 
-function simulateSensors() {
-  setInterval(() => {
-    const temp = (15 + Math.random() * 5).toFixed(1); // 15°C - 20°C
-    const noise = (30 + Math.random() * 10).toFixed(0); // 30dB - 40dB
-
-    document.getElementById("temp-val").innerText = `${temp}°C`;
-    document.getElementById("noise-val").innerText = `${noise} dB`;
-
-    document.getElementById("noise-status").innerText =
-      noise > 35 ? "Moderate" : "Quiet";
-  }, 3000);
-}
-
-let progress = 0;
-function simulateGPS() {
-  setInterval(() => {
-    if (progress < 100) {
-      progress += 5;
-      document.getElementById("hike-progress").style.width = `${progress}%`;
-
-      const lat = (39.368 + Math.random() * 0.001).toFixed(4);
-      const lng = (16.598 + Math.random() * 0.001).toFixed(4);
-      document.getElementById("gps-coords").innerText =
-        `LAT: ${lat} | LNG: ${lng}`;
-
-      if (progress === 50) {
-        document.getElementById("insight-text").innerText =
-          "You are near 'The Twin Giants'!";
-      }
-    }
-  }, 5000);
-}
-
-function simulateWeather() {
+function setupWeather(weatherConfig) {
   const banner = document.getElementById("weather-alert");
+  if (!banner || !weatherConfig) return;
 
-  banner.innerText = "🌤️ Sky is clear. Trail is safe.";
-  banner.style.backgroundColor = "#2e7d32";
+  if (weatherConfig.safe) {
+    banner.innerText = weatherConfig.safe.text;
+    banner.style.backgroundColor = weatherConfig.safe.color;
+  }
 
-  // Randomly simulate a weather warning after 10 seconds
-  setTimeout(() => {
-    banner.innerText =
-      "⚠️ CAUTION: Rain detected via API. Suggesting shorter route.";
-    banner.style.backgroundColor = "#d32f2f";
-  }, 10000);
+  if (weatherConfig.alert) {
+    const delay = weatherConfig.alert.delayMs ?? 10000;
+    setTimeout(() => {
+      banner.innerText = weatherConfig.alert.text;
+      banner.style.backgroundColor = weatherConfig.alert.color;
+    }, delay);
+  }
 }
 
-function toggleChat() {
+function setupEta(etaConfig) {
+  if (!etaConfig) return;
+
+  const labelEl = document.getElementById("eta-label");
+  const detailsEl = document.getElementById("eta-details");
+
+  if (labelEl) {
+    const label = etaConfig.label || "ETA to Exit";
+    const time = etaConfig.time || "";
+    labelEl.innerText = time ? `${label}: ${time}` : label;
+  }
+
+  if (detailsEl && Array.isArray(etaConfig.items)) {
+    detailsEl.innerHTML = etaConfig.items
+      .map(
+        (item) => `<span class="eta-item">${item.label}: ${item.value}</span>`,
+      )
+      .join("");
+  }
+}
+
+function toggleChat(message) {
   alert(
-    "AI Assistant: 'Hello! I am your RAG-powered guide. Ask me anything about the Laricio Pines!'",
+    message ||
+      "AI Assistant: 'Hello! I am your RAG-powered guide. Ask me anything about the Laricio Pines!'",
   );
 }
 
-function checkProximity(userLat, userLng) {
-  const threshold = 0.0003;
+function checkProximity(userLat, userLng, giants, discoveryConfig) {
+  const threshold = discoveryConfig?.threshold ?? 0.0003;
   const container = document.getElementById("discovery-content");
+  const wrapper = document.getElementById("discovery-container");
+  if (!container || !wrapper) return;
+
   let foundGiant = null;
 
-  // Check if user is near any giant
-  MOCK_GIANTS.forEach((giant) => {
+  giants.forEach((giant) => {
     const dist = Math.sqrt(
       Math.pow(userLat - giant.lat, 2) + Math.pow(userLng - giant.lng, 2),
     );
@@ -133,21 +172,25 @@ function checkProximity(userLat, userLng) {
   });
 
   if (foundGiant) {
-    // --- State: Giant Found ---
     container.innerHTML = `
             <div class="state-found">
-                <span class="badge" style="background: #ffc107; color: #1b3022;">📍 Landmark Reached</span>
+                <span class="badge" style="background: var(--primary-color); color: var(--text-light-color);">📍 Landmark Reached</span>
                 <h4>${foundGiant.name}</h4>
                 <p>${foundGiant.desc}</p>
-                <button class="btn-small" onclick="openChatWithContext('${foundGiant.name}')">
+                <button class="main-button" onclick="openChatWithContext('${foundGiant.name}')">
                     Ask Guide about this Tree
                 </button>
             </div>
         `;
-    document.getElementById("discovery-container").style.background =
-      "rgba(255, 193, 7, 0.1)";
+    wrapper.style.background = "rgba(255, 193, 7, 0.1)";
+
+    // Save to Passport
+    let visited = JSON.parse(localStorage.getItem("visitedGiants")) || [];
+    if (!visited.includes(foundGiant.name)) {
+      visited.push(foundGiant.name);
+      localStorage.setItem("visitedGiants", JSON.stringify(visited));
+    }
   } else {
-    // --- State: Default Scanning ---
     container.innerHTML = `
             <div class="state-scanning">
                 <span class="badge pulse">📡 Scanning</span>
@@ -155,85 +198,34 @@ function checkProximity(userLat, userLng) {
                 <p>Keep moving. Your GPS is active and tracking the trail.</p>
             </div>
         `;
-    document.getElementById("discovery-container").style.background =
-      "rgba(255, 255, 255, 0.15)";
+    wrapper.style.background = "rgba(255, 255, 255, 0.15)";
   }
 }
 
 function openChatWithContext(treeName) {
-  // This connects to Rima's role
-  // You could open a chat modal here and pre-fill the question
   const message = `Tell me about ${treeName}`;
   localStorage.setItem("pendingChatQuestion", message);
   toggleChat(message);
 }
 
-// --- DYNAMIC DATA SIMULATOR ---
-const MOCK_GIANTS = [
-  {
-    name: "The Grand Laricio",
-    lat: 39.3685,
-    lng: 16.5982,
-    desc: "A 45m tall titan.",
-  },
-  {
-    name: "Twin Pines",
-    lat: 39.369,
-    lng: 16.599,
-    desc: "Two trees sharing one root.",
-  },
-];
-
-document.addEventListener("DOMContentLoaded", () => {
-  updateSafetyUI("safe");
-  startSensorPolling();
-  startGPSTracking();
-});
-
-// 1. GPS & ETA Logic (Your Role)
-function startGPSTracking() {
-  let progress = 0;
-  setInterval(() => {
-    if (progress < 100) {
-      progress += 2;
-      document.getElementById("progress-percent").innerText = `${progress}%`;
-
-      // Update the SVG circle progress
-      const circle = document.getElementById("progress-circle");
-      const offset = 113 - (progress / 100) * 113;
-      circle.style.strokeDashoffset = offset;
-
-      // Check for nearby "Giants" (Proximity Alert)
-      if (progress === 20) showDiscovery(MOCK_GIANTS[0]);
-    }
-  }, 3000);
-}
-
-// 2. Sensor UI Feedback (Meron/Zakariye Role)
-function startSensorPolling() {
-  setInterval(() => {
-    const noise = Math.floor(Math.random() * (45 - 30) + 30);
-    const card = document.getElementById("comfort-card");
-    const noiseText = document.getElementById("noise-val");
-
-    noiseText.innerText = `${noise} dB`;
-
-    // Aesthetic change: Card turns red if noise preference is violated
-    if (noise > 40) {
-      card.classList.add("warning");
-      document.getElementById("noise-fill").style.backgroundColor = "#ff5252";
-    } else {
-      card.classList.remove("warning");
-      document.getElementById("noise-fill").style.backgroundColor = "#4caf50";
-    }
-  }, 4000);
-}
-
-function updateSafetyUI(status) {
+function updateSafetyUI(safetyConfig) {
   const banner = document.getElementById("safety-shield");
+  const text = document.getElementById("safety-text");
+  if (!banner || !text) return;
+
+  const status = safetyConfig?.status ?? "safe";
   if (status === "danger") {
     banner.className = "safety-banner danger";
-    document.getElementById("safety-text").innerText =
-      "⚠️ EMERGENCY: Storm approaching. Evacuate.";
+    text.innerText =
+      safetyConfig?.dangerText || "⚠️ EMERGENCY: Storm approaching. Evacuate.";
+  } else {
+    banner.className = "safety-banner safe";
+    text.innerText =
+      safetyConfig?.safeText || "Park Conditions: Optimal for Hiking";
   }
+}
+
+function randomBetween(min, max, decimals) {
+  const value = min + Math.random() * (max - min);
+  return Number(value.toFixed(decimals));
 }

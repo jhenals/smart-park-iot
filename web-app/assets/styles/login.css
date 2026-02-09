@@ -1,4 +1,4 @@
-  body{
+  .login-container{
 	height:100vh;
 	min-height:550px;
 	background-image: url(../../public/images/homepage-imgs/1.png);
@@ -8,6 +8,10 @@
 	position:relative;
     overflow-y: hidden;
     color: var(--color-text-light);
+}
+
+h2{
+    text-align: center;
 }
 
 .login-reg-panel{

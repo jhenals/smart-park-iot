@@ -1,0 +1,65 @@
+[
+  {
+    "id": 1,
+    "name": "Prometheus",
+    "lat": 39.3685,
+    "lng": 16.5982,
+    "desc": "A legendary giant of the Sila forest."
+  },
+  {
+    "id": 2,
+    "name": "Twin Firs",
+    "lat": 39.369,
+    "lng": 16.599,
+    "desc": "Twin firs rising from a shared base."
+  },
+  {
+    "id": 3,
+    "name": "Chestnut of the Sky",
+    "lat": 39.3694,
+    "lng": 16.5997,
+    "desc": "A chestnut reaching skyward above the canopy."
+  },
+  {
+    "id": 4,
+    "name": "Moss Chestnut",
+    "lat": 39.3701,
+    "lng": 16.6002,
+    "desc": "A moss-covered chestnut with ancient roots."
+  },
+  {
+    "id": 5,
+    "name": "Giants of the Sila",
+    "lat": 39.3706,
+    "lng": 16.601,
+    "desc": "The monumental heart of the Sila giants trail."
+  },
+  {
+    "id": 6,
+    "name": "Vutullo Pine",
+    "lat": 39.3712,
+    "lng": 16.6016,
+    "desc": "A towering Laricio pine with a strong silhouette."
+  },
+  {
+    "id": 7,
+    "name": "Buturo Pine",
+    "lat": 39.3718,
+    "lng": 16.6023,
+    "desc": "A resilient pine standing against mountain winds."
+  },
+  {
+    "id": 8,
+    "name": "Casa Pasquale Turkey Oak",
+    "lat": 39.3724,
+    "lng": 16.603,
+    "desc": "A majestic oak near the Casa Pasquale area."
+  },
+  {
+    "id": 9,
+    "name": "Ceraso Downy Oak",
+    "lat": 39.373,
+    "lng": 16.6036,
+    "desc": "A graceful downy oak with sprawling branches."
+  }
+]

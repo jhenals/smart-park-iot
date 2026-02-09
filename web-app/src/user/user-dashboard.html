@@ -18,22 +18,33 @@
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin=""
     />
+    <link rel="stylesheet" href="../../assets/styles/components/dynamic-navbar.css"/>
 
     <script
       src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
       crossorigin=""
     ></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
     <script src="../../assets/js/dynamic-navbar.js"></script>
     <script src="../../assets/js/user-dashboard.js"></script>
     <script src="../../assets/js/map.js"></script>
   </head>
   <body>
-    <nav id="dynamic-navbar" class="navbar-container"></nav>
-
+    <nav
+      id="dynamic-navbar"
+      class="navbar sticky-top navbar-expand-lg"
+      data-variant="auto"
+      data-public-prefix="/web-app/"
+    ></nav>
     <div>
-      <div id="safety-shield" class="alert-banner">
-        <span class="fa-solid fa-bed-pulse"></span>
+      <div id="safety-shield" class="safety-banner safe">
+        <img
+          src="../../public/icons/forest-icon.png"
+          class="icon"
+          alt="forest-icon"
+        />
         <span id="safety-text">Park Conditions: Optimal for Hiking</span>
       </div>
 
@@ -68,7 +79,7 @@
               <div class="card-data">
                 <h4>Acoustic Comfort</h4>
                 <p id="noise-val">32 dB</p>
-                <div class="mini-bar">
+                <div cla ss="mini-bar">
                   <div id="noise-fill" style="width: 80%"></div>
                 </div>
               </div>
@@ -83,10 +94,29 @@
               </div>
             </div>
 
+            <div class="smart-card">
+              <div class="card-icon">💡</div>
+              <div class="card-data">
+              <h4>Light Level</h4>
+              <p id="light-val">450 lux</p>
+              <small>Bright and Clear</small>
+              </div>
+            </div>
+
             <div id="discovery-container" class="smart-card discovery-fixed">
               <div id="discovery-content">
                 <div class="state-scanning">
-                  <span class="badge pulse">📡 Scanning</span>
+                  <span
+                    class="badge pulse"
+                    style="
+                      display: inline-block;
+                      width: 100%;
+                      
+                      margin: 10px;
+                      color: var(--dark-forest);
+                    "
+                    >📡 Scanning</span
+                  >
                   <h4>Searching for Giants...</h4>
                   <p>
                     Walk through the trail to discover ancient Laricio pines.
@@ -94,48 +124,38 @@
                 </div>
               </div>
             </div>
-
-            <!-- Example of an active discovery card
-
-            <div class="discovery-card active" id="discovery-alert">
-              <div class="discovery-content">
-                <span class="badge">NEARBY GIANT</span>
-                <h4>The Grand Laricio</h4>
-                <p>You are 15m away from a 400-year-old tree.</p>
-                <button onclick="openChatWithContext('The Grand Laricio')">
-                  Learn its Story
-                </button>
-              </div>
-            </div>
-
-            <div id="discovery-alert" class="discovery-card">
-              <div class="discovery-content">
-                <span class="badge">Nearby Discovery</span>
-                <h4>Tree Name</h4>
-                <p>Description goes here.</p>
-                <button
-                  onclick="
-                    openChatWithContext(
-                      document.querySelector('#discovery-alert h4').innerText,
-                    )
-                  "
-                >
-                  Learn its Story
-                </button>
-              </div>
-            </div>
-
-             -->
           </div>
 
           <button class="chat-fab" onclick="toggleChat()">
-            <img src="assets/ai-icon.svg" alt="Guide" />
+            <img
+              src="../../public/icons/chatbot-black.png"
+              class="icon"
+              alt="ai-icon"
+            />
           </button>
         </div>
       </div>
 
-      <span id="eta-label" class="eta-map">ETA to Exit: 24 mins</span>
+      <h1 class="text-center mt-5">User Location Map</h1>
+      <p class="text-center subtitle">Live GPS tracking and trail guidance</p>
       <div id="map"></div>
+
+      <div class="eta-info">
+        <h4>ETA to Exit: 24 mins</h4>
+        <div id="eta-details" class="eta-details">
+          <span class="eta-item">Distance: 1.8 km</span> </br>
+          <span class="eta-item">Elevation: +120 m</span> </br>
+          <span class="eta-item">Exit: East Gate</span> </br>
+          <span class="eta-item">Pace: 4.5 km/h</span> </br>
+        </div>
+      </div>
+
     </div>
+
+    <footer>
+      <p>&copy; 2026 Smart Park IoT</p>
+    </footer>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
   </body>
 </html>

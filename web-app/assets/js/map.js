@@ -1,5 +1,3 @@
-const loadingMessage = document.getElementById("loading-message");
-
 const gigantiDellaSilaCenter = [39.2, 16.8];
 let map, userMarker;
 
@@ -16,15 +14,16 @@ function initMap() {
     .openPopup();
 }
 
-initMap();
+document.addEventListener("DOMContentLoaded", () => {
+  initMap();
+  fetchSensors();
+});
 const DUMMY_USER_POSITION = {
   lat: 39.3305,
   lng: 16.4728,
 };
 
 const sensors = [];
-
-fetchSensors();
 
 // Helper functions
 function goToUserDashboard() {
@@ -33,8 +32,7 @@ function goToUserDashboard() {
 
 function fetchSensors() {
   const loadingMessage = document.getElementById("loading-message");
-
-  loadingMessage.style.display = "block";
+  if (loadingMessage) loadingMessage.style.display = "block";
 
   // Simulate network delay with setTimeout
   setTimeout(() => {
@@ -46,10 +44,12 @@ function fetchSensors() {
         renderMapMarkers(sensors);
 
         // Hide loading and render data
-        loadingMessage.style.display = "none";
+        if (loadingMessage) loadingMessage.style.display = "none";
       })
       .catch((err) => {
-        loadingMessage.textContent = "Error loading sensors";
+        if (loadingMessage) {
+          loadingMessage.textContent = "Error loading sensors";
+        }
         console.error("Error loading sensors:", err);
       });
   }, 1000); // 1 second simulated delay
