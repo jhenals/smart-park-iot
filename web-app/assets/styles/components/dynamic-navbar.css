@@ -6,6 +6,8 @@
 .nav-link {
   border-radius: 20px;
   color: var(--color-text-light);
+  text-align: center;
+
 }
 
 .nav-link:hover {
@@ -19,7 +21,7 @@
 }
 
 
-
-
-
+.navbar-toggler{
+  text-align: center;
+}
 

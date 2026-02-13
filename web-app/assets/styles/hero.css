@@ -7,6 +7,7 @@ center/cover no-repeat;
   align-items: center;
   padding-top: 20px;
   color: var(--text-light-color);
+  height: 100vh;
 }
 
 .hero-section h1 {

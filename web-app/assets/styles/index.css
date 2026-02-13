@@ -17,8 +17,9 @@ font-family: "Roboto", sans-serif;
 
 --forest-dark: #1b3022;
 --forest-light: #2e7d32;
---accent-gold: #ffc107;
 --glass-bg: rgba(255, 255, 255, 0.15);
+--glass-white: rgba(255, 255, 255, 0.1);
+
 --glass-border: rgba(255, 255, 255, 0.2);
 --danger-color: #ff5252;
 }
@@ -50,19 +51,19 @@ section {
   flex-direction: column;
   width: 100%;
   align-items: center;
-  min-height: 100vh;
 }
-
 
 header{
   display: flex;
   flex-direction: column;
+  align-items: center;
+  margin: 40px 0;
 }
 
 header h1{
-  font-family: 'Orbitron', sans-serif;
-  color: var(--text-dark-color);
-  text-align: center;
+    font-size: 2.5rem;
+    color: var(--text-dark-color);
+    font-family: 'Orbitron', sans-serif;
 }
 
 header p{
@@ -116,28 +117,14 @@ background: var(--primary-color);
   font-weight: bold;
 }
 
-.nav-link {
-  border-radius: 20px;
-  color: var(--color-text-light);
-}
-
-.nav-link:hover {
-  color: var(--color-text-dark);
-  background: var(--background-color);
-} 
-
-.navbar-nav .nav-item {
-  margin-left: 15px;
-  margin-right: 15px;
-}
 
 footer {
-  margin-top: auto;
   font-size: x-small;
-  width: 100%;
-  padding: 8px 0;
+  padding: 15px 0;
   text-align: center;
+  color: var(--text-light-color);
   background-color: var(--primary-color);
+
 }
 
 .glass-header {
@@ -152,8 +139,8 @@ footer {
   margin-bottom: 10px;
 }
 
-.smart-card, .glass-header, .discovery-card {
-  background: var(--glass-bg);
+.glass-card, .glass-header, .discovery-card {
+  background: var(--glass-white);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--glass-border);
@@ -163,6 +150,11 @@ footer {
   display: flex;
   flex-direction: column;
   align-items: center;
+
+}
+
+.glass-card:hover {
+    transform: translateY(-5px);
 }
 
 .card-grid {
@@ -170,4 +162,5 @@ footer {
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 15px;
   padding: 10px;
+  width: 90%;
 }

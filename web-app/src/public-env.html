@@ -40,14 +40,14 @@
       data-public-prefix="/web-app/"
     ></nav>
 
-    <header class="text-center">
-      <h1 class="mt-5">Park Live Pulse</h1>
+    <header>
+      <h1>Park Live Pulse</h1>
       <p>Real-time environmental health of the Giganti della Sila.</p>
     </header>
 
     <div class="public-env-container">
       <section class="park-insights">
-        <div class="insight-card glass">
+        <div class="insight-card glass-card">
           <div class="insight-header">
             <span class="insight-icon">🌡️</span>
             <h4>Temperature</h4>
@@ -56,7 +56,7 @@
           <p id="temp-desc">Real-time temperature levels.</p>
         </div>
 
-        <div class="insight-card glass">
+        <div class="insight-card glass-card">
           <div class="insight-header">
             <span class="insight-icon">🔇</span>
             <h4>Soundscape</h4>
@@ -65,7 +65,7 @@
           <p id="noise-desc">Real-time sound levels.</p>
         </div>
 
-        <div class="insight-card glass">
+        <div class="insight-card glass-card">
           <div class="insight-header">
             <span class="insight-icon">💧</span>
             <h4>Humidity</h4>
@@ -74,7 +74,7 @@
           <p id="humidity-desc">Real-time humidity levels.</p>
         </div>
 
-        <div class="insight-card glass">
+        <div class="insight-card glass-card">
           <div class="insight-header">
             <span class="insight-icon">🌬️</span>
             <h4>Air Quality</h4>
@@ -83,7 +83,7 @@
           <p id="aqi-desc">Real-time air quality index.</p>
         </div>
 
-        <div class="insight-card glass">
+        <div class="insight-card glass-card">
           <div class="insight-header">
             <span class="insight-icon">👁️</span>
             <h4>Trail Visibility</h4>
@@ -92,7 +92,7 @@
           <p id="visibility-desc">Real-time light levels under the canopy.</p>
         </div>
 
-        <div class="insight-card glass">
+        <div class="insight-card glass-card">
           <div class="insight-header">
             <span class="insight-icon">📉</span>
             <h4>Atmospheric Stability</h4>
@@ -118,7 +118,7 @@
         <div id="map" class="map-box shadow-lg"></div>
       </section>
 
-      <section class="public-env-section glass pb-5">
+      <section class="public-env-section glass-card pb-5">
         <div class="public-env-header">
           <h3>Want to find the Giants?</h3>
           <p>
@@ -128,14 +128,14 @@
         </div>
         <div class="cta-buttons">
           <a href="login.html" class="main-button">Login / Register</a>
-          <a href="about-sensors.html" class="btn-outline">How it works</a>
         </div>
       </section>
     </div>
 
-    <footer>
-      <p>&copy; 2026 Smart Park IoT | Empowering Nature with Data</p>
-    </footer>
+    <iframe
+      src="../src/components/footer.html"
+      style="width: 100%; border: none; display: block; height: 45px"
+    ></iframe>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   </body>

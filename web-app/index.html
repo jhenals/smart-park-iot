@@ -9,6 +9,8 @@
       href="/web-app/public/images/logo.png"
     />
     <link rel="stylesheet" href="assets/styles/index.css" />
+    <link rel="stylesheet" href="assets/styles/components/dynamic-navbar.css" />
+
     <link rel="stylesheet" href="assets/styles/hero.css" />
     <script src="assets/js/dynamic-navbar.js"></script>
     <script
@@ -41,7 +43,7 @@
       </section>
 
       <section class="card-grid feature-container">
-        <div class="smart-card">
+        <div class="glass-card">
           <div class="card-icon">🌲</div>
           <div class="card-data">
             <h4>Real-time Monitoring</h4>
@@ -49,7 +51,7 @@
           </div>
         </div>
 
-        <div class="smart-card">
+        <div class="glass-card">
           <div class="card-icon">🤖</div>
           <div class="card-data">
             <h4>AI Virtual Assistant</h4>
@@ -57,7 +59,7 @@
           </div>
         </div>
 
-        <div class="smart-card">
+        <div class="glass-card">
           <div class="card-icon">🚶</div>
           <div class="card-data">
             <h4>Smart Trail Recommendations</h4>
@@ -67,9 +69,11 @@
       </section>
     </div>
 
-    <footer>
-      <p>&copy; 2026 Smart Park IoT</p>
-    </footer>
+    <iframe
+      src="src/components/footer.html"
+      style="width: 100%; border: none; display: block; height: 45px"
+    ></iframe>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>
