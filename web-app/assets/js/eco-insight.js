@@ -1,5 +1,5 @@
-const DASHBOARD_DATA_URL = "../../../database/user-dashboard.json";
-const GIANTS_DATA_URL = "../../../database/giants-sila.json";
+const DASHBOARD_DATA_URL = await fetch(API.DASHBOARD_DATA_PATH);
+const GIANTS_DATA_URL = await fetch(API.GIANTS_DATA_PATH);
 
 document.addEventListener("DOMContentLoaded", () => {
   renderPassport();

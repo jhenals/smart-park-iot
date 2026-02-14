@@ -1,7 +1,5 @@
 async function injectLiveFact() {
-  const response = await fetch(
-    "http://localhost:8000/api/weather/forecast/?minutes=5",
-  );
+  const response = await fetch(API.FASTAPI_URL);
   const data = await response.json();
 
   if (data.length > 0) {

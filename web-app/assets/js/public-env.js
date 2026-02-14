@@ -1,11 +1,10 @@
-// 1. API Configuration
 const gigantiDellaSilaCenter = [SILA_LOCATION.LAT, SILA_LOCATION.LON];
 let map, userMarker;
 let REAL_TIME_DATA = [];
 
 document.addEventListener("DOMContentLoaded", () => {
   initMap();
-  loadPublicEnv(); // Initial load
+  loadPublicEnv();
   setInterval(loadPublicEnv, 30000); // Sync every 30s
 });
 
@@ -111,63 +110,3 @@ function getNoiseLabel(noise) {
   }
   return "Unknown";
 }
-
-/**
-TODO: Put this in admin
-/**
- * Calculates sensor stability based on accelerometer data.
- * Your data uses units where ~1000 = 1g (gravity).
- 
-function calculateStability(latestData) {
-  const { accX, accY, accZ } = latestData;
-
-  // Calculate the total magnitude of acceleration
-  // In a stable state, magnitude should be approx 1000 (1g)
-  const magnitude = Math.sqrt(accX ** 2 + accY ** 2 + accZ ** 2);
-  const deviation = Math.abs(1000 - magnitude);
-
-  // Calculate Tilt (how far the sensor is leaning from vertical)
-  // 0 is perfectly upright; higher values indicate tilt
-  const tilt = Math.sqrt(accX ** 2 + accY ** 2);
-
-  let status = {
-    label: "Secure",
-    class: "status-safe",
-    description: "Node is upright and stable.",
-  };
-
-  if (deviation > 150) {
-    status = {
-      label: "Vibration",
-      class: "status-warning",
-      description: "Mechanical vibration detected.",
-    };
-  }
-
-  if (tilt > 300) {
-    status = {
-      label: "Tilted",
-      class: "status-danger",
-      description: "Sensor position may be compromised.",
-    };
-  }
-
-  return status;
-}
-
-function updateStabilityUI(latestData) {
-  const stability = calculateStability(latestData);
-  const container = document.getElementById("node-stability");
-
-  if (container) {
-    container.innerHTML = `
-            <div class="stability-badge ${stability.class}">
-                ${stability.label}
-            </div>
-            <p>${stability.description}</p>
-            <small>Tilt Index: ${Math.round(Math.sqrt(latestData.accX ** 2 + latestData.accY ** 2))}</small>
-        `;
-  }
-}
-
-**/

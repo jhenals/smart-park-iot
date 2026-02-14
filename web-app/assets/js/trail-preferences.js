@@ -8,13 +8,13 @@ function populateSelect(elementId, options) {
   const selectElement = document.getElementById(elementId);
   if (!selectElement) return;
 
-  selectElement.innerHTML = ""; // Clear existing options
-  
+  selectElement.innerHTML = "";
+
   options.forEach((option) => {
     const optionElement = document.createElement("option");
     optionElement.value = option.value;
     optionElement.textContent = option.label;
-    optionElement.title = option.description; // Tooltip on hover
+    optionElement.title = option.description;
     selectElement.appendChild(optionElement);
   });
 }
@@ -24,17 +24,12 @@ function generateMockRecommendation() {
   const env = document.getElementById("environment").value;
   const interest = document.getElementById("interest").value;
 
-  // Generate recommendation key including interest
   const key = `${difficulty}_${env}_${interest}`;
   const trailKey = TRAIL_RECOMMENDATIONS[key];
-  
-  // Get trail details from TRAILS constant
   const trail = TRAILS[trailKey] || TRAILS.mainParkLoop;
 
-  // Store the recommendation to display on the User Homepage
   localStorage.setItem("recommendedTrail", JSON.stringify(trail));
 
-  // Show the result with full trail details
   displayTrailRecommendation(trail);
 }
 
@@ -44,7 +39,7 @@ function displayTrailRecommendation(trail) {
   const trailDetailsEl = document.getElementById("trail-details");
 
   trailNameEl.innerText = trail.name;
-  
+
   // Build detailed trail information
   const detailsHTML = `
     <p class="trail-description">${trail.description}</p>
@@ -56,15 +51,15 @@ function displayTrailRecommendation(trail) {
     <div class="trail-features">
       <strong>Features:</strong>
       <ul>
-        ${trail.features.map(feature => `<li>${feature}</li>`).join('')}
+        ${trail.features.map((feature) => `<li>${feature}</li>`).join("")}
       </ul>
     </div>
   `;
-  
+
   if (trailDetailsEl) {
     trailDetailsEl.innerHTML = detailsHTML;
   }
-  
+
   resultDiv.style.display = "block";
 }
 
@@ -72,9 +67,10 @@ function goToHomepage() {
   window.location.href = "/web-app/src/user/user-dashboard.html";
 }
 
-// Initialize preferences when page loads
-if (typeof TRAIL_PREFERENCES !== 'undefined') {
+if (typeof TRAIL_PREFERENCES !== "undefined") {
   initializePreferences();
 } else {
-  console.error('TRAIL_PREFERENCES not loaded. Make sure constants.js is included.');
+  console.error(
+    "TRAIL_PREFERENCES not loaded. Make sure constants.js is included.",
+  );
 }

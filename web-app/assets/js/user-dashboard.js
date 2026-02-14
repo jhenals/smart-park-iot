@@ -1,4 +1,3 @@
-// Track when user starts the trail for ETA calculation
 let trailStartTime = null;
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -30,15 +29,11 @@ async function loadDashboardData() {
 }
 
 function applyUserAndTrail(user, safety) {
-  // Get user session from localStorage (set during login)
   const userSessionData = localStorage.getItem("userSession");
   const userSession = userSessionData ? JSON.parse(userSessionData) : null;
-
-  // Get recommended trail from localStorage (set during trail preferences)
   const savedTrailData = localStorage.getItem("recommendedTrail");
   const savedTrail = savedTrailData ? JSON.parse(savedTrailData) : null;
 
-  // Determine display name
   let displayUser = "Explorer";
   if (userSession) {
     if (userSession.firstName && userSession.lastName) {
@@ -52,11 +47,9 @@ function applyUserAndTrail(user, safety) {
     displayUser = user.name;
   }
 
-  // Determine display trail
   const displayTrail =
     savedTrail?.name || user?.preferredTrail || "Giant Pine Loop";
 
-  // Update UI elements
   const trailEl = document.getElementById("active-trail");
   const userEl = document.getElementById("display-username");
   const trailDescEl = document.getElementById("trail-description");
@@ -433,7 +426,6 @@ function calculateDynamicETA(currentProgress, trail) {
 function calculateAdjustedETA(currentProgress, trail, avgSpeedPercentPerMin) {
   let difficultyMultiplier = 1.0;
 
-  // Adjust for trail difficulty
   if (trail.difficulty) {
     switch (trail.difficulty.toLowerCase()) {
       case "easy":

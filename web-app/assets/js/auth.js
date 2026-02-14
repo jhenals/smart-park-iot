@@ -22,7 +22,6 @@ $('.login-reg-panel input[type="radio"]').on("change", function () {
   }
 });
 
-// Load users from JSON file
 async function loadUsers() {
   try {
     const response = await fetch("../../database/users.json");
@@ -98,29 +97,24 @@ async function handleRegister() {
     return;
   }
 
-  // Validate email format
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     alert("Please enter a valid email address.");
     return;
   }
 
-  // Validate password match
   if (password !== confirmPassword) {
     alert("Passwords do not match. Please try again.");
     return;
   }
 
-  // Validate password strength (minimum 6 characters)
   if (password.length < 6) {
     alert("Password must be at least 6 characters long.");
     return;
   }
 
-  // Load existing users
   const users = await loadUsers();
 
-  // Check if user already exists
   const existingUser = users.find(
     (u) => u.email.toLowerCase() === email.toLowerCase(),
   );
@@ -130,7 +124,6 @@ async function handleRegister() {
     return;
   }
 
-  // Create new user (in a real app, this would be saved to backend)
   const newUser = {
     id: users.length + 1,
     username: email.split("@")[0], // Use email prefix as username
@@ -143,7 +136,6 @@ async function handleRegister() {
     lastLogin: new Date().toISOString(),
   };
 
-  // Store user session
   const userSession = {
     id: newUser.id,
     username: newUser.username,
@@ -158,22 +150,17 @@ async function handleRegister() {
   localStorage.setItem("isLoggedIn", "true");
 
   alert("Registration successful! Redirecting...");
-
   // Note: In production, you would save this to a backend/database
   console.log("New user registered:", newUser);
-
-  // Redirect to visitor page
   window.location.href = "/web-app/src/user/trail-preferences.html";
 }
 
-// Logout function (can be used across the app)
 function logout() {
   localStorage.removeItem("userSession");
   localStorage.removeItem("isLoggedIn");
   window.location.href = "/web-app/src/login.html";
 }
 
-// Check if user is logged in (can be used on protected pages)
 function checkAuth() {
   const isLoggedIn = localStorage.getItem("isLoggedIn");
   if (!isLoggedIn || isLoggedIn !== "true") {
@@ -183,7 +170,6 @@ function checkAuth() {
   return JSON.parse(localStorage.getItem("userSession"));
 }
 
-// Check if user has admin role
 function isAdmin() {
   const user = checkAuth();
   return user && user.role === "admin";

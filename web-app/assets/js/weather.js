@@ -1,5 +1,3 @@
-// Constants are now loaded from constants.js included in HTML
-
 async function loadWeather() {
   const container = document.getElementById("weather");
   const forecastList = document.getElementById("forecast-list");
@@ -103,7 +101,7 @@ function updateLiveConditions(sensor) {
   }
 }
 
-let pressureChartInstance = null; // Global to allow updating
+let pressureChartInstance = null;
 
 function renderPressureChart(dataList) {
   const canvas = document.getElementById("pressureChart");
@@ -156,7 +154,7 @@ function renderPressureChart(dataList) {
       scales: {
         x: {
           display: true,
-          grid: { display: false }, // Hide vertical grid lines
+          grid: { display: false },
           ticks: { color: "rgba(255, 255, 255, 0.6)", maxTicksLimit: 6 },
         },
         y: {
@@ -171,19 +169,17 @@ function renderPressureChart(dataList) {
 
 function updateTrailReadiness(latest, previous) {
   const badge = document.getElementById("hike-recommendation");
-  const messageEl = document.getElementById("hike-recommendation-desc"); // The <p> tag
+  const messageEl = document.getElementById("hike-recommendation-desc");
 
   const pressureDiff = latest.pressure - previous.pressure;
   const isHumidityHigh = latest.humidity > THRESHOLDS.humidity.highHumidity;
   const isLightLow = latest.light < THRESHOLDS.light.lowVisibility;
   const isPressureFalling = pressureDiff < THRESHOLDS.pressure.falling;
 
-  // 2. Logic for Message and Badge
   let status = "Highly Recommended";
   let statusClass = "status-safe";
   let reasons = [];
 
-  // Check for negative conditions to build the message
   if (Math.abs(pressureDiff) < THRESHOLDS.pressure.stableRange) {
     reasons.push("stable pressure");
   } else if (pressureDiff > 0) {
@@ -194,12 +190,10 @@ function updateTrailReadiness(latest, previous) {
     reasons.push("low humidity");
   }
 
-  // Identify Warnings
   if (isPressureFalling || isHumidityHigh || isLightLow) {
     status = "Use Caution";
     statusClass = "status-warning";
 
-    // Overwrite reasons with warnings
     let warnings = [];
     if (isPressureFalling) warnings.push("dropping pressure (possible rain)");
     if (isHumidityHigh) warnings.push("high humidity (slippery trails)");
