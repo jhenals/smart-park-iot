@@ -1,25 +1,25 @@
-const DASHBOARD_DATA_URL = "../../../database/user-dashboard.json";
-const GIANTS_DATA_URL = "../../../database/giants-sila.json";
-
 document.addEventListener("DOMContentLoaded", () => {
   loadDashboardData();
 });
 
 async function loadDashboardData() {
   try {
-    const [dashboardResponse, giantsResponse] = await Promise.all([
-      fetch(DASHBOARD_DATA_URL),
-      fetch(GIANTS_DATA_URL),
-    ]);
+    const [dashboardResponse, giantsResponse, sensorResponse] =
+      await Promise.all([
+        fetch(API.DASHBOARD_DATA_PATH),
+        fetch(API.GIANTS_DATA_PATH),
+        fetch(API.SENSORS_DATA_PATH),
+      ]);
 
     const data = await dashboardResponse.json();
     const giantsData = await giantsResponse.json();
+    const sensorData = await sensorResponse.json();
 
     applyUserAndTrail(data.user, data.safety);
     updateSafetyUI(data.safety);
     setupWeather(data.weather);
     setupEta(data.eta);
-    startSensorPolling(data.sensors);
+    startSensorPolling(sensorData);
     startGPSTracking(data.gps, giantsData, data.discovery);
   } catch (error) {
     console.error("Failed to load dashboard data:", error);
@@ -27,17 +27,45 @@ async function loadDashboardData() {
 }
 
 function applyUserAndTrail(user, safety) {
-  const savedTrail = localStorage.getItem("recommendedTrail");
-  const savedUser = localStorage.getItem("username");
+  // Get user session from localStorage (set during login)
+  const userSessionData = localStorage.getItem("userSession");
+  const userSession = userSessionData ? JSON.parse(userSessionData) : null;
 
-  const displayUser = savedUser || user?.name || "Visitor";
-  const displayTrail = savedTrail || user?.preferredTrail || "Giant Pine Loop";
+  // Get recommended trail from localStorage (set during trail preferences)
+  const savedTrailData = localStorage.getItem("recommendedTrail");
+  const savedTrail = savedTrailData ? JSON.parse(savedTrailData) : null;
 
+  // Determine display name
+  let displayUser = "Explorer";
+  if (userSession) {
+    if (userSession.firstName && userSession.lastName) {
+      displayUser = `${userSession.firstName} ${userSession.lastName}`;
+    } else if (userSession.firstName) {
+      displayUser = userSession.firstName;
+    } else if (userSession.username) {
+      displayUser = userSession.username;
+    }
+  } else if (user?.name) {
+    displayUser = user.name;
+  }
+
+  // Determine display trail
+  const displayTrail =
+    savedTrail?.name || user?.preferredTrail || "Giant Pine Loop";
+
+  // Update UI elements
   const trailEl = document.getElementById("active-trail");
   const userEl = document.getElementById("display-username");
+  const trailDescEl = document.getElementById("trail-description");
 
   if (trailEl) trailEl.innerText = displayTrail;
   if (userEl) userEl.innerText = displayUser;
+  if (trailDescEl && savedTrail?.description) {
+    trailDescEl.innerText = savedTrail.description;
+  }
+
+  // Optional: Display additional trail info if available
+  updateTrailInfo(savedTrail);
 }
 
 function startGPSTracking(gpsConfig, giants, discoveryConfig) {
@@ -47,8 +75,10 @@ function startGPSTracking(gpsConfig, giants, discoveryConfig) {
   let progress = 0;
   const intervalMs = gpsConfig?.progressIntervalMs ?? 3000;
   const step = gpsConfig?.progressStep ?? 2;
-  const startLat = gpsConfig?.start?.lat ?? 39.3685;
-  const startLng = gpsConfig?.start?.lng ?? 16.5982;
+
+  // Use SILA_LOCATION from constants as default
+  const startLat = gpsConfig?.start?.lat ?? SILA_LOCATION.LAT;
+  const startLng = gpsConfig?.start?.lng ?? SILA_LOCATION.LON;
   const markerStep = gpsConfig?.markerStep ?? 0.00005;
 
   setInterval(() => {
@@ -78,23 +108,47 @@ function startGPSTracking(gpsConfig, giants, discoveryConfig) {
   }, intervalMs);
 }
 
-function startSensorPolling(sensorConfig) {
+function startSensorPolling(sensorData) {
   const tempEl = document.getElementById("temp-val");
   const noiseEl = document.getElementById("noise-val");
   const card = document.getElementById("comfort-card");
   const noiseFill = document.getElementById("noise-fill");
+  const lightEl = document.getElementById("light-val");
 
-  const intervalMs = sensorConfig?.intervalMs ?? 3000;
-  const noiseThreshold = sensorConfig?.noiseThreshold ?? 40;
-  const tempRange = sensorConfig?.temperatureRange ?? { min: 15, max: 20 };
-  const noiseRange = sensorConfig?.noiseRange ?? { min: 30, max: 45 };
+  if (!sensorData || sensorData.length === 0) {
+    console.error("No sensor data available");
+    return;
+  }
+
+  // Use thresholds from constants
+  const noiseThreshold = THRESHOLDS.noise[0].max; // Serene threshold (45 dB)
+
+  let currentIndex = sensorData.length - 1; // Start from latest reading
+  const intervalMs = 3000; // Update every 3 seconds
 
   setInterval(() => {
-    const temp = randomBetween(tempRange.min, tempRange.max, 1);
-    const noise = randomBetween(noiseRange.min, noiseRange.max, 0);
+    // Cycle through sensor data
+    if (currentIndex < 0) {
+      currentIndex = sensorData.length - 1; // Loop back to latest
+    }
 
-    if (tempEl) tempEl.innerText = `${temp}°C`;
-    if (noiseEl) noiseEl.innerText = `${noise} dB`;
+    const reading = sensorData[currentIndex];
+    currentIndex--;
+
+    if (!reading) return;
+
+    // Use actual sensor values
+    const temp = reading.temperature || 0;
+    const noise = reading.noise || 0;
+    const light = reading.light || 0;
+
+    if (tempEl) tempEl.innerText = `${temp.toFixed(1)}°C`;
+    if (noiseEl) noiseEl.innerText = `${Math.round(noise)} dB`;
+
+    // Convert light sensor value (0-10 scale) to descriptive lux estimate
+    // Light sensor: 0-2 = deep canopy (~200-300 lux), 3-5 = moderate (~400-600 lux), 6-10 = bright (~700-1000 lux)
+    const estimatedLux = Math.round(light * 100 + 200); // Rough conversion
+    if (lightEl) lightEl.innerText = `${estimatedLux} lux`;
 
     if (card && noiseFill) {
       if (noise > noiseThreshold) {
@@ -228,4 +282,68 @@ function updateSafetyUI(safetyConfig) {
 function randomBetween(min, max, decimals) {
   const value = min + Math.random() * (max - min);
   return Number(value.toFixed(decimals));
+}
+
+// Update trail information in dashboard
+function updateTrailInfo(trail) {
+  if (!trail) return;
+
+  // Update ETA section with trail-specific data
+  const etaLabelEl = document.getElementById("eta-label");
+  const etaDetailsEl = document.getElementById("eta-details");
+
+  if (etaLabelEl && trail.duration) {
+    etaLabelEl.innerText = `ETA to Complete Trail: ${trail.duration}`;
+  }
+
+  if (etaDetailsEl) {
+    const details = [];
+
+    if (trail.distance) {
+      details.push(
+        `<span class="eta-item"><strong>Distance:</strong> ${trail.distance}</span>`,
+      );
+    }
+    if (trail.elevation) {
+      details.push(
+        `<span class="eta-item"><strong>Elevation Gain:</strong> ${trail.elevation}</span>`,
+      );
+    }
+    if (trail.difficulty) {
+      const difficultyLabel =
+        TRAIL_PREFERENCES?.difficulty?.find((d) => d.value === trail.difficulty)
+          ?.label || trail.difficulty;
+      details.push(
+        `<span class="eta-item"><strong>Difficulty:</strong> ${difficultyLabel}</span>`,
+      );
+    }
+
+    // Add trail features as badges
+    if (trail.features && Array.isArray(trail.features)) {
+      const featuresHTML = trail.features
+        .slice(0, 3)
+        .map(
+          (feature) =>
+            `<span class="eta-item feature-badge">✓ ${feature}</span>`,
+        )
+        .join("");
+      details.push(featuresHTML);
+    }
+
+    if (details.length > 0) {
+      etaDetailsEl.innerHTML = details.join("<br>");
+    }
+  }
+}
+
+// Get current user session
+function getCurrentUser() {
+  const userSessionData = localStorage.getItem("userSession");
+  return userSessionData ? JSON.parse(userSessionData) : null;
+}
+
+// Get current trail
+function getCurrentTrail() {
+  const savedTrailData = localStorage.getItem("recommendedTrail");
+  return savedTrailData ? JSON.parse(savedTrailData) : null;
 }

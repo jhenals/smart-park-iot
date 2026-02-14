@@ -3,8 +3,10 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!navContainer) return;
 
   const role = localStorage.getItem("userRole"); // 'admin' or 'visitor'
-  const isLoggedIn = localStorage.getItem("loggedIn") === "true";
-  const name = localStorage.getItem("username") || "Guest";
+  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+  const user = JSON.parse(localStorage.getItem("userSession")) || {
+    firstName: "Guest",
+  };
   const variant = navContainer.dataset.variant || "";
   const effectiveVariant =
     variant === "auto" && !isLoggedIn ? "public" : variant;
@@ -148,7 +150,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <a class="nav-link" href="${userPrefix}src/user/user-dashboard.html">Home</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="${userPrefix}src/user/map.html">Map</a>
+              <a class="nav-link" href="${userPrefix}src/user/user-location.html">Map</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="${userPrefix}src/user/trail-preferences.html">Change Trail</a>
@@ -160,7 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <a class="nav-link" onclick="toggleChat()"">Guide</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" onclick="logout()"">Exit (${name})</a>
+              <a class="nav-link" onclick="logout()"">Exit (${user.firstName})</a>
 
             </li>
           </ul>

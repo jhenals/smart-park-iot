@@ -1,7 +1,5 @@
 // 1. API Configuration
-const FASTAPI_BASE_URL =
-  "http://localhost:8000/api/weather/forecast/?minutes=60";
-const gigantiDellaSilaCenter = [39.355, 16.223];
+const gigantiDellaSilaCenter = [SILA_LOCATION.LAT, SILA_LOCATION.LON];
 let map, userMarker;
 let REAL_TIME_DATA = [];
 
@@ -13,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function loadPublicEnv() {
   try {
-    const response = await fetch(FASTAPI_BASE_URL);
+    const response = await fetch(API.SENSORS_DATA_PATH); //TODO: change to FASTAPI_URL to fetch from backend
     if (!response.ok) throw new Error("Backend unreachable");
 
     const data = await response.json();
@@ -75,42 +73,6 @@ function renderSensorNodes(dataList) {
   }
 }
 
-/**
-
-function updateLivePulse(dataList) {
-  const latest = dataList[dataList.length - 1];
-
-  const tempEl = document.getElementById("live-temp");
-  const noiseEl = document.getElementById("live-noise");
-  const humidEl = document.getElementById("live-humidity");
-  const visibilityEl = document.getElementById("live-visibility");
-  const trendEl = document.getElementById("pressure-trend");
-
-  if (tempEl && latest.temperature) {
-    tempEl.innerText = `${latest.temperature.toFixed(1)}°C`;
-  }
-
-  if (noiseEl && latest.noise) {
-    noiseEl.innerText = getNoiseLabel(latest.noise);
-  }
-
-  if (humidEl && latest.humidity) {
-    humidEl.innerText = `${latest.humidity.toFixed(1)}%`;
-  }
-
-  // Visibility Logic (using 'light' and 'tof')
-  if (latest.light > 5) visibilityEl.innerText = "High Clarity";
-  else if (latest.light > 2) visibilityEl.innerText = "Moderate";
-  else visibilityEl.innerText = "Low/Canopy Shadow";
-
-  const diff = latest.pressure - previous.pressure;
-  if (Math.abs(diff) < 2) trendEl.innerText = "Stable ↔️";
-  else if (diff > 0) trendEl.innerText = "Rising ↗️";
-  else trendEl.innerText = "Falling ↘️";
-
-  document.getElementById("gateway-status").innerText = "Active";
-}
- */
 function updateLivePulse(latest) {
   const tempEl = document.getElementById("live-temp");
   const humEl = document.getElementById("live-humidity");
@@ -127,29 +89,24 @@ function updateEnvironmentalInsights(latest, previous) {
 
   if (trendEl) {
     const diff = latest.pressure - previous.pressure;
-    if (Math.abs(diff) < 2) trendEl.innerText = "Stable ↔️";
+    if (Math.abs(diff) < THRESHOLDS.pressure.stableDiff)
+      trendEl.innerText = "Stable ↔️";
     else if (diff > 0) trendEl.innerText = "Rising ↗️";
     else trendEl.innerText = "Falling ↘️";
   }
 
   // 2. Visibility Logic (Light)
   if (visibilityEl) {
-    // Your JSON shows light: 3, which is quite low
-    if (latest.light > 10) visibilityEl.innerText = "Clear Skies";
-    else if (latest.light > 2)
+    if (latest.light > THRESHOLDS.light.clearSkies)
+      visibilityEl.innerText = "Clear Skies";
+    else if (latest.light > THRESHOLDS.light.deepCanopy)
       visibilityEl.innerText = "Deep Canopy / Twilight";
     else visibilityEl.innerText = "Low Visibility";
   }
 }
 
-const noiseThresholds = [
-  { label: "Serene", max: 45 },
-  { label: "Quiet", max: 55 },
-  { label: "Natural Sounds", max: Infinity },
-];
-
 function getNoiseLabel(noise) {
-  for (const threshold of noiseThresholds) {
+  for (const threshold of THRESHOLDS.noise) {
     if (noise <= threshold.max) return threshold.label;
   }
   return "Unknown";

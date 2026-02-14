@@ -130,4 +130,21 @@ h1 span {
   display: flex;
   flex-direction: column;
   margin-left: 20px;
-} 
+}
+
+.eta-item {
+  margin: 5px 0;
+  font-size: 1rem;
+}
+
+.feature-badge {
+  display: inline-block;
+  padding: 5px 10px;
+  margin: 3px;
+  background-color: rgba(255, 193, 7, 0.2);
+  border: 1px solid var(--primary-color);
+  border-radius: 15px;
+  font-size: 0.9rem;
+  color: var(--text-light-color);
+}
+ 

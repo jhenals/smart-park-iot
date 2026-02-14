@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Location - Smart Park</title>
+    <link rel="stylesheet" href="../../assets/styles/index.css" />
+    <link rel="stylesheet" href="../../assets/styles/map.css" />
+    <link
+      rel="stylesheet"
+      href="../../assets/styles/components/dynamic-navbar.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <link rel="stylesheet" href="../../assets/styles/user-loc.css" />
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../assets/constants/constants.js"></script>
+    <script src="../../assets/js/dynamic-navbar.js"></script>
+    <script src="../../assets/js/user-location.js"></script>
+  </head>
+
+  <body>
+    <nav
+      id="dynamic-navbar"
+      class="navbar sticky-top navbar-expand-lg"
+      data-variant="auto"
+      data-public-prefix="/web-app/"
+    ></nav>
+    <header>
+      <h1>📍 My Location</h1>
+      <p>See where you are in the park and nearby points of interest.</p>
+    </header>
+
+    <div class="location-container">
+      <div class="stats-container">
+        <div class="user-stats">
+          <div class="stat-item">
+            <span>Trail:</span>
+            <strong id="current-trail">Loading...</strong>
+          </div>
+          <div class="stat-item">
+            <span>Progress:</span>
+            <strong id="trail-progress">0%</strong>
+          </div>
+        </div>
+      </div>
+      <div class="map-loc-container">
+        <div id="location-map"></div>
+
+        <div class="location-panel glass-card">
+          <h3>Your Position</h3>
+          <div class="coord-display">
+            <div><strong>Latitude:</strong> <span id="user-lat">--</span></div>
+            <div><strong>Longitude:</strong> <span id="user-lng">--</span></div>
+            <div style="margin-top: 10px">
+              <span class="accuracy-indicator" id="accuracy-indicator"></span>
+              <span id="accuracy-text">Acquiring GPS...</span>
+            </div>
+          </div>
+
+          <h4 style="margin-top: 20px; color: var(--primary-color)">
+            Nearby Points
+          </h4>
+          <ul class="nearby-list" id="nearby-points">
+            <li class="nearby-item">
+              <span>Scanning for landmarks...</span>
+            </li>
+          </ul>
+
+          <button
+            class="main-button"
+            onclick="shareLocation()"
+            style="width: 100%; margin-top: 10px"
+          >
+            📤 Share Location
+          </button>
+        </div>
+      </div>
+
+      <div class="control-buttons">
+        <button
+          class="map-control-btn active"
+          id="follow-btn"
+          onclick="toggleFollow()"
+        >
+          🎯 Follow Me
+        </button>
+        <button class="map-control-btn" onclick="centerOnUser()">
+          📍 Center
+        </button>
+        <button class="map-control-btn" onclick="showFullTrail()">
+          🗺️ Full Trail
+        </button>
+      </div>
+    </div>
+
+    <iframe
+      src="../../src/components/footer.html"
+      style="width: 100%; border: none; display: block; height: 45px"
+    ></iframe>
+    <script src="../../assets/js/user-location.js"></script>
+  </body>
+</html>

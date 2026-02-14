@@ -11,6 +11,8 @@
       href="../../assets/styles/components/dynamic-navbar.css"
     />
 
+    <script src="../../assets/constants/constants.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script
       src="https://kit.fontawesome.com/fde79452b1.js"
       crossorigin="anonymous"
@@ -35,31 +37,49 @@
       <div class="weather-dashboard">
         <section class="forecast-container glass-card">
           <h3>Hourly Forecast</h3>
-          <ul id="forecast-list" class="list-unstyled"></ul>
+          <ul id="forecast-list" class="list-unstyled">
+            Loading...
+          </ul>
         </section>
-        <div class="weather-advanced-grid">
-          <div class="decision-card glass-card">
+        <section class="weather-advanced-container">
+          <div class="weather-advanced-card glass-card">
             <h4>🌲 Trail Readiness</h4>
-            <div id="hike-recommendation" class="status-badge">
-              Highly Recommended
+            <div id="hike-recommendation" class="status-badge status-safe">
+              Loading...
             </div>
-            <p>Stable pressure and low humidity detected by Node 101.</p>
+            <p id="hike-recommendation-desc">
+              Stable pressure and low humidity detected by Node 101.
+            </p>
+
+            <div class="readiness-details">
+              <div>
+                <small>Visibility:</small>
+                <i id="readiness-light">Loading...</i>
+              </div>
+              <div>
+                <small>Stability:</small>
+                <i id="readiness-press">Loading...</i>
+              </div>
+            </div>
           </div>
 
-          <div class="trend-card glass-card">
+          <div class="weather-advanced-card glass-card">
             <h4>📉 1h Pressure Trend</h4>
-            <canvas id="pressureChart"></canvas>
+            <canvas id="pressureChart">Loading...</canvas>
           </div>
-
-          <div class="gear-card glass-card">
+          <div class="weather-advanced-card glass-card">
             <h4>🎒 Essential Gear</h4>
-            <ul id="gear-list"></ul>
+            <ul id="gear-list">
+              Loading ...
+            </ul>
           </div>
-        </div>
+        </section>
       </div>
 
-      <div class="glass-card flex-column text-center mb-5 mt-5 forecast-calab">
-        <h1 class="text-center">Weather Forecast Calabria</h1>
+      <div class="flex-column text-center mb-5 mt-5 forecast-calab">
+        <header>
+          <h1 class="text-center">Weather Forecast Calabria</h1>
+        </header>
         <iframe
           src="https://www.parks.it/parco.nazionale.sila/Emeteo.php"
           width="80%"

@@ -3,76 +3,59 @@
   <head>
     <meta charset="UTF-8" />
     <title>Sila Park - Tailor Your Visit</title>
-    <link rel="stylesheet" href="assets/css/style.css" />
+    <link rel="stylesheet" href="../../assets/styles/index.css" />
+    <link rel="stylesheet" href="../../assets/styles/trail-pref.css" />
+    <script src="../../assets/constants/constants.js"></script>
   </head>
   <body>
-    <div class="preferences-container">
-      <h2>How do you want to experience the Park?</h2>
-      <p>Our AI will suggest the best trail based on real-time sensor data.</p>
-        <form id="preferencesForm">
+    <section class="preferences-container">
+      <header>
+        <h1>How do you want to experience the Park?</h1>
+        <h2>Tailor your visit</h2>
+        <p>
+          Our AI will suggest the best trail based on real-time sensor data.
+        </p>
+      </header>
+      <form id="preferencesForm" class="glass-card">
         <div class="input-group">
-            <label>Trail Difficulty:</label>
-            <select id="difficulty">
-                <option value="easy">Easy (Flat & Relaxing)</option>
-                <option value="moderate">Moderate (Some inclines)</option>
-                <option value="hard">Challenging (Steep Slopes)</option>
-            </select>
-        </div>
-
-        <div class="input-group">
-            <label>Preferred Environment:</label>
-            <select id="environment">
-                <option value="quiet">Quiet & Serene</option>
-                <option value="bright">Sunny & Open</option>
-            </select>
+          <label>Trail Difficulty:</label>
+          <select id="difficulty"></select>
         </div>
 
         <div class="input-group">
-            <label>Primary Interest:</label>
-            <select id="interest">
-                <option value="history">Ancient Pines & History</option>
-                <option value="botany">Local Flora & Fauna</option>
-            </select>
+          <label>Preferred Environment:</label>
+          <select id="environment"></select>
         </div>
 
-        <button type="button" onclick="generateMockRecommendation()">Get Recommendation</button>
-    </form>
-
-    <div id="recommendation-result" style="display:none; margin-top: 20px;">
-        <h3>Recommended for You:</h3>
-        <p id="trail-name" style="font-weight: bold; color: #2e7d32;"></p>
-        <button onclick="goToHomepage()">Start Hiking</button>
-    </div>
-</div>
-
-      <!-- Trail Preference Form 
-       <form id="preferenceForm">
-        <label>I prefer a trail that is:</label>
-        <select id="difficulty">
-          <option value="easy">Relaxing (Low Slope)</option>
-          <option value="moderate">Active (Medium Slope)</option>
-          <option value="hard">Challenging (High Slope)</option>
-        </select>
-
-        <label>Environment Preference:</label>
-        <div class="radio-group">
-          <input type="radio" name="env" value="quiet" checked /> 🤫 Quiet &
-          Peaceful <input type="radio" name="env" value="bright" /> ☀️ Sunny &
-          Bright
+        <div class="input-group">
+          <label>Primary Interest:</label>
+          <select id="interest"></select>
         </div>
 
-        <label>I am interested in:</label>
-        <select id="interest">
-          <option value="history">Park History & Giants</option>
-          <option value="nature">Flora & Fauna</option>
-        </select>
-
-        <button type="button" onclick="getRecommendation()">
-          Find My Trail
+        <button
+          type="button"
+          class="main-button"
+          onclick="
+            generateMockRecommendation();
+            document
+              .getElementById('recommendation-result')
+              .scrollIntoView({ behavior: 'smooth' });
+          "
+        >
+          Get Recommendation
         </button>
-      </form>-->
-      
-    </div>
+      </form>
+    </section>
+    <section>
+      <div id="recommendation-result" style="display: none; margin-top: 50px">
+        <h3>Recommended for You:</h3>
+        <h2 id="trail-name"></h2>
+        <div id="trail-details" class="trail-info"></div>
+        <button class="main-button" onclick="goToHomepage()">
+          Start Hiking
+        </button>
+      </div>
+    </section>
 
     <script src="../../assets/js/trail-preferences.js"></script>
   </body>
