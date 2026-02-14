@@ -82,7 +82,7 @@ async function handleLogin() {
 
   // Redirect based on role
   if (user.role === "admin") {
-    window.location.href = "/web-app/src/admin/admin-dashboard.html";
+    window.location.href = "http://localhost:5173/";
   } else {
     window.location.href = "/web-app/src/user/trail-preferences.html";
   }

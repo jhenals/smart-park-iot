@@ -1,3 +1,6 @@
+// Track when user starts the trail for ETA calculation
+let trailStartTime = null;
+
 document.addEventListener("DOMContentLoaded", () => {
   loadDashboardData();
 });
@@ -66,13 +69,20 @@ function applyUserAndTrail(user, safety) {
 
   // Optional: Display additional trail info if available
   updateTrailInfo(savedTrail);
+
+  // Initialize trail start time for ETA calculation
+  initializeTrailStart();
 }
 
 function startGPSTracking(gpsConfig, giants, discoveryConfig) {
   const progressEl = document.getElementById("progress-percent");
   const circle = document.getElementById("progress-circle");
 
-  let progress = 0;
+  // Use shared progress from localStorage
+  let progress = parseInt(
+    localStorage.getItem("sharedTrailProgress") || "0",
+    10,
+  );
   const intervalMs = gpsConfig?.progressIntervalMs ?? 3000;
   const step = gpsConfig?.progressStep ?? 2;
 
@@ -85,6 +95,9 @@ function startGPSTracking(gpsConfig, giants, discoveryConfig) {
     if (progress >= 100) return;
 
     progress += step;
+
+    // Store shared progress
+    localStorage.setItem("sharedTrailProgress", progress.toString());
 
     if (progressEl) progressEl.innerText = `${progress}%`;
     if (circle) {
@@ -100,6 +113,16 @@ function startGPSTracking(gpsConfig, giants, discoveryConfig) {
     }
     if (typeof map !== "undefined" && map) {
       map.panTo([newLat, newLng]);
+    }
+
+    // Update dynamic ETA based on current progress
+    const trail = getCurrentTrail();
+    if (trail && progress > 0) {
+      const eta = calculateDynamicETA(progress, trail);
+      const etaLabelEl = document.getElementById("eta-label");
+      if (etaLabelEl) {
+        etaLabelEl.innerText = `ETA to Complete: ${eta}`;
+      }
     }
 
     if (Array.isArray(giants) && giants.length > 0) {
@@ -238,7 +261,6 @@ function checkProximity(userLat, userLng, giants, discoveryConfig) {
         `;
     wrapper.style.background = "rgba(255, 193, 7, 0.1)";
 
-    // Save to Passport
     let visited = JSON.parse(localStorage.getItem("visitedGiants")) || [];
     if (!visited.includes(foundGiant.name)) {
       visited.push(foundGiant.name);
@@ -284,7 +306,6 @@ function randomBetween(min, max, decimals) {
   return Number(value.toFixed(decimals));
 }
 
-// Update trail information in dashboard
 function updateTrailInfo(trail) {
   if (!trail) return;
 
@@ -318,7 +339,6 @@ function updateTrailInfo(trail) {
       );
     }
 
-    // Add trail features as badges
     if (trail.features && Array.isArray(trail.features)) {
       const featuresHTML = trail.features
         .slice(0, 3)
@@ -346,4 +366,110 @@ function getCurrentUser() {
 function getCurrentTrail() {
   const savedTrailData = localStorage.getItem("recommendedTrail");
   return savedTrailData ? JSON.parse(savedTrailData) : null;
+}
+
+// Initialize trail start time
+function initializeTrailStart() {
+  const savedStartTime = localStorage.getItem("trailStartTime");
+  if (savedStartTime) {
+    trailStartTime = parseInt(savedStartTime, 10);
+  } else {
+    trailStartTime = Date.now();
+    localStorage.setItem("trailStartTime", trailStartTime.toString());
+  }
+}
+
+// Reset trail start time (call when starting a new trail)
+function resetTrailStart() {
+  trailStartTime = Date.now();
+  localStorage.setItem("trailStartTime", trailStartTime.toString());
+  localStorage.setItem("sharedTrailProgress", "0");
+  localStorage.removeItem("visitedGiants");
+}
+
+// Format minutes into readable time string
+function formatTime(minutes) {
+  if (minutes < 1) {
+    return "< 1m";
+  }
+
+  const hours = Math.floor(minutes / 60);
+  const mins = Math.round(minutes % 60);
+
+  if (hours > 0) {
+    return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+  }
+  return `${mins}m`;
+}
+
+// Calculate dynamic ETA based on current progress
+function calculateDynamicETA(currentProgress, trail) {
+  // Restore start time if not set
+  if (!trailStartTime) {
+    const savedStartTime = localStorage.getItem("trailStartTime");
+    if (savedStartTime) {
+      trailStartTime = parseInt(savedStartTime, 10);
+    } else {
+      return trail.duration || "N/A";
+    }
+  }
+
+  if (currentProgress === 0) {
+    return trail.duration || "N/A";
+  }
+
+  // Calculate elapsed time
+  const elapsedMs = Date.now() - trailStartTime;
+  const elapsedMinutes = elapsedMs / (1000 * 60);
+
+  // Calculate average speed (percent per minute)
+  const avgSpeedPercentPerMin = currentProgress / elapsedMinutes;
+
+  // Calculate remaining time with difficulty adjustment
+  return calculateAdjustedETA(currentProgress, trail, avgSpeedPercentPerMin);
+}
+
+// Calculate ETA with difficulty and elevation adjustments
+function calculateAdjustedETA(currentProgress, trail, avgSpeedPercentPerMin) {
+  let difficultyMultiplier = 1.0;
+
+  // Adjust for trail difficulty
+  if (trail.difficulty) {
+    switch (trail.difficulty.toLowerCase()) {
+      case "easy":
+        difficultyMultiplier = 0.9;
+        break;
+      case "moderate":
+        difficultyMultiplier = 1.0;
+        break;
+      case "hard":
+        difficultyMultiplier = 1.3;
+        break;
+      case "expert":
+        difficultyMultiplier = 1.6;
+        break;
+    }
+  }
+
+  // Adjust for elevation gain (parse from string like "150m" or "500 ft")
+  if (trail.elevation) {
+    const elevationMatch = trail.elevation.match(/\d+/);
+    if (elevationMatch) {
+      const elevationGain = parseInt(elevationMatch[0], 10);
+      if (elevationGain > 300) {
+        difficultyMultiplier *= 1.2;
+      } else if (elevationGain > 500) {
+        difficultyMultiplier *= 1.4;
+      }
+    }
+  }
+
+  // Calculate adjusted speed
+  const adjustedSpeed = avgSpeedPercentPerMin / difficultyMultiplier;
+
+  // Calculate remaining progress and time
+  const remainingProgress = 100 - currentProgress;
+  const remainingMinutes = remainingProgress / adjustedSpeed;
+
+  return formatTime(remainingMinutes);
 }

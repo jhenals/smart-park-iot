@@ -1,7 +1,6 @@
-.user-dashboard.container {
+.user-dashboard-container {
   display: flex;
   flex-direction: column;
-  color: var(--text-light-color)!important;
 }
 
 h1 {
@@ -148,3 +147,6 @@ h1 span {
   color: var(--text-light-color);
 }
  
+.card-grid{
+  margin:auto;
+}

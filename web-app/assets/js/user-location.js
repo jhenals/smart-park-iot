@@ -1,11 +1,9 @@
-// User Location Page - Real-time GPS tracking and navigation
 let locationMap, userLocationMarker, accuracyCircle, pathPolyline;
 let userPosition = null;
 let isFollowingUser = true;
 let watchID = null;
 let nearbyGiants = [];
 
-// Initialize map on page load
 document.addEventListener("DOMContentLoaded", () => {
   initializeLocationMap();
   loadTrailInfo();
@@ -14,20 +12,17 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function initializeLocationMap() {
-  // Initialize map centered on Sila National Park
   locationMap = L.map("location-map").setView(
     [SILA_LOCATION.LAT, SILA_LOCATION.LON],
     15,
   );
 
-  // Add OpenStreetMap tiles
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution:
       '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     maxZoom: 19,
   }).addTo(locationMap);
 
-  // Create custom user marker icon
   const userIcon = L.divIcon({
     html: `
       <div style="
@@ -56,14 +51,12 @@ function initializeLocationMap() {
     iconAnchor: [12, 12],
   });
 
-  // Initialize user marker
   userLocationMarker = L.marker([SILA_LOCATION.LAT, SILA_LOCATION.LON], {
     icon: userIcon,
   })
     .addTo(locationMap)
     .bindPopup("📍 You are here");
 
-  // Initialize accuracy circle
   accuracyCircle = L.circle([SILA_LOCATION.LAT, SILA_LOCATION.LON], {
     radius: 50,
     color: "#2196f3",
@@ -72,9 +65,8 @@ function initializeLocationMap() {
     weight: 1,
   }).addTo(locationMap);
 
-  // Initialize trail path polyline
   pathPolyline = L.polyline([], {
-    color: "#ffc107",
+    color: "var(--danger-color)",
     weight: 3,
     opacity: 0.7,
     dashArray: "10, 5",
@@ -97,7 +89,6 @@ async function loadNearbyPoints() {
     const response = await fetch(API.GIANTS_DATA_PATH);
     nearbyGiants = await response.json();
 
-    // Add markers for all giants
     nearbyGiants.forEach((giant) => {
       const giantIcon = L.divIcon({
         html: `<div style="font-size: 50px;">🌲</div>`,
@@ -113,7 +104,6 @@ async function loadNearbyPoints() {
       giant.marker = marker;
     });
 
-    // Update nearby points list if user position is already available
     if (userPosition) {
       updateNearbyPoints(userPosition.lat, userPosition.lng);
     }
@@ -123,9 +113,7 @@ async function loadNearbyPoints() {
 }
 
 function startLocationTracking() {
-  // Check if geolocation is available
   if ("geolocation" in navigator) {
-    // Try to get real GPS location
     watchID = navigator.geolocation.watchPosition(
       (position) => {
         updateUserPosition(
@@ -136,7 +124,6 @@ function startLocationTracking() {
       },
       (error) => {
         console.warn("Geolocation error:", error.message);
-        // Fallback to simulated location
         simulateLocationTracking();
       },
       {
@@ -146,20 +133,20 @@ function startLocationTracking() {
       },
     );
   } else {
-    // Geolocation not available, use simulation
     simulateLocationTracking();
   }
 }
 
 function simulateLocationTracking() {
-  // Simulate GPS tracking along a trail
-  let progress = 0;
   const startLat = SILA_LOCATION.LAT;
   const startLng = SILA_LOCATION.LON;
   const step = 0.00005;
 
   setInterval(() => {
-    progress += 1;
+    let progress = parseInt(
+      localStorage.getItem("sharedTrailProgress") || "0",
+      5,
+    );
     if (progress > 100) progress = 0;
 
     const lat = startLat + (Math.random() - 0.5) * step + progress * step * 0.1;
@@ -174,29 +161,23 @@ function simulateLocationTracking() {
 function updateUserPosition(lat, lng, accuracy = 15) {
   userPosition = { lat, lng, accuracy };
 
-  // Update marker position
   userLocationMarker.setLatLng([lat, lng]);
   accuracyCircle.setLatLng([lat, lng]);
   accuracyCircle.setRadius(accuracy);
 
-  // Update coordinate display
   document.getElementById("user-lat").textContent = lat.toFixed(6);
   document.getElementById("user-lng").textContent = lng.toFixed(6);
 
-  // Update accuracy indicator
   updateAccuracyDisplay(accuracy);
 
-  // Add to path
   const pathCoords = pathPolyline.getLatLngs();
   pathCoords.push([lat, lng]);
   pathPolyline.setLatLngs(pathCoords);
 
-  // Follow user if enabled
   if (isFollowingUser) {
     locationMap.setView([lat, lng], locationMap.getZoom());
   }
 
-  // Update nearby points
   updateNearbyPoints(lat, lng);
 }
 
@@ -219,13 +200,11 @@ function updateAccuracyDisplay(accuracy) {
 function updateNearbyPoints(userLat, userLng) {
   if (!nearbyGiants || nearbyGiants.length === 0) return;
 
-  // Calculate distances to all giants
   const pointsWithDistance = nearbyGiants.map((giant) => {
     const distance = calculateDistance(userLat, userLng, giant.lat, giant.lng);
     return { ...giant, distance };
   });
 
-  // Sort by distance
   pointsWithDistance.sort((a, b) => a.distance - b.distance);
 
   // Show top 5 nearest
@@ -311,7 +290,6 @@ function focusOnPoint(lat, lng, name) {
   isFollowingUser = false;
   document.getElementById("follow-btn").classList.remove("active");
 
-  // Find and open the popup for this point
   nearbyGiants.forEach((giant) => {
     if (giant.name === name && giant.marker) {
       giant.marker.openPopup();
@@ -338,7 +316,6 @@ function shareLocation() {
       .share(shareData)
       .catch((err) => console.log("Share failed:", err));
   } else {
-    // Fallback: copy to clipboard
     const coordText = `${userPosition.lat.toFixed(6)}, ${userPosition.lng.toFixed(6)}`;
     navigator.clipboard.writeText(coordText).then(() => {
       alert("Coordinates copied to clipboard: " + coordText);
@@ -346,13 +323,11 @@ function shareLocation() {
   }
 }
 
-// Helper function to get current trail from localStorage
 function getCurrentTrail() {
   const savedTrailData = localStorage.getItem("recommendedTrail");
   return savedTrailData ? JSON.parse(savedTrailData) : null;
 }
 
-// Cleanup on page unload
 window.addEventListener("beforeunload", () => {
   if (watchID) {
     navigator.geolocation.clearWatch(watchID);
