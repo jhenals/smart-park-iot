@@ -1,0 +1,6 @@
+services:
+  smartparkiot:
+    image: smartparkiot
+    build:
+      context: .
+      dockerfile: ./Dockerfile
