@@ -33,8 +33,6 @@ RUN pip install --no-cache-dir \
 # Expose the port FastAPI runs on
 EXPOSE 8000
 
-# Set working directory to app folder for correct module imports
-WORKDIR /app/app
-
-# Run with auto-reload for development
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Run from project root so package imports resolve
+WORKDIR /app
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

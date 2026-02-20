@@ -22,65 +22,63 @@ $('.login-reg-panel input[type="radio"]').on("change", function () {
   }
 });
 
-async function loadUsers() {
-  try {
-    const response = await fetch("../../database/users.json");
-    if (!response.ok) {
-      throw new Error("Failed to load users");
-    }
-    return await response.json();
-  } catch (error) {
-    console.error("Error loading users:", error);
-    return [];
-  }
+function getApiBaseUrl() {
+  return localStorage.getItem("apiBaseUrl") || "http://localhost:8000";
+}
+
+function setLoggedInFlags(value) {
+  localStorage.setItem("isLoggedIn", value ? "true" : "false");
+  localStorage.setItem("loggedIn", value ? "true" : "false");
 }
 
 async function handleLogin() {
-  const emailOrUsername = document.getElementById("email").value.trim();
+  const username = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
 
-  if (!emailOrUsername || !password) {
-    alert("Please enter email/username and password to continue.");
+  if (!username || !password) {
+    alert("Please enter username and password to continue.");
     return;
   }
 
-  // Load users from JSON
-  const users = await loadUsers();
+  const apiBase = getApiBaseUrl();
+  const body = new URLSearchParams();
+  body.append("username", username);
+  body.append("password", password);
 
-  // Find user by email or username
-  const user = users.find(
-    (u) =>
-      u.email.toLowerCase() === emailOrUsername.toLowerCase() ||
-      u.username.toLowerCase() === emailOrUsername.toLowerCase(),
-  );
+  try {
+    const response = await fetch(`${apiBase}/api/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body,
+    });
 
-  if (!user) {
-    alert("User not found. Please check your credentials.");
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      alert(payload.detail || "Invalid username or password.");
+      return;
+    }
+
+    localStorage.setItem("accessToken", payload.access_token);
+    localStorage.setItem("tokenType", payload.token_type || "bearer");
+
+    const userSession = {
+      username,
+      email: "",
+      role: username.toLowerCase() === "admin" ? "admin" : "visitor",
+      lastLogin: new Date().toISOString(),
+    };
+
+    localStorage.setItem("userSession", JSON.stringify(userSession));
+    setLoggedInFlags(true);
+  } catch (error) {
+    console.error("Login request failed:", error);
+    alert("Unable to reach authentication server.");
     return;
   }
 
-  // Validate password
-  if (user.password !== password) {
-    alert("Incorrect password. Please try again.");
-    return;
-  }
-
-  // Store user session data (excluding password for security)
-  const userSession = {
-    id: user.id,
-    username: user.username,
-    email: user.email,
-    role: user.role,
-    firstName: user.firstName,
-    lastName: user.lastName,
-    lastLogin: new Date().toISOString(),
-  };
-
-  localStorage.setItem("userSession", JSON.stringify(userSession));
-  localStorage.setItem("isLoggedIn", "true");
-
-  // Redirect based on role
-  if (user.role === "admin") {
+  if (username.toLowerCase() === "admin") {
     window.location.href = "http://localhost:5173/";
   } else {
     window.location.href = "/web-app/src/user/trail-preferences.html";
@@ -88,18 +86,17 @@ async function handleLogin() {
 }
 
 async function handleRegister() {
-  const email = document.getElementById("reg-email").value.trim();
+  const username = document.getElementById("reg-username").value.trim();
   const password = document.getElementById("reg-password").value;
   const confirmPassword = document.getElementById("reg-confirm-password").value;
 
-  if (!email || !password || !confirmPassword) {
+  if (!username || !password || !confirmPassword) {
     alert("Please fill up all fields to continue.");
     return;
   }
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    alert("Please enter a valid email address.");
+  if (username.length < 3) {
+    alert("Username must be at least 3 characters long.");
     return;
   }
 
@@ -113,51 +110,72 @@ async function handleRegister() {
     return;
   }
 
-  const users = await loadUsers();
+  const apiBase = getApiBaseUrl();
+  const registerPayload = {
+    username,
+    password,
+  };
 
-  const existingUser = users.find(
-    (u) => u.email.toLowerCase() === email.toLowerCase(),
-  );
+  try {
+    const registerResponse = await fetch(`${apiBase}/api/auth/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(registerPayload),
+    });
 
-  if (existingUser) {
-    alert("An account with this email already exists. Please login instead.");
+    const registerData = await registerResponse.json().catch(() => ({}));
+    if (!registerResponse.ok) {
+      alert(registerData.detail || "Registration failed.");
+      return;
+    }
+
+    const loginForm = new URLSearchParams();
+    loginForm.append("username", username);
+    loginForm.append("password", password);
+
+    const loginResponse = await fetch(`${apiBase}/api/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: loginForm,
+    });
+
+    const loginData = await loginResponse.json().catch(() => ({}));
+    if (!loginResponse.ok) {
+      alert(loginData.detail || "Registered but auto-login failed.");
+      return;
+    }
+
+    localStorage.setItem("accessToken", loginData.access_token);
+    localStorage.setItem("tokenType", loginData.token_type || "bearer");
+
+    const userSession = {
+      username,
+      email: "",
+      role: "visitor",
+      lastLogin: new Date().toISOString(),
+    };
+    localStorage.setItem("userSession", JSON.stringify(userSession));
+    setLoggedInFlags(true);
+  } catch (error) {
+    console.error("Registration request failed:", error);
+    alert("Unable to reach authentication server.");
     return;
   }
 
-  const newUser = {
-    id: users.length + 1,
-    username: email.split("@")[0], // Use email prefix as username
-    password: password,
-    email: email,
-    role: "visitor", // Default role
-    firstName: "",
-    lastName: "",
-    createdAt: new Date().toISOString(),
-    lastLogin: new Date().toISOString(),
-  };
-
-  const userSession = {
-    id: newUser.id,
-    username: newUser.username,
-    email: newUser.email,
-    role: newUser.role,
-    firstName: newUser.firstName,
-    lastName: newUser.lastName,
-    lastLogin: newUser.lastLogin,
-  };
-
-  localStorage.setItem("userSession", JSON.stringify(userSession));
-  localStorage.setItem("isLoggedIn", "true");
-
   alert("Registration successful! Redirecting...");
-  // Note: In production, you would save this to a backend/database
-  console.log("New user registered:", newUser);
   window.location.href = "/web-app/src/user/trail-preferences.html";
 }
 
 function logout() {
   localStorage.removeItem("userSession");
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("tokenType");
   localStorage.removeItem("isLoggedIn");
+  localStorage.removeItem("loggedIn");
   window.location.href = "/web-app/src/login.html";
 }
 
