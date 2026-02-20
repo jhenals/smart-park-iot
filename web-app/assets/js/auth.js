@@ -174,6 +174,7 @@ async function handleLogin() {
     alert("Login successful! Redirecting...");
 
     if (userData.role === "admin") {
+      console.log("Admin detected, redirecting to admin dashboard");
       window.location.href = "http://localhost:5173/";
     } else {
       window.location.href = "/web-app/src/user/trail-preferences.html";
@@ -207,7 +208,96 @@ function logout() {
   window.location.href = "/web-app/src/login.html";
 }
 
+// Get current user's role from Firestore
+async function getUserRole(uid) {
+  try {
+    const userDocRef = doc(userDatabase, "users", uid);
+    const userDoc = await getDoc(userDocRef);
+
+    if (userDoc.exists()) {
+      return userDoc.data().role;
+    }
+    return null;
+  } catch (error) {
+    console.error("Error fetching user role:", error);
+    return null;
+  }
+}
+
+// Check if current user is admin
+async function isUserAdmin() {
+  const user = auth.currentUser;
+  if (!user) {
+    alert("Please log in first");
+    return false;
+  }
+
+  const role = await getUserRole(user.uid);
+  return role === "admin";
+}
+
+// Make authenticated API request
+async function makeAPIRequest(endpoint, method = "GET", body = null) {
+  const user = auth.currentUser;
+
+  if (!user) {
+    alert("Please log in first");
+    return null;
+  }
+
+  // Check if user is admin
+  const isAdmin = await isUserAdmin();
+  if (!isAdmin) {
+    alert("Admin access required to use this feature");
+    return null;
+  }
+
+  try {
+    // Get Firebase ID token
+    const token = await user.getIdToken();
+
+    const options = {
+      method: method,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    };
+
+    if (body) {
+      options.body = JSON.stringify(body);
+    }
+
+    const response = await fetch(endpoint, options);
+
+    if (response.status === 403) {
+      alert("You do not have admin access");
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("API request failed:", error);
+    alert(`Request failed: ${error.message}`);
+    return null;
+  }
+}
+
+// Example usage: Get weather forecast
+async function getWeatherForecast() {
+  const data = await makeAPIRequest("/api/forecast/?minutes=60");
+  if (data) {
+    console.log("Weather data:", data);
+    // Display data on your page
+  }
+}
+
 // Expose functions to global scope for inline onclick handlers
 window.handleLogin = handleLogin;
 window.handleRegister = handleRegister;
 window.logout = logout;
+window.getWeatherForecast = getWeatherForecast;
