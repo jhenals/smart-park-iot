@@ -23,36 +23,11 @@ const firebaseConfig = {
   measurementId: "G-LH5LGV3RPF",
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth();
 const userDatabase = getFirestore();
-
+const API_BASE = "http://localhost:8000";
 console.log("Firebase app initialized:", app);
-
-$(document).ready(function () {
-  $(".login-info-box").fadeOut();
-  $(".login-show").addClass("show-log-panel");
-});
-
-$('.login-reg-panel input[type="radio"]').on("change", function () {
-  if ($("#log-login-show").is(":checked")) {
-    $(".register-info-box").fadeOut();
-    $(".login-info-box").fadeIn();
-
-    $(".white-panel").addClass("right-log");
-    $(".register-show").addClass("show-log-panel");
-    $(".login-show").removeClass("show-log-panel");
-  } else if ($("#log-reg-show").is(":checked")) {
-    $(".register-info-box").fadeIn();
-    $(".login-info-box").fadeOut();
-
-    $(".white-panel").removeClass("right-log");
-
-    $(".login-show").addClass("show-log-panel");
-    $(".register-show").removeClass("show-log-panel");
-  }
-});
 
 async function handleRegister() {
   const email = document.getElementById("reg-email").value.trim();
@@ -80,8 +55,6 @@ async function handleRegister() {
   }
 
   try {
-    preventDefault(); // Prevent form submission if using a form element
-    // Create user in Firebase Authentication
     const userCredential = await createUserWithEmailAndPassword(
       auth,
       email,
@@ -89,7 +62,6 @@ async function handleRegister() {
     );
     const user = userCredential.user;
 
-    // Store user data in Firestore database
     const userData = {
       email: email,
       role: "visitor",
@@ -125,6 +97,8 @@ async function handleRegister() {
   }
 }
 
+//TODO: Instead of an alert, consider using a modal or inline error message for better UX. Also, add loading indicators during async operations for improved user feedback.
+
 async function handleLogin() {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
@@ -156,28 +130,40 @@ async function handleLogin() {
       return;
     }
 
-    // User exists in database, proceed with login
     const userData = userDocSnapshot.data();
+
+    // Get Firebase ID token (JWT)
+    const idToken = await user.getIdToken();
+    const tokenResult = await user.getIdTokenResult();
+
     const userSession = {
       email: email,
       uid: user.uid,
       role: userData.role,
       lastLogin: new Date().toISOString(),
+      token: idToken,
+      tokenExpiration: tokenResult.expirationTime, //Firebase default duration: 1 hour
     };
 
-    localStorage.setItem("userSession", JSON.stringify(userSession));
-    localStorage.setItem("accessToken", user.uid);
-    localStorage.setItem("tokenType", "bearer");
+    // Save session and token data
+    saveSession(userSession); // Now handles all localStorage operations
     setLoggedInFlags(true);
 
     console.log("Login successful for user:", user.uid);
+    console.log("Token expires at:", tokenResult.expirationTime);
     alert("Login successful! Redirecting...");
 
-    if (userData.role === "admin") {
-      console.log("Admin detected, redirecting to admin dashboard");
-      window.location.href = "http://localhost:5173/";
+    // Redirect based on user role (token is already stored in localStorage)
+    if (isSessionValid()) {
+      if (userData.role === "admin") {
+        console.log("Admin detected, redirecting to weather app");
+        window.location.href = "http://localhost:5173/";
+      } else {
+        window.location.href = "/web-app/src/user/trail-preferences.html";
+      }
     } else {
-      window.location.href = "/web-app/src/user/trail-preferences.html";
+      alert("Error: Session could not be saved. Please try again.");
+      console.error("Session validation failed after save");
     }
   } catch (error) {
     const errorCode = error.code;
@@ -196,35 +182,186 @@ async function handleLogin() {
 
 function setLoggedInFlags(value) {
   localStorage.setItem("isLoggedIn", value ? "true" : "false");
-  localStorage.setItem("loggedIn", value ? "true" : "false");
+}
+
+function saveSession(userSession) {
+  const sessionData = {
+    ...userSession,
+    timestamp: new Date().getTime(),
+    isActive: true,
+  };
+  localStorage.setItem("userSession", JSON.stringify(sessionData));
+  localStorage.setItem("sessionSavedAt", new Date().toISOString());
+
+  if (userSession.token) {
+    localStorage.setItem("accessToken", userSession.token);
+    localStorage.setItem("tokenType", "bearer");
+  }
+  if (userSession.uid) {
+    localStorage.setItem("userUid", userSession.uid);
+  }
+
+  console.log("Session saved to localStorage:", sessionData);
+}
+
+function getSession() {
+  const session = localStorage.getItem("userSession");
+  return session ? JSON.parse(session) : null;
+}
+
+function isSessionValid() {
+  const session = getSession();
+  if (!session) return false;
+
+  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+  const hasToken = !!localStorage.getItem("accessToken");
+
+  return isLoggedIn && hasToken && session.isActive;
+}
+
+function restoreSession() {
+  if (isSessionValid()) {
+    const session = getSession();
+    console.log("Session restored from localStorage:", session);
+    return session;
+  }
+  return null;
 }
 
 function logout() {
   localStorage.removeItem("userSession");
   localStorage.removeItem("accessToken");
   localStorage.removeItem("tokenType");
+  localStorage.removeItem("userUid");
   localStorage.removeItem("isLoggedIn");
-  localStorage.removeItem("loggedIn");
-  window.location.href = "/web-app/src/login.html";
+  localStorage.removeItem("sessionSavedAt");
+  console.log("Session and token cleared from localStorage");
+
+  // Sign out from Firebase
+  auth
+    .signOut()
+    .then(() => {
+      console.log("User signed out from Firebase");
+      window.location.href = "/web-app/src/login.html";
+    })
+    .catch((error) => {
+      console.error("Error signing out:", error);
+      window.location.href = "/web-app/src/login.html";
+    });
 }
 
-// Get current user's role from Firestore
-async function getUserRole(uid) {
-  try {
-    const userDocRef = doc(userDatabase, "users", uid);
-    const userDoc = await getDoc(userDocRef);
-
-    if (userDoc.exists()) {
-      return userDoc.data().role;
-    }
+// Get and refresh Firebase token
+async function getValidToken() {
+  const user = auth.currentUser;
+  if (!user) {
+    console.error("No user logged in");
     return null;
+  }
+
+  try {
+    // This automatically refreshes the token if expired
+    const token = await user.getIdToken(true);
+
+    // Update localStorage with fresh token
+    localStorage.setItem("accessToken", token);
+
+    const tokenResult = await user.getIdTokenResult();
+    console.log("Token refreshed, expires at:", tokenResult.expirationTime);
+
+    // Update session with new token
+    const session = getSession();
+    if (session) {
+      session.token = token;
+      session.tokenExpiration = tokenResult.expirationTime;
+      saveSession(session);
+    }
+
+    return token;
   } catch (error) {
-    console.error("Error fetching user role:", error);
+    console.error("Error getting token:", error);
     return null;
   }
 }
 
-// Check if current user is admin
+// Check if token is expired or about to expire (within 5 minutes)
+function isTokenExpiring() {
+  const session = getSession();
+  if (!session || !session.tokenExpiration) {
+    return true;
+  }
+
+  const expirationTime = new Date(session.tokenExpiration).getTime();
+  const currentTime = new Date().getTime();
+  const fiveMinutes = 5 * 60 * 1000;
+
+  return expirationTime - currentTime < fiveMinutes;
+}
+
+async function validateAndRefreshToken() {
+  if (isTokenExpiring()) {
+    console.log("Token expiring soon, refreshing...");
+    return await getValidToken();
+  }
+
+  return localStorage.getItem("accessToken");
+}
+
+async function getTokenInfo() {
+  const user = auth.currentUser;
+  if (!user) {
+    console.error("No user logged in");
+    return null;
+  }
+
+  try {
+    const tokenResult = await user.getIdTokenResult();
+    const session = getSession();
+
+    const expirationTime = new Date(tokenResult.expirationTime);
+    const issuedAtTime = new Date(tokenResult.issuedAtTime);
+    const currentTime = new Date();
+
+    const timeUntilExpiry = expirationTime.getTime() - currentTime.getTime();
+    const minutesUntilExpiry = Math.floor(timeUntilExpiry / (1000 * 60));
+    const tokenAge = currentTime.getTime() - issuedAtTime.getTime();
+    const tokenAgeMinutes = Math.floor(tokenAge / (1000 * 60));
+
+    const info = {
+      token: tokenResult.token,
+      expirationTime: tokenResult.expirationTime,
+      issuedAtTime: tokenResult.issuedAtTime,
+      signInProvider: tokenResult.signInProvider,
+      claims: tokenResult.claims,
+
+      // Formatted times
+      expiresAt: expirationTime.toLocaleString(),
+      issuedAt: issuedAtTime.toLocaleString(),
+
+      // Time calculations
+      minutesUntilExpiry: minutesUntilExpiry,
+      tokenAgeMinutes: tokenAgeMinutes,
+      isExpired: timeUntilExpiry <= 0,
+      isExpiringSoon: minutesUntilExpiry < 5,
+
+      // Session data
+      sessionData: session,
+    };
+
+    console.log("📝 Token Information:");
+    console.log(`  - Issued at: ${info.issuedAt}`);
+    console.log(`  - Expires at: ${info.expiresAt}`);
+    console.log(`  - Token age: ${info.tokenAgeMinutes} minutes`);
+    console.log(`  - Time until expiry: ${info.minutesUntilExpiry} minutes`);
+    console.log(`  - Is expired: ${info.isExpired}`);
+    console.log(`  - Expiring soon: ${info.isExpiringSoon}`);
+
+    return info;
+  } catch (error) {
+    console.error("Error getting token info:", error);
+    return null;
+  }
+}
+
 async function isUserAdmin() {
   const user = auth.currentUser;
   if (!user) {
@@ -232,11 +369,16 @@ async function isUserAdmin() {
     return false;
   }
 
-  const role = await getUserRole(user.uid);
-  return role === "admin";
+  try {
+    const userDocRef = doc(userDatabase, "users", user.uid);
+    const userDoc = await getDoc(userDocRef);
+    return userDoc.exists() && userDoc.data().role === "admin";
+  } catch (error) {
+    console.error("Error fetching user role:", error);
+    return false;
+  }
 }
 
-// Make authenticated API request
 async function makeAPIRequest(endpoint, method = "GET", body = null) {
   const user = auth.currentUser;
 
@@ -253,8 +395,14 @@ async function makeAPIRequest(endpoint, method = "GET", body = null) {
   }
 
   try {
-    // Get Firebase ID token
-    const token = await user.getIdToken();
+    // Get valid token (auto-refreshes if expired)
+    const token = await validateAndRefreshToken();
+
+    if (!token) {
+      alert("Session expired. Please login again.");
+      window.location.href = "/web-app/src/login.html";
+      return null;
+    }
 
     const options = {
       method: method,
@@ -262,6 +410,7 @@ async function makeAPIRequest(endpoint, method = "GET", body = null) {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
+      credentials: "include",
     };
 
     if (body) {
@@ -272,6 +421,12 @@ async function makeAPIRequest(endpoint, method = "GET", body = null) {
 
     if (response.status === 403) {
       alert("You do not have admin access");
+      return null;
+    }
+
+    if (response.status === 401) {
+      alert("Session expired. Please login again.");
+      logout();
       return null;
     }
 
@@ -287,7 +442,6 @@ async function makeAPIRequest(endpoint, method = "GET", body = null) {
   }
 }
 
-// Example usage: Get weather forecast
 async function getWeatherForecast() {
   const data = await makeAPIRequest("/api/forecast/?minutes=60");
   if (data) {
@@ -301,3 +455,19 @@ window.handleLogin = handleLogin;
 window.handleRegister = handleRegister;
 window.logout = logout;
 window.getWeatherForecast = getWeatherForecast;
+window.getSession = getSession;
+window.isSessionValid = isSessionValid;
+window.restoreSession = restoreSession;
+window.getValidToken = getValidToken;
+window.validateAndRefreshToken = validateAndRefreshToken;
+window.makeAPIRequest = makeAPIRequest;
+window.getTokenInfo = getTokenInfo;
+
+// Initialize session on page load
+document.addEventListener("DOMContentLoaded", function () {
+  const session = restoreSession();
+  if (session) {
+    console.log("Session restored on page load:", session);
+    // You can use the session data here if needed
+  }
+});

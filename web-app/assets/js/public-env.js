@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function loadPublicEnv() {
   try {
-    const response = await fetch(API.SENSORS_DATA_PATH); //TODO: change to FASTAPI_URL to fetch from backend
+    const response = await fetch("http://localhost:8000/api/weather/forecast/public?minutes=60");
     if (!response.ok) throw new Error("Backend unreachable");
 
     const data = await response.json();
