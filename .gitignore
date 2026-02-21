@@ -1,6 +1,3 @@
-# Firebase service account key
-smart-park-iot-d7743-firebase-adminsdk-fbsvc-2938d538d4.json
-
 # Environment Variables
 .env
 .env.local
