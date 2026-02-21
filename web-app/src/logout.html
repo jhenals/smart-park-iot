@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Logging out...</title>
+  </head>
+  <body>
+    <script>
+      // Clear all localStorage for port 5500
+      localStorage.clear();
+      console.log("Port 5500 - Local storage cleared during logout");
+
+      // Listen for logout message from port 5173
+      window.addEventListener("message", (event) => {
+        if (event.data && event.data.type === "LOGOUT_FROM_5173") {
+          console.log("Logout confirmed on port 5500 side");
+          localStorage.clear();
+        }
+      });
+
+      // Notify parent window that logout is complete
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: "LOGOUT_COMPLETE" }, "*");
+      }
+    </script>
+  </body>
+</html>

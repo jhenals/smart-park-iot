@@ -9,6 +9,10 @@ const API = {
   GIANTS_DATA_PATH: "../../../database/giants-sila.json",
 };
 
+const PATHS = {
+  FIREBASE_CONFIG_PATH: "../../../firebase-config/firebase.js",
+};
+
 //Sila Geographic coordinates
 const SILA_LOCATION = {
   LAT: 39.3551, // Giganti della Sila latitude
@@ -48,53 +52,97 @@ const THRESHOLDS = {
     falling: -15, // Pa - pressure dropping more than this is warning
   },
   noise: [
-    { label: "Serene", max: 45 },
-    { label: "Quiet", max: 55 },
-    { label: "Natural Sounds", max: Infinity },
+    { value: "very_quiet", label: "Serene", max: 30 },
+    { value: "comfortable", label: "Comfortable", max: 50 },
+    { value: "noticeable", label: "Noticeable", max: 65 },
+    { value: "noisy_disturbing", label: "Noisy/ Disturbing", max: 75 },
+    { value: "harmful", label: "Harmful with long exposure", max: 100 },
   ],
 };
 
 // Trail Preferences and Options
 const TRAIL_PREFERENCES = {
-  difficulty: [
+  noise: [
     {
-      value: "easy",
-      label: "Easy (Flat & Relaxing)",
-      description: "Gentle paths suitable for all fitness levels",
+      value: "very_quiet",
+      label: "Very Quiet",
+      description: "Peaceful and serene environment",
+    },
+    {
+      value: "comfortable",
+      label: "Comfortable",
+      description: "Natural sounds and ambiance",
+    },
+    {
+      value: "noticeable",
+      label: "Noticeable",
+      description: "Some noticeable sounds and activity",
+    },
+  ],
+  slope: [
+    {
+      value: "steep",
+      label: "Steep",
+      description: "Demanding climbs and descents",
     },
     {
       value: "moderate",
-      label: "Moderate (Some inclines)",
-      description: "Mixed terrain with some elevation changes",
+      label: "Moderate",
+      description: "Some challenging sections",
     },
     {
-      value: "hard",
-      label: "Challenging (Steep Slopes)",
-      description: "Demanding trails with significant elevation gain",
-    },
-  ],
-  environment: [
-    {
-      value: "quiet",
-      label: "Quiet & Serene",
-      description: "Peaceful areas with minimal noise",
-    },
-    {
-      value: "bright",
-      label: "Sunny & Open",
-      description: "Well-lit areas with open canopy",
+      value: "flat",
+      label: "Flat",
+      description: "Minimal elevation change, easy walking",
     },
   ],
-  interest: [
+  vibe: [
     {
-      value: "history",
-      label: "Ancient Pines & History",
-      description: "Explore historic giant trees and cultural sites",
+      value: "frosty",
+      label: "Frosty",
+      description: "Fresh mountain air and clear skies",
     },
     {
-      value: "botany",
-      label: "Local Flora & Fauna",
-      description: "Discover diverse plant and animal species",
+      value: "moody",
+      label: "Moody",
+      description: "Fresh mountain air and clear skies",
+    },
+    {
+      value: "brisk",
+      label: "Brisk",
+      description: "Fresh mountain air and clear skies",
+    },
+    {
+      value: "serene_mild",
+      label: "Serene, Mild",
+      description: "Fresh mountain air and clear skies",
+    },
+    {
+      value: "crisp_clear",
+      label: "Crisp, Clear",
+      description: "Fresh mountain air and clear skies",
+    },
+    {
+      value: "sun_drenched",
+      label: "Sun-Drenched",
+      description: "Fresh mountain air and clear skies",
+    },
+  ],
+  width: [
+    {
+      value: "narrow",
+      label: "Narrow",
+      description: "Intimate single-track paths",
+    },
+    {
+      value: "moderate",
+      label: "Moderate",
+      description: "Standard trail width",
+    },
+    {
+      value: "wide",
+      label: "Wide",
+      description: "Spacious paths, accessible",
     },
   ],
 };

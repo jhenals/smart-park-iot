@@ -1,39 +1,26 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
 import {
-  getFirestore,
+  firebaseConfig,
+  auth,
+  userDatabase,
+} from "../../../firebase-config/firebase.js";
+import {
   setDoc,
   doc,
   getDoc,
 } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
 import {
-  getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
 } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAvlmocEGgpWviAtHTcPaoxQWh5PZ6QDbI",
-  authDomain: "smart-park-iot-d7743.firebaseapp.com",
-  databaseURL:
-    "https://smart-park-iot-d7743-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "smart-park-iot-d7743",
-  storageBucket: "smart-park-iot-d7743.firebasestorage.app",
-  messagingSenderId: "292986669185",
-  appId: "1:292986669185:web:2935ae540d17025bafa580",
-  measurementId: "G-LH5LGV3RPF",
-};
+console.log(
+  "Firebase & Auth module initialized from centralized configuration:",
+  firebaseConfig.projectId,
+);
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth();
-const userDatabase = getFirestore();
-const API_BASE = "http://localhost:8000";
-console.log("Firebase app initialized:", app);
+const API_BASE_URL = "http://localhost:8000";
 
-async function handleRegister() {
-  const email = document.getElementById("reg-email").value.trim();
-  const password = document.getElementById("reg-password").value;
-  const confirmPassword = document.getElementById("reg-confirm-password").value;
-
+async function signUp(email, password, confirmPassword) {
   if (!email || !password || !confirmPassword) {
     alert("Please fill up all fields to continue.");
     return;
@@ -64,6 +51,9 @@ async function handleRegister() {
 
     const userData = {
       email: email,
+      displayName:
+        email.split("@")[0].charAt(0).toUpperCase() +
+        email.split("@")[0].slice(1),
       role: "visitor",
       createdAt: new Date().toISOString(),
       uid: user.uid,
@@ -77,7 +67,7 @@ async function handleRegister() {
       user.uid,
     );
     alert("Registration successful! You can now log in with your credentials.");
-    window.location.href = "/web-app/src/login.html";
+    window.location.href = "http://localhost:5500/web-app/src/login.html";
   } catch (error) {
     const errorCode = error.code;
     const errorMessage = error.message;
@@ -99,10 +89,7 @@ async function handleRegister() {
 
 //TODO: Instead of an alert, consider using a modal or inline error message for better UX. Also, add loading indicators during async operations for improved user feedback.
 
-async function handleLogin() {
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value;
-
+async function signIn(email, password) {
   if (!email || !password) {
     alert("Please enter email and password to continue.");
     return;
@@ -126,7 +113,8 @@ async function handleLogin() {
 
     if (!userDocSnapshot.exists()) {
       alert("User account not found in database. Please register first.");
-      window.location.href = "/web-app/src/login.html";
+      console.error("No user document found for UID:", user.uid);
+      window.location.href = "http://localhost:5500/web-app/src/login.html";
       return;
     }
 
@@ -135,33 +123,28 @@ async function handleLogin() {
     // Get Firebase ID token (JWT)
     const idToken = await user.getIdToken();
     const tokenResult = await user.getIdTokenResult();
-
-    const userSession = {
+    saveSession({
       email: email,
       uid: user.uid,
       role: userData.role,
-      lastLogin: new Date().toISOString(),
       token: idToken,
-      tokenExpiration: tokenResult.expirationTime, //Firebase default duration: 1 hour
-    };
+      tokenExpiration: tokenResult.expirationTime, // Firebase default duration: 1 hour
+    });
 
-    // Save session and token data
-    saveSession(userSession); // Now handles all localStorage operations
-    setLoggedInFlags(true);
-
-    console.log("Login successful for user:", user.uid);
-    console.log("Token expires at:", tokenResult.expirationTime);
-    alert("Login successful! Redirecting...");
-
-    // Redirect based on user role (token is already stored in localStorage)
     if (isSessionValid()) {
+      console.log("Session validation passed for role:", userData.role);
       if (userData.role === "admin") {
-        console.log("Admin detected, redirecting to weather app");
-        window.location.href = "http://localhost:5173/";
+        console.log("Admin detected, redirecting to weather app with token");
+        const encodedToken = encodeURIComponent(idToken);
+        window.location.href = `http://localhost:5173/admin?token=${encodedToken}`;
       } else {
-        window.location.href = "/web-app/src/user/trail-preferences.html";
+        console.log("Login successful for user:", user.uid, userData.role);
+        alert("Login successful! Redirecting...");
+        window.location.href =
+          "http://localhost:5500/web-app/src/user/trail-preferences.html"; // TODO: add user params
       }
     } else {
+      console.error("Session validation failed");
       alert("Error: Session could not be saved. Please try again.");
       console.error("Session validation failed after save");
     }
@@ -180,28 +163,29 @@ async function handleLogin() {
   }
 }
 
-function setLoggedInFlags(value) {
-  localStorage.setItem("isLoggedIn", value ? "true" : "false");
-}
+export async function getUserProfile(uid) {
+  try {
+    const cached = localStorage.getItem(`userProfile_${uid}`);
+    const cacheTime = localStorage.getItem(`userProfile_${uid}_time`);
+    const oneHour = 60 * 60 * 1000;
 
-function saveSession(userSession) {
-  const sessionData = {
-    ...userSession,
-    timestamp: new Date().getTime(),
-    isActive: true,
-  };
-  localStorage.setItem("userSession", JSON.stringify(sessionData));
-  localStorage.setItem("sessionSavedAt", new Date().toISOString());
+    if (cached && cacheTime && Date.now() - parseInt(cacheTime) < oneHour) {
+      return JSON.parse(cached);
+    }
 
-  if (userSession.token) {
-    localStorage.setItem("accessToken", userSession.token);
-    localStorage.setItem("tokenType", "bearer");
+    const userDocRef = doc(userDatabase, "users", uid);
+    const userDoc = await getDoc(userDocRef);
+
+    if (userDoc.exists()) {
+      const userData = userDoc.data();
+      localStorage.setItem(`userProfile_${uid}`, JSON.stringify(userData));
+      localStorage.setItem(`userProfile_${uid}_time`, Date.now().toString());
+      return userData;
+    }
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
   }
-  if (userSession.uid) {
-    localStorage.setItem("userUid", userSession.uid);
-  }
-
-  console.log("Session saved to localStorage:", sessionData);
+  return null;
 }
 
 function getSession() {
@@ -209,259 +193,83 @@ function getSession() {
   return session ? JSON.parse(session) : null;
 }
 
+function setLoggedInFlags(value) {
+  localStorage.setItem("isLoggedIn", value ? "true" : "false");
+}
+
+function saveSession({ email, uid, role, token, tokenExpiration }) {
+  const sessionData = {
+    email: email,
+    uid: uid,
+    role: role,
+    token: token,
+    tokenExpiration: tokenExpiration,
+    lastLogin: new Date().toISOString(),
+    isActive: true,
+  };
+
+  localStorage.setItem("userSession", JSON.stringify(sessionData));
+  localStorage.setItem("sessionSavedAt", new Date().toISOString());
+  localStorage.setItem("accessToken", token);
+  localStorage.setItem("tokenType", "Bearer");
+  localStorage.setItem("userUid", uid);
+  setLoggedInFlags(true);
+  return sessionData;
+}
+
 function isSessionValid() {
   const session = getSession();
   if (!session) return false;
-
   const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
   const hasToken = !!localStorage.getItem("accessToken");
-
-  return isLoggedIn && hasToken && session.isActive;
+  return !!(session.isActive && isLoggedIn && hasToken);
 }
 
 function restoreSession() {
   if (isSessionValid()) {
     const session = getSession();
-    console.log("Session restored from localStorage:", session);
+    //console.log("Session restored from localStorage:", session);
     return session;
   }
   return null;
 }
 
 function logout() {
-  localStorage.removeItem("userSession");
-  localStorage.removeItem("accessToken");
-  localStorage.removeItem("tokenType");
-  localStorage.removeItem("userUid");
-  localStorage.removeItem("isLoggedIn");
-  localStorage.removeItem("sessionSavedAt");
-  console.log("Session and token cleared from localStorage");
+  localStorage.clear();
+  console.log("All local storage cleared");
 
-  // Sign out from Firebase
   auth
     .signOut()
     .then(() => {
       console.log("User signed out from Firebase");
-      window.location.href = "/web-app/src/login.html";
+      window.location.href = "http://localhost:5500/web-app/src/login.html";
     })
     .catch((error) => {
       console.error("Error signing out:", error);
-      window.location.href = "/web-app/src/login.html";
+      window.location.href = "http://localhost:5500/web-app/src/login.html";
     });
 }
 
-// Get and refresh Firebase token
-async function getValidToken() {
-  const user = auth.currentUser;
-  if (!user) {
-    console.error("No user logged in");
-    return null;
+/**
+ * Listen for logout messages from other ports (e.g., port 5173)
+ */
+window.addEventListener("message", (event) => {
+  // Accept messages from both localhost and localhost:5173
+  if (event.data && event.data.type === "LOGOUT_FROM_5173") {
+    console.log("Received logout signal from port 5173");
+    localStorage.clear();
+    console.log("Local storage cleared from cross-port logout");
   }
-
-  try {
-    // This automatically refreshes the token if expired
-    const token = await user.getIdToken(true);
-
-    // Update localStorage with fresh token
-    localStorage.setItem("accessToken", token);
-
-    const tokenResult = await user.getIdTokenResult();
-    console.log("Token refreshed, expires at:", tokenResult.expirationTime);
-
-    // Update session with new token
-    const session = getSession();
-    if (session) {
-      session.token = token;
-      session.tokenExpiration = tokenResult.expirationTime;
-      saveSession(session);
-    }
-
-    return token;
-  } catch (error) {
-    console.error("Error getting token:", error);
-    return null;
-  }
-}
-
-// Check if token is expired or about to expire (within 5 minutes)
-function isTokenExpiring() {
-  const session = getSession();
-  if (!session || !session.tokenExpiration) {
-    return true;
-  }
-
-  const expirationTime = new Date(session.tokenExpiration).getTime();
-  const currentTime = new Date().getTime();
-  const fiveMinutes = 5 * 60 * 1000;
-
-  return expirationTime - currentTime < fiveMinutes;
-}
-
-async function validateAndRefreshToken() {
-  if (isTokenExpiring()) {
-    console.log("Token expiring soon, refreshing...");
-    return await getValidToken();
-  }
-
-  return localStorage.getItem("accessToken");
-}
-
-async function getTokenInfo() {
-  const user = auth.currentUser;
-  if (!user) {
-    console.error("No user logged in");
-    return null;
-  }
-
-  try {
-    const tokenResult = await user.getIdTokenResult();
-    const session = getSession();
-
-    const expirationTime = new Date(tokenResult.expirationTime);
-    const issuedAtTime = new Date(tokenResult.issuedAtTime);
-    const currentTime = new Date();
-
-    const timeUntilExpiry = expirationTime.getTime() - currentTime.getTime();
-    const minutesUntilExpiry = Math.floor(timeUntilExpiry / (1000 * 60));
-    const tokenAge = currentTime.getTime() - issuedAtTime.getTime();
-    const tokenAgeMinutes = Math.floor(tokenAge / (1000 * 60));
-
-    const info = {
-      token: tokenResult.token,
-      expirationTime: tokenResult.expirationTime,
-      issuedAtTime: tokenResult.issuedAtTime,
-      signInProvider: tokenResult.signInProvider,
-      claims: tokenResult.claims,
-
-      // Formatted times
-      expiresAt: expirationTime.toLocaleString(),
-      issuedAt: issuedAtTime.toLocaleString(),
-
-      // Time calculations
-      minutesUntilExpiry: minutesUntilExpiry,
-      tokenAgeMinutes: tokenAgeMinutes,
-      isExpired: timeUntilExpiry <= 0,
-      isExpiringSoon: minutesUntilExpiry < 5,
-
-      // Session data
-      sessionData: session,
-    };
-
-    console.log("📝 Token Information:");
-    console.log(`  - Issued at: ${info.issuedAt}`);
-    console.log(`  - Expires at: ${info.expiresAt}`);
-    console.log(`  - Token age: ${info.tokenAgeMinutes} minutes`);
-    console.log(`  - Time until expiry: ${info.minutesUntilExpiry} minutes`);
-    console.log(`  - Is expired: ${info.isExpired}`);
-    console.log(`  - Expiring soon: ${info.isExpiringSoon}`);
-
-    return info;
-  } catch (error) {
-    console.error("Error getting token info:", error);
-    return null;
-  }
-}
-
-async function isUserAdmin() {
-  const user = auth.currentUser;
-  if (!user) {
-    alert("Please log in first");
-    return false;
-  }
-
-  try {
-    const userDocRef = doc(userDatabase, "users", user.uid);
-    const userDoc = await getDoc(userDocRef);
-    return userDoc.exists() && userDoc.data().role === "admin";
-  } catch (error) {
-    console.error("Error fetching user role:", error);
-    return false;
-  }
-}
-
-async function makeAPIRequest(endpoint, method = "GET", body = null) {
-  const user = auth.currentUser;
-
-  if (!user) {
-    alert("Please log in first");
-    return null;
-  }
-
-  // Check if user is admin
-  const isAdmin = await isUserAdmin();
-  if (!isAdmin) {
-    alert("Admin access required to use this feature");
-    return null;
-  }
-
-  try {
-    // Get valid token (auto-refreshes if expired)
-    const token = await validateAndRefreshToken();
-
-    if (!token) {
-      alert("Session expired. Please login again.");
-      window.location.href = "/web-app/src/login.html";
-      return null;
-    }
-
-    const options = {
-      method: method,
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-    };
-
-    if (body) {
-      options.body = JSON.stringify(body);
-    }
-
-    const response = await fetch(endpoint, options);
-
-    if (response.status === 403) {
-      alert("You do not have admin access");
-      return null;
-    }
-
-    if (response.status === 401) {
-      alert("Session expired. Please login again.");
-      logout();
-      return null;
-    }
-
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.statusText}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("API request failed:", error);
-    alert(`Request failed: ${error.message}`);
-    return null;
-  }
-}
-
-async function getWeatherForecast() {
-  const data = await makeAPIRequest("/api/forecast/?minutes=60");
-  if (data) {
-    console.log("Weather data:", data);
-    // Display data on your page
-  }
-}
+});
 
 // Expose functions to global scope for inline onclick handlers
-window.handleLogin = handleLogin;
-window.handleRegister = handleRegister;
+window.signIn = signIn;
+window.signUp = signUp;
+window.getUserProfile = getUserProfile;
 window.logout = logout;
-window.getWeatherForecast = getWeatherForecast;
 window.getSession = getSession;
 window.isSessionValid = isSessionValid;
 window.restoreSession = restoreSession;
-window.getValidToken = getValidToken;
-window.validateAndRefreshToken = validateAndRefreshToken;
-window.makeAPIRequest = makeAPIRequest;
-window.getTokenInfo = getTokenInfo;
 
 // Initialize session on page load
 document.addEventListener("DOMContentLoaded", function () {
@@ -471,3 +279,17 @@ document.addEventListener("DOMContentLoaded", function () {
     // You can use the session data here if needed
   }
 });
+
+// Export Firebase instances and functions for use in other modules
+export {
+  auth,
+  userDatabase,
+  firebaseConfig,
+  signIn,
+  signUp,
+  logout,
+  getSession,
+  isSessionValid,
+  restoreSession,
+  saveSession,
+};

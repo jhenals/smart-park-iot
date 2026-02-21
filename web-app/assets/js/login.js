@@ -1,3 +1,5 @@
+import { signUp, signIn } from "./auth.js";
+
 $(document).ready(function () {
   $(".login-info-box").fadeOut();
   $(".login-show").addClass("show-log-panel");
@@ -21,3 +23,26 @@ $('.login-reg-panel input[type="radio"]').on("change", function () {
     $(".register-show").removeClass("show-log-panel");
   }
 });
+
+// Authentication functions
+async function handleLogin() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  await signIn(email, password);
+}
+
+async function handleRegister() {
+  const email = document.getElementById("reg-email").value;
+  const password = document.getElementById("reg-password").value;
+  const confirmPassword = document.getElementById("reg-confirm-password").value;
+  await signUp(email, password, confirmPassword);
+}
+
+function goToHomePage() {
+  window.location.href = "/web-app/index.html";
+}
+
+// Make functions global for inline onclick handlers
+window.handleLogin = handleLogin;
+window.handleRegister = handleRegister;
+window.goToHomePage = goToHomePage;

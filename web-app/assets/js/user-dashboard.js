@@ -1,3 +1,5 @@
+import { getUserProfile, getSession } from "./auth.js";
+
 let trailStartTime = null;
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -28,24 +30,14 @@ async function loadDashboardData() {
   }
 }
 
-function applyUserAndTrail(user, safety) {
-  const userSessionData = localStorage.getItem("userSession");
-  const userSession = userSessionData ? JSON.parse(userSessionData) : null;
+async function applyUserAndTrail(user, safety) {
+  const userSession = getSession();
+  const userProfileFromFirebase = await getUserProfile(userSession.uid);
+  const displayUser = userProfileFromFirebase?.displayName || "Explorer";
+
+  //TODO: Get this from firebase
   const savedTrailData = localStorage.getItem("recommendedTrail");
   const savedTrail = savedTrailData ? JSON.parse(savedTrailData) : null;
-
-  let displayUser = "Explorer";
-  if (userSession) {
-    if (userSession.firstName && userSession.lastName) {
-      displayUser = `${userSession.firstName} ${userSession.lastName}`;
-    } else if (userSession.firstName) {
-      displayUser = userSession.firstName;
-    } else if (userSession.username) {
-      displayUser = userSession.username;
-    }
-  } else if (user?.name) {
-    displayUser = user.name;
-  }
 
   const displayTrail =
     savedTrail?.name || user?.preferredTrail || "Giant Pine Loop";

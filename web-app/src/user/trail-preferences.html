@@ -6,57 +6,169 @@
     <link rel="stylesheet" href="../../assets/styles/index.css" />
     <link rel="stylesheet" href="../../assets/styles/trail-pref.css" />
     <script src="../../assets/constants/constants.js"></script>
+    <script type="module" src="../../assets/js/auth.js" defer></script>
   </head>
   <body>
     <section class="preferences-container">
       <header>
-        <h1>How do you want to experience the Park?</h1>
-        <h2>Tailor your visit</h2>
+        <h1>
+          Welcome, <span id="welcome-message">Explorer </span>! </br> How do you
+          want to experience the Park today?
+        </h1>
         <p>
-          Our AI will suggest the best trail based on real-time sensor data.
+          <strong>Tailor your visit!</strong> Our AI will suggest the best trail based on real-time sensor data.
         </p>
+        <div
+          id="saved-prefs-indicator"
+          style="
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(76, 175, 80, 0.2);
+            border-radius: 8px;
+            color: #4caf50;
+          "
+        >
+          ✓ Your saved preferences have been loaded
+        </div>
       </header>
       <form id="preferencesForm" class="glass-card">
-        <div class="input-group">
-          <label>Trail Difficulty:</label>
-          <select id="difficulty"></select>
+        <div class="preferences-grid">
+          <div class="preference-category">
+            <label>Noise Level</label>
+            <button type="button" class="modal-trigger" data-modal="noiseModal" onclick="openModal('noiseModal')">
+              <span id="noise-display">Select</span>
+              <span class="chevron">▼</span>
+            </button>
+          </div>
+
+          <div class="preference-category">
+            <label>Trail Slope</label>
+            <button type="button" class="modal-trigger" data-modal="slopeModal" onclick="openModal('slopeModal')">
+              <span id="slope-display">Select</span>
+              <span class="chevron">▼</span>
+            </button>
+          </div>
+
+          <div class="preference-category">
+            <label>Trail Width</label>
+            <button type="button" class="modal-trigger" data-modal="widthModal" onclick="openModal('widthModal')">
+              <span id="width-display">Select</span>
+              <span class="chevron">▼</span>
+            </button>
+          </div>
+
+          
+          <div class="preference-category">
+            <label>Preferred Vibe</label>
+            <button type="button" class="modal-trigger" data-modal="vibeModal" onclick="openModal('vibeModal')">
+              <span id="vibe-display">Select</span>
+              <span class="chevron">▼</span>
+            </button>
+          </div>
         </div>
 
-        <div class="input-group">
-          <label>Preferred Environment:</label>
-          <select id="environment"></select>
-        </div>
-
-        <div class="input-group">
-          <label>Primary Interest:</label>
-          <select id="interest"></select>
-        </div>
-
-        <button
+        <div>
+           <button
           type="button"
           class="main-button"
           onclick="
-            generateMockRecommendation();
-            document
-              .getElementById('recommendation-result')
-              .scrollIntoView({ behavior: 'smooth' });
+            (async () => {
+              await saveAndRecommend();
+              setTimeout(() => {
+                document
+                  .getElementById('recommendation-wrapper')
+                  .scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }, 100);
+            })()
           "
         >
-          Get Recommendation
+          Save Preferences & Get Recommendation
         </button>
+
+      
+        <button
+          type="button"
+          class="main-button reset-button"
+          onclick="resetPreferences()"
+        >
+          Reset
+        </button>
+          
+        </div>  
       </form>
     </section>
+
+    <!-- Modals (outside container to avoid z-index stacking) -->
+    <div id="noiseModal" class="modal">
+      <div class="modal-overlay" onclick="closeModal('noiseModal')"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Select Noise Level</h2>
+          <button class="close-btn" onclick="closeModal('noiseModal')">&times;</button>
+        </div>
+        <div id="noiseOptions" class="options-grid"></div>
+      </div>
+    </div>
+
+    <div id="slopeModal" class="modal">
+      <div class="modal-overlay" onclick="closeModal('slopeModal')"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Select Trail Slope</h2>
+          <button class="close-btn" onclick="closeModal('slopeModal')">&times;</button>
+        </div>
+        <div id="slopeOptions" class="options-grid"></div>
+      </div>
+    </div>
+
+    <div id="vibeModal" class="modal">
+      <div class="modal-overlay" onclick="closeModal('vibeModal')"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Select Vibe</h2>
+          <button class="close-btn" onclick="closeModal('vibeModal')">&times;</button>
+        </div>
+        <div id="vibeOptions" class="options-grid"></div>
+      </div>
+    </div>
+
+    <div id="widthModal" class="modal">
+      <div class="modal-overlay" onclick="closeModal('widthModal')"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Select Trail Width</h2>
+          <button class="close-btn" onclick="closeModal('widthModal')">&times;</button>
+        </div>
+        <div id="widthOptions" class="options-grid"></div>
+      </div>
+    </div>
+
     <section>
-      <div id="recommendation-result" style="display: none; margin-top: 50px">
+      <div
+        id="recommendation-wrapper"
+        class="recommendation-layout"
+        style="display: none; margin-top: 50px"
+      >
+        <div id="recommendation-result">
         <h3>Recommended for You:</h3>
         <h2 id="trail-name"></h2>
         <div id="trail-details" class="trail-info"></div>
         <button class="main-button" onclick="goToHomepage()">
           Start Hiking
         </button>
+        </div>
+        <div id="trail-image-wrap" class="recommendation-image" style="display: none;">
+          <img
+            id="trail-image"
+            src="../../public/images/discover-giganti.jpg"
+            data-placeholder-src="../../public/images/discover-giganti.jpg"
+            alt="Recommended trail"
+          />
+        </div>
       </div>
     </section>
 
-    <script src="../../assets/js/trail-preferences.js"></script>
+    <script type="module" src="../../assets/js/trail-preferences.js"></script>
   </body>
 </html>
