@@ -5,10 +5,13 @@ import {
   doc,
   getDoc,
   collection,
-  query,
   where,
   getDocs,
   addDoc,
+  query,
+  orderBy,
+  limit,
+  updateDoc,
 } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
 
 const user = await getUserProfile(getSession().uid);
@@ -25,10 +28,11 @@ const preferencesState = {
 let currentRecommendation = {
   trail: null,
   score: null,
+  reason: null,
+  whyRecommended: null,
 };
 
 function initializePreferences() {
-  // Populate modal options
   populateModalOptions("noise", TRAIL_PREFERENCES.noise);
   populateModalOptions("slope", TRAIL_PREFERENCES.slope);
   populateModalOptions("vibe", TRAIL_PREFERENCES.vibe);
@@ -37,64 +41,23 @@ function initializePreferences() {
   loadSavedPreferences();
 }
 
-async function loadSavedPreferences() {
+function loadSavedPreferences() {
   try {
     const session = getSession();
+
+    // Check if session exists and is valid
+    if (!session || !session.uid) {
+      console.log("No valid session found");
+      return null;
+    }
+
     const userId = session.uid;
 
-    const userPrefsRef = doc(userDatabase, "user_prefs", userId);
-    const userPrefsDoc = await getDoc(userPrefsRef);
-
-    if (userPrefsDoc.exists()) {
-      const savedPrefs = userPrefsDoc.data();
-
-      // Update state and display
-      if (savedPrefs.noise_prefs) {
-        preferencesState.noise = savedPrefs.noise_prefs;
-        const noiseOption = TRAIL_PREFERENCES.noise.find(
-          (opt) => opt.value === savedPrefs.noise_prefs,
-        );
-        if (noiseOption) {
-          document.getElementById("noise-display").textContent =
-            noiseOption.label;
-          updateSelectedState("noise", savedPrefs.noise_prefs);
-        }
-      }
-      if (savedPrefs.slope_prefs) {
-        preferencesState.slope = savedPrefs.slope_prefs;
-        const slopeOption = TRAIL_PREFERENCES.slope.find(
-          (opt) => opt.value === savedPrefs.slope_prefs,
-        );
-        if (slopeOption) {
-          document.getElementById("slope-display").textContent =
-            slopeOption.label;
-          updateSelectedState("slope", savedPrefs.slope_prefs);
-        }
-      }
-      if (savedPrefs.vibe_prefs) {
-        preferencesState.vibe = savedPrefs.vibe_prefs;
-        const vibeOption = TRAIL_PREFERENCES.vibe.find(
-          (opt) => opt.value === savedPrefs.vibe_prefs,
-        );
-        if (vibeOption) {
-          document.getElementById("vibe-display").textContent =
-            vibeOption.label;
-          updateSelectedState("vibe", savedPrefs.vibe_prefs);
-        }
-      }
-      if (savedPrefs.width_prefs) {
-        preferencesState.width = savedPrefs.width_prefs;
-        const widthOption = TRAIL_PREFERENCES.width.find(
-          (opt) => opt.value === savedPrefs.width_prefs,
-        );
-        if (widthOption) {
-          document.getElementById("width-display").textContent =
-            widthOption.label;
-          updateSelectedState("width", savedPrefs.width_prefs);
-        }
-      }
-
-      console.log("Loaded saved preferences:", savedPrefs);
+    const cachedPrefs = localStorage.getItem(`userPrefs_${userId}`);
+    if (cachedPrefs) {
+      console.log("Loading preferences from localStorage");
+      const savedPrefs = JSON.parse(cachedPrefs);
+      updatePreferencesDisplay(savedPrefs);
       return savedPrefs;
     } else {
       console.log("No saved preferences found");
@@ -103,6 +66,63 @@ async function loadSavedPreferences() {
   } catch (error) {
     console.error("Error loading saved preferences:", error);
     return null;
+  }
+}
+
+function updatePreferencesDisplay(savedPrefs) {
+  const preferenceFields = [
+    {
+      key: "noise_prefs",
+      state: "noise",
+      display: "noise-display",
+      options: TRAIL_PREFERENCES.noise,
+    },
+    {
+      key: "slope_prefs",
+      state: "slope",
+      display: "slope-display",
+      options: TRAIL_PREFERENCES.slope,
+    },
+    {
+      key: "vibe_prefs",
+      state: "vibe",
+      display: "vibe-display",
+      options: TRAIL_PREFERENCES.vibe,
+    },
+    {
+      key: "width_prefs",
+      state: "width",
+      display: "width-display",
+      options: TRAIL_PREFERENCES.width,
+    },
+  ];
+
+  preferenceFields.forEach((field) => {
+    if (savedPrefs[field.key]) {
+      preferencesState[field.state] = savedPrefs[field.key];
+      const option = field.options.find(
+        (opt) => opt.value === savedPrefs[field.key],
+      );
+
+      if (option) {
+        const displayElement = document.getElementById(field.display);
+        if (displayElement) {
+          displayElement.textContent = option.label;
+        }
+        updateSelectedState(field.state, savedPrefs[field.key]);
+      }
+    }
+  });
+
+  // Show recommend button if all preferences are loaded
+  const allSelected = Object.values(preferencesState).every(
+    (val) => val !== null,
+  );
+  if (allSelected) {
+    const recommendButton = document.getElementById("recommendButton");
+    if (recommendButton) {
+      recommendButton.style.display = "block";
+    }
   }
 }
 
@@ -214,6 +234,7 @@ function selectPreference(category, value, label) {
   );
 
   if (allSelected) {
+    localStorage.setItem("userPreferences", JSON.stringify(preferencesState));
     console.log("All preferences selected, showing recommend button");
     const recommendButton = document.getElementById("recommendButton");
     if (recommendButton) {
@@ -297,6 +318,115 @@ function resetPreferences() {
   );
 }
 
+async function getRecommendation() {
+  try {
+    // Validate that all preferences are selected
+    const allSelected = Object.values(preferencesState).every(
+      (val) => val !== null,
+    );
+
+    if (!allSelected) {
+      alert("Please select all preferences before getting a recommendation.");
+      return;
+    }
+
+    console.log("Getting recommendation with preferences:", preferencesState);
+
+    // Build preferences object
+    const preferences = {
+      noise: preferencesState.noise,
+      slope: preferencesState.slope,
+      vibe: preferencesState.vibe,
+      width: preferencesState.width,
+    };
+
+    // Generate recommendation (replace with actual AI call later)
+    const recommendation = await generateMockRecommendation(preferences);
+    console.log("Recommendation received:", recommendation);
+
+    if (recommendation) {
+      currentRecommendation = recommendation;
+      displayTrailRecommendation(currentRecommendation);
+    } else {
+      alert("Could not generate a recommendation. Please try again.");
+    }
+  } catch (error) {
+    console.error("Error getting recommendation:", error);
+    alert("Failed to get recommendation. Please try again.");
+  }
+}
+
+// TODO: To change with ML model integration, this is just a mock function to simulate recommendation logic
+async function getFirebaseTrailMatch(preferences) {
+  try {
+    console.log("Getting random trail recommendation from Firebase");
+
+    // Fetch all trails from Firebase
+    const trailsRef = collection(userDatabase, "trails");
+    const querySnapshot = await getDocs(trailsRef);
+
+    if (querySnapshot.empty) {
+      console.log("No trails available in database");
+      alert("No trails found in database.");
+      return null;
+    }
+
+    // Convert to array
+    const trails = [];
+    querySnapshot.forEach((doc) => {
+      trails.push({ id: doc.id, ...doc.data() });
+    });
+
+    console.log("Trails found in database:", trails.length);
+    console.log("All trails:", trails);
+
+    if (trails.length === 0) {
+      console.error("No trails in array");
+      return null;
+    }
+
+    // Randomly select a trail
+    const randomIndex = Math.floor(Math.random() * trails.length);
+    const selectedTrail = trails[randomIndex]; // Remove .data - just use the trail object
+
+    console.log("Random index:", randomIndex);
+    console.log("Randomly selected trail:", selectedTrail);
+
+    if (!selectedTrail) {
+      console.error("Selected trail is undefined at index:", randomIndex);
+      return null;
+    }
+
+    return {
+      userId: user.uid,
+      trail: selectedTrail,
+      score: 100,
+      whyRecommended: ["Available trail in the park", "Ready for your visit"],
+    };
+  } catch (error) {
+    console.error("Error getting trail from Firebase:", error);
+    throw error;
+  }
+}
+
+async function generateMockRecommendation(preferences) {
+  try {
+    console.log("Generating recommendation");
+    const recommendation = await getFirebaseTrailMatch(preferences);
+
+    if (recommendation) {
+      return recommendation;
+    } else {
+      alert("No trails available. Please try again later.");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error generating recommendation:", error);
+    alert("Failed to generate recommendation. Please try again.");
+    return null;
+  }
+}
+
 //TODO: Put this in Passport
 async function deleteUserPreferencesInFirebase() {
   try {
@@ -312,24 +442,25 @@ async function deleteUserPreferencesInFirebase() {
   }
 }
 
-async function saveUserPreferences(preferences) {
+async function saveUserPreferencesInFirebase(preferences) {
   try {
     const session = getSession();
     const userId = session.uid;
 
-    const userPrefsData = {
+    const docRef = await addDoc(collection(userDatabase, "user_pref"), {
+      id: null, // Will be updated with the auto-generated ID
       userId: userId,
-      noise_prefs: preferences.noise,
-      slope_prefs: preferences.slope,
-      vibe_prefs: preferences.vibe,
-      width_prefs: preferences.width,
-      timestamp: new Date().toISOString(),
-    };
+      ...preferences,
+      createdAt: Date.now(),
+    });
 
-    const userPrefsRef = doc(userDatabase, "user_prefs", userId);
-    await setDoc(userPrefsRef, userPrefsData);
-    console.log("User preferences saved successfully:", userPrefsData);
-    return true;
+    // Update the document with its own ID
+    await updateDoc(doc(userDatabase, "user_pref", docRef.id), {
+      id: docRef.id,
+    });
+
+    console.log("Preferences saved with ID:", docRef.id);
+    return docRef.id;
   } catch (error) {
     console.error("Error saving user preferences:", error);
     alert("Failed to save preferences. Please try again.");
@@ -337,309 +468,119 @@ async function saveUserPreferences(preferences) {
   }
 }
 
-function normalizeFirebaseTrail(trailDoc) {
-  const data = trailDoc.data();
-  const distance = data.distance?.value
-    ? `${data.distance.value} ${data.distance.unit || ""}`.trim()
-    : data.distance || "N/A";
-  const duration = data.duration?.value
-    ? `${data.duration.value} ${data.duration.unit || ""}`.trim()
-    : data.duration || "N/A";
-  const elevation = data.elevationGain
-    ? `${data.elevationGain} m`
-    : data.elevation || "N/A";
-
-  return {
-    id: trailDoc.id,
-    name: data.title || data.name || trailDoc.id,
-    description: data.description || "A trail matched to your preferences.",
-    distance: distance,
-    duration: duration,
-    elevation: elevation,
-    features: Array.isArray(data.features) ? data.features : [],
-    tags: Array.isArray(data.tags) ? data.tags : data.tags ? [data.tags] : [],
-    imageUrl: data.imageUrl || data.image_url || "",
-    source: "firebase",
-  };
-}
-
-async function getFirebaseTrailMatch(preferences) {
+async function saveUserRecommendationInFirebase(userPrefId, recommendations) {
   try {
-    const trailsRef = collection(userDatabase, "trails");
-    const baseFilters = [
-      where("noise", "==", preferences.noise),
-      where("slope", "==", preferences.slope),
-      where("width", "==", preferences.width),
-    ];
+    const docRef = await addDoc(collection(userDatabase, "recommendations"), {
+      id: null, // Will be updated with the auto-generated ID
+      userId: user.uid,
+      userPrefId: userPrefId, // Reference to the user preference document
+      recommendedTrails: recommendations,
+      createdAt: Date.now(),
+    });
 
-    // Prefer array-contains when tags is an array.
-    let trailsQuery = query(
-      trailsRef,
-      ...baseFilters,
-      where("tags", "array-contains", preferences.vibe),
-    );
-    let trailsSnapshot = await getDocs(trailsQuery);
-
-    // Fallback when tags is stored as a string.
-    if (trailsSnapshot.empty) {
-      trailsQuery = query(
-        trailsRef,
-        ...baseFilters,
-        where("tags", "==", preferences.vibe),
-      );
-      trailsSnapshot = await getDocs(trailsQuery);
-    }
-
-    if (trailsSnapshot.empty) {
-      return null;
-    }
-
-    const trailDoc = trailsSnapshot.docs[0];
-    return normalizeFirebaseTrail(trailDoc);
+    console.log("Recommendations saved with ID:", docRef.id);
+    return docRef.id;
   } catch (error) {
-    console.error("Error fetching trail from Firebase:", error);
-    return null;
+    console.error("Error saving recommendations:", error);
+    throw error;
   }
 }
 
-async function verifyTrailExists(trailId) {
+async function savePreferencesAndRecommendation() {
   try {
-    const trailRef = doc(userDatabase, "trails", trailId);
-    const trailDoc = await getDoc(trailRef);
-
-    if (trailDoc.exists()) {
-      console.log("Trail found in Firebase:", trailDoc.data());
-      return trailDoc.data();
-    } else {
-      console.log("Trail not found in Firebase:", trailId);
-      return null;
-    }
-  } catch (error) {
-    console.error("Error verifying trail in Firebase:", error);
-    return null;
-  }
-}
-
-async function saveRecommendation(trailId, score) {
-  try {
-    const session = getSession();
-    const userId = session.uid;
-
-    const recommendationData = {
-      user_id: userId,
-      trail_id: trailId,
-      score: score,
-      timestamp: new Date().toISOString(),
-      preferences: {
-        noise: preferencesState.noise,
-        slope: preferencesState.slope,
-        vibe: preferencesState.vibe,
-        width: preferencesState.width,
-      },
+    const preferences = {
+      noise: preferencesState.noise,
+      slope: preferencesState.slope,
+      vibe: preferencesState.vibe,
+      width: preferencesState.width,
     };
-
-    const recommendationsRef = collection(userDatabase, "recommendations");
-    const docRef = await addDoc(recommendationsRef, recommendationData);
-
-    console.log(
-      "Recommendation saved successfully:",
-      docRef.id,
-      recommendationData,
-    );
-    return true;
+    let userPrefId = await saveUserPreferencesInFirebase(preferences);
+    await saveUserRecommendationInFirebase(userPrefId, currentRecommendation);
   } catch (error) {
-    console.error("Error saving recommendation:", error);
-    return false;
+    console.error("Error saving preferences and recommendation:", error);
   }
 }
 
-async function saveAndRecommend() {
-  // Validate that all preferences are selected
-  if (
-    !preferencesState.noise ||
-    !preferencesState.slope ||
-    !preferencesState.vibe ||
-    !preferencesState.width
-  ) {
-    alert("Please select all preferences before getting a recommendation.");
+// Update displayTrailRecommendation to fetch the full trail data
+async function displayTrailRecommendation(recommendation) {
+  const resultSection = document.getElementById("recommendation-wrapper");
+
+  if (!resultSection || !recommendation) {
+    console.error("Cannot display recommendation");
     return;
   }
 
-  // Save user preferences to Firebase
-  const preferences = {
-    noise: preferencesState.noise,
-    slope: preferencesState.slope,
-    vibe: preferencesState.vibe,
-    width: preferencesState.width,
-  };
+  const { userId, trail, score, whyRecommended } = recommendation;
 
-  const saved = await saveUserPreferences(preferences);
+  // Handle array values from Firebase
+  const noise = Array.isArray(trail.noise) ? trail.noise[0] : trail.noise;
+  const slope = Array.isArray(trail.slope) ? trail.slope[0] : trail.slope;
+  const width = Array.isArray(trail.width) ? trail.width[0] : trail.width;
+  const tags = Array.isArray(trail.tags) ? trail.tags.join(", ") : trail.tags;
 
-  if (saved) {
-    // Show success message briefly
-    const indicator = document.getElementById("saved-prefs-indicator");
-    if (indicator) {
-      indicator.textContent = "✓ Preferences saved successfully!";
-      indicator.style.display = "block";
-      setTimeout(() => {
-        indicator.style.opacity = "0";
-        indicator.style.transition = "opacity 1s";
-        setTimeout(() => {
-          indicator.style.display = "none";
-          indicator.style.opacity = "1";
-          indicator.textContent = "✓ Your saved preferences have been loaded";
-        }, 1000);
-      }, 2000);
-    }
+  resultSection.innerHTML = `
+    <div class="recommendation-card">
+      <div class="recommendation-header">
+        <h2>🎯 Your Trail Recommendation</h2>
+        <div class="match-score">${score}% Match</div>
+      </div>
 
-    // Generate recommendation based on preferences
-    generateMockRecommendation(preferences);
-  }
-}
+      <div class= "d-flex">
 
-async function generateMockRecommendation(preferences) {
-  // Map new preferences to old trail system (temporary until ML model is ready)
-  let difficulty = "moderate";
-  let environment = "quiet";
-  let interest = "botany";
-
-  // Map slope to difficulty
-  if (preferences.slope === "flat" || preferences.slope === "gentle") {
-    difficulty = "easy";
-  } else if (preferences.slope === "steep") {
-    difficulty = "hard";
-  }
-
-  // Map noise to environment
-  if (preferences.noise === "quiet") {
-    environment = "quiet";
-  } else {
-    environment = "bright";
-  }
-
-  // Map vibe to interest (simplified)
-  if (preferences.vibe && preferences.vibe.includes("Clear")) {
-    interest = "history";
-  }
-
-  const key = `${difficulty}_${environment}_${interest}`;
-  const trailKey = TRAIL_RECOMMENDATIONS[key];
-  let trail = TRAILS[trailKey] || TRAILS.mainParkLoop;
-
-  // Try to match a trail from Firebase based on the preference schema.
-  const firebaseTrail = await getFirebaseTrailMatch(preferences);
-  if (firebaseTrail) {
-    trail = firebaseTrail;
-  }
-
-  // Calculate recommendation score (0-100) based on preference matching
-  let score = 75; // Base score
-  if (trail.difficulty === difficulty) score += 10;
-  if (trail.environment === environment) score += 10;
-  if (trail.interest === interest) score += 5;
-
-  // Add user preferences to the trail object for display
-  trail.userPreferences = {
-    noise: preferences.noise,
-    slope: preferences.slope,
-    vibe: preferences.vibe,
-    width: preferences.width,
-  };
-
-  // Store the recommendation to be saved when user clicks "Start Hiking"
-  currentRecommendation.trail = trail;
-  currentRecommendation.score = score;
-
-  localStorage.setItem("recommendedTrail", JSON.stringify(trail));
-
-  displayTrailRecommendation(trail);
-}
-
-function displayTrailRecommendation(trail) {
-  const wrapper = document.getElementById("recommendation-wrapper");
-  const resultDiv = document.getElementById("recommendation-result");
-  const trailNameEl = document.getElementById("trail-name");
-  const trailDetailsEl = document.getElementById("trail-details");
-  const imageWrap = document.getElementById("trail-image-wrap");
-  const imageEl = document.getElementById("trail-image");
-
-  trailNameEl.innerText = trail.name;
-
-  if (imageWrap && imageEl) {
-    const placeholderSrc = imageEl.getAttribute("data-placeholder-src") || "";
-    const resolvedSrc = trail.imageUrl || placeholderSrc;
-
-    if (resolvedSrc) {
-      imageEl.src = resolvedSrc;
-      imageEl.alt = trail.imageUrl
-        ? `${trail.name} trail`
-        : "Recommended trail";
-      imageWrap.style.display = "flex";
-    } else {
-      imageWrap.style.display = "none";
-      imageEl.src = "";
-      imageEl.alt = "Recommended trail";
-    }
-  }
-
-  // Build detailed trail information with user preferences
-  let preferencesHTML = "";
-  if (trail.userPreferences) {
-    // Helper function to get label from preference value
-    const getLabel = (category, value) => {
-      const option = TRAIL_PREFERENCES[category]?.find(
-        (opt) => opt.value === value,
-      );
-      return option?.label || value;
-    };
-
-    preferencesHTML = `
-      <div class="user-preferences" style="margin-bottom: 20px; padding: 15px; background: rgba(255, 255, 255, 0.1); border-radius: 8px;">
-        <h4 style="margin-top: 0;">Your Preferences:</h4>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-          <span><strong>Noise:</strong> ${getLabel("noise", trail.userPreferences.noise)}</span>
-          <span><strong>Slope:</strong> ${getLabel("slope", trail.userPreferences.slope)}</span>
-          <span><strong>Vibe:</strong> ${getLabel("vibe", trail.userPreferences.vibe)}</span>
-          <span><strong>Width:</strong> ${getLabel("width", trail.userPreferences.width)}</span>
+      <div class="trail-info">
+        <h3 class="text-center">${trail.name}</h3>
+        <p class="recommendation-reason text-center">This trail has been selected for you based on availability.</p>
+      
+        <div class="trail-details">
+          <div class="detail-item">
+            <span class="detail-label">🔊 Noise Level:</span>
+            <span class="detail-value">${noise}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">⛰️ Slope:</span>
+            <span class="detail-value">${slope}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">↔️ Width:</span>
+            <span class="detail-value">${width}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">✨ Vibe:</span>
+            <span class="detail-value">${tags}</span>
+          </div>
+        </div>
+        <div class="why-recommended">
+          <h4>Why This Trail?</h4>
+          <ul>
+            ${whyRecommended.map((reason) => `<li>${reason}</li>`).join("")}
+          </ul>
         </div>
       </div>
-    `;
-  }
 
-  const tagsHTML =
-    trail.tags && trail.tags.length
-      ? `<div class="trail-features"><strong>Tags:</strong> ${trail.tags.join(", ")}</div>`
-      : "";
-  const featuresHTML =
-    trail.features && trail.features.length
-      ? `<div class="trail-features">
-        <strong>Features:</strong>
-        <ul>
-          ${trail.features.map((feature) => `<li>${feature}</li>`).join("")}
-        </ul>
-      </div>`
-      : "";
 
-  const detailsHTML = `
-    ${preferencesHTML}
-    <p class="trail-description">${trail.description}</p>
-    <div class="trail-stats">
-      <span><strong>Distance:</strong> ${trail.distance}</span>
-      <span><strong>Duration:</strong> ${trail.duration}</span>
-      <span><strong>Elevation:</strong> ${trail.elevation}</span>
+        <div id="trail-image-wrap" class="recommendation-image">
+          <img
+            id="trail-image"
+            src="../../public/images/discover-giganti.jpg"
+            data-placeholder-src="../../public/images/discover-giganti.jpg"
+            alt="Recommended trail"
+            />
+          </div>
+      </div>
+            
+      <div class="action-buttons">
+        <button onclick="savePreferencesAndRecommendation()" class="btn-primary">
+          💾 Save This Recommendation
+        </button>
+        <button onclick="resetPreferences()" class="btn-secondary">
+          🔄 Try Again
+        </button>
+      </div>
     </div>
-    ${tagsHTML}
-    ${featuresHTML}
   `;
 
-  if (trailDetailsEl) {
-    trailDetailsEl.innerHTML = detailsHTML;
-  }
-
-  if (wrapper) {
-    wrapper.style.display = "flex";
-  }
-  resultDiv.style.display = "block";
+  resultSection.style.display = "block";
+  resultSection.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
 async function goToHomepage() {
@@ -672,8 +613,8 @@ async function goToHomepage() {
 }
 
 // Make functions available globally for inline onclick handlers
-window.saveAndRecommend = saveAndRecommend;
 window.generateMockRecommendation = generateMockRecommendation;
+window.getRecommendation = getRecommendation;
 window.goToHomepage = goToHomepage;
 window.loadSavedPreferences = loadSavedPreferences;
 window.openModal = openModal;
@@ -683,6 +624,8 @@ window.startPreferenceFlow = startPreferenceFlow;
 window.resetPreferences = resetPreferences;
 window.selectPreference = selectPreference;
 window.startPreferenceFlow = startPreferenceFlow;
+window.savePreferencesAndRecommendation = savePreferencesAndRecommendation;
+window.deleteUserPreferencesInFirebase = deleteUserPreferencesInFirebase;
 
 if (typeof TRAIL_PREFERENCES !== "undefined") {
   initializePreferences();

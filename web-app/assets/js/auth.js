@@ -131,23 +131,22 @@ async function signIn(email, password) {
       tokenExpiration: tokenResult.expirationTime, // Firebase default duration: 1 hour
     });
 
-    if (isSessionValid()) {
-      console.log("Session validation passed for role:", userData.role);
-      if (userData.role === "admin") {
-        console.log("Admin detected, redirecting to weather app with token");
-        const encodedToken = encodeURIComponent(idToken);
-        window.location.href = `http://localhost:5173/admin?token=${encodedToken}`;
-      } else {
-        console.log("Login successful for user:", user.uid, userData.role);
-        alert("Login successful! Redirecting...");
-        window.location.href =
-          "http://localhost:5500/web-app/src/user/trail-preferences.html"; // TODO: add user params
-      }
-    } else {
-      console.error("Session validation failed");
-      alert("Error: Session could not be saved. Please try again.");
-      console.error("Session validation failed after save");
-    }
+if (isSessionValid()) {
+  console.log("Session validation passed for role:", userData.role);
+  if (userData.role === "admin") {
+    console.log("Admin detected, redirecting to weather app with token");
+    const encodedToken = encodeURIComponent(idToken);
+    window.location.href = `http://localhost:5173/admin?token=${encodedToken}`;
+  } else {
+    console.log("Login successful for user:", user.uid, userData.role);
+    window.location.href =
+       `http://localhost:5500/web-app/src/user/trail-preferences.html?userId=${user.uid}`;
+  }
+} else {
+  console.error("Session validation failed");
+  alert("Error: Session could not be saved. Please try again.");
+  console.error("Session validation failed after save");
+}
   } catch (error) {
     const errorCode = error.code;
     const errorMessage = error.message;

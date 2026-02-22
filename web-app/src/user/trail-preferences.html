@@ -74,7 +74,7 @@
           class="main-button"
           onclick="
             (async () => {
-              await saveAndRecommend();
+              await getRecommendation();
               setTimeout(() => {
                 document
                   .getElementById('recommendation-wrapper')
@@ -83,7 +83,7 @@
             })()
           "
         >
-          Save Preferences & Get Recommendation
+          Get Recommendation
         </button>
 
       
@@ -147,25 +147,9 @@
     <section>
       <div
         id="recommendation-wrapper"
-        class="recommendation-layout"
+        class="recommendation-layout glass-card"
         style="display: none; margin-top: 50px"
       >
-        <div id="recommendation-result">
-        <h3>Recommended for You:</h3>
-        <h2 id="trail-name"></h2>
-        <div id="trail-details" class="trail-info"></div>
-        <button class="main-button" onclick="goToHomepage()">
-          Start Hiking
-        </button>
-        </div>
-        <div id="trail-image-wrap" class="recommendation-image" style="display: none;">
-          <img
-            id="trail-image"
-            src="../../public/images/discover-giganti.jpg"
-            data-placeholder-src="../../public/images/discover-giganti.jpg"
-            alt="Recommended trail"
-          />
-        </div>
       </div>
     </section>
 

@@ -202,39 +202,6 @@
   line-height: 1.4;
 }
 
-.recommendation-layout {
-  max-width: 1100px;
-  margin: 50px auto;
-  display: flex;
-  gap: 24px;
-  align-items: stretch;
-  justify-content: center;
-}
-
-#recommendation-result{
-  width: 50%;
-  padding: 20px;
-  background-color: var(--card-bg-color);
-  border-radius: 10px;
-  text-align: center;
-}
-
-.recommendation-image {
-  width: 50%;
-  border-radius: 10px;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.2);
-  display: flex;
-  align-items: stretch;
-}
-
-.recommendation-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
 @media (max-width: 900px) {
   .recommendation-layout {
     flex-direction: column;
@@ -349,4 +316,181 @@ button{
 }
 
 
+#recommendation-result {
+  margin: 2rem auto;
+  max-width: 80%;
+  padding: 1rem;
+}
 
+.recommendation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 1rem;
+}
+
+.match-score {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--forest-dark);
+}
+
+.recommendation-reason {
+  font-size: 1.1rem;
+  color: var(--text-dark-color);
+  margin: 1rem 0;
+  font-style: italic;
+}
+
+.trail-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.detail-label {
+  font-weight: bold;
+  color: var(--text-dark-color);
+}
+
+.detail-value {
+  color: var(--text-dark-color);
+  font-size: 1.1rem;
+}
+
+.why-recommended h4 {
+  margin-top: 0;
+  color: var(--forest-dark);
+}
+
+.why-recommended ul {
+  margin: 0.5rem 0 0 1.5rem;
+}
+
+.why-recommended li {
+  margin: 0.5rem 0;
+  color: var(--text-dark-color);
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  justify-content: center;
+}
+
+.btn-primary, .btn-secondary {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-primary {
+  background: var(--forest-dark);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #45a049;
+}
+
+.btn-secondary {
+  background: #757575;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #616161;
+}
+
+.recommendation-image {
+  width: 50%;
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: stretch;
+}
+
+.recommendation-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+#recommendation-wrapper {
+  width: 80%;
+  max-width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+#recommendation-result {
+  width: 100%;
+  padding: 2rem;
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(76, 175, 80, 0.05) 100%);
+  border-radius: 0;
+  box-sizing: border-box;
+}
+
+.recommendation-card {
+  width: 100%;
+  max-width: 100%;
+  padding: 2rem;
+  margin: 0;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.recommendation-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 1rem;
+}
+
+.trail-details {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin: 1.5rem 0;
+  justify-content: center;
+  align-items: center;
+
+}
+
+.detail-item {
+  width: 60%;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.why-recommended {
+  width: 90%;
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: #e8f5e9;
+  border-left: 4px solid #4CAF50;
+  border-radius: 4px;
+  justify-content: center;
+}
+
+.action-buttons {
+  width: 100%;
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  justify-content: center;
+}
