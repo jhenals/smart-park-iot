@@ -479,6 +479,7 @@ async function saveUserRecommendationInFirebase(userPrefId, recommendations) {
     });
 
     console.log("Recommendations saved with ID:", docRef.id);
+    localStorage.setItem("recommendation", JSON.stringify(recommendations));
     return docRef.id;
   } catch (error) {
     console.error("Error saving recommendations:", error);
@@ -495,7 +496,11 @@ async function savePreferencesAndRecommendation() {
       width: preferencesState.width,
     };
     let userPrefId = await saveUserPreferencesInFirebase(preferences);
-    await saveUserRecommendationInFirebase(userPrefId, currentRecommendation);
+    let trailRecId= await saveUserRecommendationInFirebase(userPrefId, currentRecommendation);
+    if (userPrefId && trailRecId) {
+      window.location.href = `http://localhost:5500/web-app/src/user/user-dashboard.html?userId=${user.uid}`;
+    }
+    
   } catch (error) {
     console.error("Error saving preferences and recommendation:", error);
   }
@@ -570,10 +575,10 @@ async function displayTrailRecommendation(recommendation) {
             
       <div class="action-buttons">
         <button onclick="savePreferencesAndRecommendation()" class="btn-primary">
-          💾 Save This Recommendation
+          Start Hiking
         </button>
         <button onclick="resetPreferences()" class="btn-secondary">
-          🔄 Try Again
+          Try Again
         </button>
       </div>
     </div>

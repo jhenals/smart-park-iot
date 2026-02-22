@@ -6,7 +6,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function goToHomePage() {
   const isLoggedIn = localStorage.getItem("loggedIn") === "true";
-  window.location.href = isLoggedIn
-    ? "http://localhost:5500/web-app/src/user/user-dashboard.html"
-    : "http://localhost:5500/web-app/index.html";
+  const user = JSON.parse(localStorage.getItem("user"));
+  window.location.href =
+    isLoggedIn && user
+      ? `http://localhost:5500/web-app/src/user/user-dashboard.html?userId=${user.uid}`
+      : "http://localhost:5500/web-app/index.html";
 }
