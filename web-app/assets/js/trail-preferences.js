@@ -496,11 +496,13 @@ async function savePreferencesAndRecommendation() {
       width: preferencesState.width,
     };
     let userPrefId = await saveUserPreferencesInFirebase(preferences);
-    let trailRecId= await saveUserRecommendationInFirebase(userPrefId, currentRecommendation);
+    let trailRecId = await saveUserRecommendationInFirebase(
+      userPrefId,
+      currentRecommendation,
+    );
     if (userPrefId && trailRecId) {
       window.location.href = `http://localhost:5500/web-app/src/user/user-dashboard.html?userId=${user.uid}`;
     }
-    
   } catch (error) {
     console.error("Error saving preferences and recommendation:", error);
   }
