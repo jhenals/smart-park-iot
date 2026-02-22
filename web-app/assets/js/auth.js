@@ -126,27 +126,27 @@ async function signIn(email, password) {
     saveSession({
       email: email,
       uid: user.uid,
+      displayName: userData.displayName,
       role: userData.role,
       token: idToken,
       tokenExpiration: tokenResult.expirationTime, // Firebase default duration: 1 hour
     });
 
-if (isSessionValid()) {
-  console.log("Session validation passed for role:", userData.role);
-  if (userData.role === "admin") {
-    console.log("Admin detected, redirecting to weather app with token");
-    const encodedToken = encodeURIComponent(idToken);
-    window.location.href = `http://localhost:5173/admin?token=${encodedToken}`;
-  } else {
-    console.log("Login successful for user:", user.uid, userData.role);
-    window.location.href =
-       `http://localhost:5500/web-app/src/user/trail-preferences.html?userId=${user.uid}`;
-  }
-} else {
-  console.error("Session validation failed");
-  alert("Error: Session could not be saved. Please try again.");
-  console.error("Session validation failed after save");
-}
+    if (isSessionValid()) {
+      console.log("Session validation passed for role:", userData.role);
+      if (userData.role === "admin") {
+        console.log("Admin detected, redirecting to weather app with token");
+        const encodedToken = encodeURIComponent(idToken);
+        window.location.href = `http://localhost:5173/admin?token=${encodedToken}`;
+      } else {
+        console.log("Login successful for user:", user.uid, userData.role);
+        window.location.href = `http://localhost:5500/web-app/src/user/trail-preferences.html?userId=${user.uid}`;
+      }
+    } else {
+      console.error("Session validation failed");
+      alert("Error: Session could not be saved. Please try again.");
+      console.error("Session validation failed after save");
+    }
   } catch (error) {
     const errorCode = error.code;
     const errorMessage = error.message;
@@ -196,10 +196,18 @@ function setLoggedInFlags(value) {
   localStorage.setItem("isLoggedIn", value ? "true" : "false");
 }
 
-function saveSession({ email, uid, role, token, tokenExpiration }) {
+function saveSession({
+  email,
+  displayName,
+  uid,
+  role,
+  token,
+  tokenExpiration,
+}) {
   const sessionData = {
     email: email,
     uid: uid,
+    displayName: displayName,
     role: role,
     token: token,
     tokenExpiration: tokenExpiration,

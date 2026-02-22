@@ -5,8 +5,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const role = localStorage.getItem("userRole"); // 'admin' or 'visitor'
   const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
   const user = JSON.parse(localStorage.getItem("userSession")) || {
-    firstName: "Guest",
+    displayName: "Explorer",
   };
+  console.log("User:", user);
   const variant = navContainer.dataset.variant || "";
   const effectiveVariant =
     variant === "auto" && !isLoggedIn ? "public" : variant;
@@ -162,7 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <a class="nav-link" onclick="toggleChat()"">Guide</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" onclick="logout()"">Exit (${user.firstName})</a>
+              <a class="nav-link" onclick="logout()"">Exit (${user.displayName})</a>
 
             </li>
           </ul>
