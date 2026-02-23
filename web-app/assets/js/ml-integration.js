@@ -84,20 +84,15 @@ export async function getMLRecommendations(topN = 5) {
 
 async function getTrailById(trailId) {
   try {
-    const trailIdString = String(trailId);
-    const trailDocRef = doc(userDatabase, "trails", trailIdString);
+    const trailDocRef = doc(userDatabase, "trails", trailId);
     const trailDoc = await getDoc(trailDocRef);
 
     if (trailDoc.exists()) {
-      return { id: trailIdString, ...trailDoc.data() };
+      return { id: trailId, ...trailDoc.data() };
     }
 
     const trailsRef = collection(userDatabase, "trails");
-    const q = query(
-      trailsRef,
-      where("trail_id", "==", trailIdString),
-      limit(1),
-    );
+    const q = query(trailsRef, where("trail_id", "==", trailId), limit(1));
     const snapshot = await getDocs(q);
 
     if (!snapshot.empty) {
