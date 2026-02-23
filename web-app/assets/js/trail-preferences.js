@@ -32,6 +32,8 @@ let currentRecommendation = {
   whyRecommended: null,
 };
 
+let allRecommendations = []; // Store all recommendations for selection
+
 function initializePreferences() {
   populateModalOptions("noise", TRAIL_PREFERENCES.noise);
   populateModalOptions("slope", TRAIL_PREFERENCES.slope);
@@ -186,22 +188,18 @@ function startPreferenceFlow(startCategory = "noise") {
     return;
   }
 
-  // Set modal flow to start from the clicked category
   modalFlow.currentStep = startIndex;
 
-  // Check if all preferences are already loaded
   const allSelected = modalFlow.categories.every(
     (cat) => preferencesState[cat] !== null,
   );
 
   if (allSelected) {
-    // All preferences already selected, show recommend button
     const recommendButton = document.getElementById("recommendButton");
     if (recommendButton) {
       recommendButton.style.display = "block";
     }
   } else {
-    // Open the clicked category's modal
     setTimeout(() => {
       openModal(`${startCategory}Modal`);
     }, 200);
@@ -241,13 +239,12 @@ function selectPreference(category, value, label) {
       recommendButton.style.display = "block";
     }
   } else {
-    // Show next modal in circular flow
     const nextCategory =
       modalFlow.categories[modalFlow.currentStep % modalFlow.categories.length];
     console.log(`Opening next modal: ${nextCategory}Modal`);
     setTimeout(() => {
       openModal(`${nextCategory}Modal`);
-    }, 300); // Small delay for smooth transition
+    }, 300);
   }
 }
 
@@ -275,13 +272,17 @@ function updateSelectedState(category, selectedValue) {
 }
 
 function resetPreferences() {
+  // Reset state
   preferencesState.noise = null;
   preferencesState.slope = null;
   preferencesState.vibe = null;
   preferencesState.width = null;
 
-  localStorage.removeItem("recommendedTrail");
+  // Clear localStorage (only trail selection)
+  localStorage.removeItem("selectedTrailId");
+  console.log("🗑️ Cleared localStorage: selectedTrailId");
 
+  // Reset display
   document.getElementById("noise-display").textContent = "Select";
   document.getElementById("slope-display").textContent = "Select";
   document.getElementById("vibe-display").textContent = "Select";
@@ -313,14 +314,21 @@ function resetPreferences() {
     }
   });
 
-  console.log(
-    "Preferences reset and localStorage cleared and Firebase deleted",
-  );
+  // Reset recommendations
+  allRecommendations = [];
+  currentRecommendation = {
+    trail: null,
+    score: null,
+    reason: null,
+    whyRecommended: null,
+  };
+
+  console.log("Preferences reset");
 }
 
 async function getRecommendation() {
   try {
-    // Validate that all preferences are selected
+    // Validate all preferences are selected
     const allSelected = Object.values(preferencesState).every(
       (val) => val !== null,
     );
@@ -330,185 +338,346 @@ async function getRecommendation() {
       return;
     }
 
-    console.log("Getting recommendation with preferences:", preferencesState);
+    console.log("💾 Saving preferences...");
 
-    // Build preferences object
-    const preferences = {
-      noise: preferencesState.noise,
-      slope: preferencesState.slope,
-      vibe: preferencesState.vibe,
-      width: preferencesState.width,
-    };
+    // 1. Save preferences to Firebase
+    await savePreferencesDirectlyToFirebase(preferencesState);
 
-    // Generate recommendation (replace with actual AI call later)
-    const recommendation = await generateMockRecommendation(preferences);
-    console.log("Recommendation received:", recommendation);
+    // 2. Show loading state
+    const resultSection = document.getElementById("recommendation-wrapper");
+    resultSection.innerHTML = `
+      <div class="glass-card" style="padding: 2rem; text-align: center;">
+        <div class="loading-spinner"></div>
+        <h3>🤖 Loading Recommendations...</h3>
+        <p>Fetching your trail matches...</p>
+      </div>
+    `;
+    resultSection.style.display = "block";
 
-    if (recommendation) {
-      currentRecommendation = recommendation;
-      displayTrailRecommendation(currentRecommendation);
-    } else {
-      alert("Could not generate a recommendation. Please try again.");
-    }
-  } catch (error) {
-    console.error("Error getting recommendation:", error);
-    alert("Failed to get recommendation. Please try again.");
-  }
-}
+    console.log("🚀 Fetching recommendations from Firestore...");
 
-// TODO: To change with ML model integration, this is just a mock function to simulate recommendation logic
-async function getFirebaseTrailMatch(preferences) {
-  try {
-    console.log("Getting random trail recommendation from Firebase");
-
-    // Fetch all trails from Firebase
-    const trailsRef = collection(userDatabase, "trails");
-    const querySnapshot = await getDocs(trailsRef);
-
-    if (querySnapshot.empty) {
-      console.log("No trails available in database");
-      alert("No trails found in database.");
-      return null;
-    }
-
-    // Convert to array
-    const trails = [];
-    querySnapshot.forEach((doc) => {
-      trails.push({ id: doc.id, ...doc.data() });
-    });
-
-    console.log("Trails found in database:", trails.length);
-    console.log("All trails:", trails);
-
-    if (trails.length === 0) {
-      console.error("No trails in array");
-      return null;
-    }
-
-    // Randomly select a trail
-    const randomIndex = Math.floor(Math.random() * trails.length);
-    const selectedTrail = trails[randomIndex]; // Remove .data - just use the trail object
-
-    console.log("Random index:", randomIndex);
-    console.log("Randomly selected trail:", selectedTrail);
-
-    if (!selectedTrail) {
-      console.error("Selected trail is undefined at index:", randomIndex);
-      return null;
-    }
-
-    return {
-      userId: user.uid,
-      trail: selectedTrail,
-      score: 100,
-      whyRecommended: ["Available trail in the park", "Ready for your visit"],
-    };
-  } catch (error) {
-    console.error("Error getting trail from Firebase:", error);
-    throw error;
-  }
-}
-
-async function generateMockRecommendation(preferences) {
-  try {
-    console.log("Generating recommendation");
-    const recommendation = await getFirebaseTrailMatch(preferences);
-
-    if (recommendation) {
-      return recommendation;
-    } else {
-      alert("No trails available. Please try again later.");
-      return null;
-    }
-  } catch (error) {
-    console.error("Error generating recommendation:", error);
-    alert("Failed to generate recommendation. Please try again.");
-    return null;
-  }
-}
-
-//TODO: Put this in Passport
-async function deleteUserPreferencesInFirebase() {
-  try {
+    // 3. Fetch recommendations directly from Firestore
     const session = getSession();
     const userId = session.uid;
+
+    // Fetch recommendation batches for this user (no orderBy needed - will sort in code)
+    const recommendationsQuery = query(
+      collection(userDatabase, "recommendations"),
+      where("userId", "==", userId),
+    );
+
+    const snapshot = await getDocs(recommendationsQuery);
+
+    if (snapshot.empty) {
+      throw new Error(
+        "No recommendations found. Please run: node generate_recom.js <userId>",
+      );
+    }
+
+    // Get the latest batch (sort by generatedAt in code)
+    const allBatches = snapshot.docs.map((doc) => doc.data());
+    allBatches.sort(
+      (a, b) =>
+        new Date(b.generatedAt).getTime() - new Date(a.generatedAt).getTime(),
+    );
+    const resultDoc = allBatches[0]; // Latest batch
+
+    console.log("📋 Result Document:", resultDoc);
+
+    const topRecommendations = resultDoc.recommendations || [];
+    console.log(
+      `✅ Found ${topRecommendations.length} recommendations in batch`,
+    );
+
+    // 4. Display results
+    if (topRecommendations && topRecommendations.length > 0) {
+      console.log(
+        `📊 Processing ${topRecommendations.length} recommendations, fetching trail details...`,
+      );
+
+      // Fetch full trail data for each recommendation
+      const enrichedRecommendations = await Promise.all(
+        topRecommendations.map(async (rec, idx) => {
+          try {
+            console.log(`🔍 Fetching trail ${idx + 1}/5: ${rec.trail_id}`);
+            const trailDoc = await getDoc(
+              doc(userDatabase, "trails", rec.trail_id),
+            );
+            if (trailDoc.exists()) {
+              console.log(`✅ Trail found: ${rec.trail_id}`);
+              return {
+                trail: { id: rec.trail_id, ...trailDoc.data() },
+                score: rec.score,
+                whyRecommended: rec.matched_reasons || [],
+                algorithm: rec.algorithm || "generate_recom",
+              };
+            } else {
+              console.warn(`⚠️ Trail document not found: ${rec.trail_id}`);
+              // Return with minimal trail data
+              return {
+                trail: {
+                  id: rec.trail_id,
+                  name: `Trail ${rec.trail_id}`,
+                  noise: "Unknown",
+                  slope: "Unknown",
+                  width: "Unknown",
+                  tags: "No data",
+                },
+                score: rec.score,
+                whyRecommended: rec.matched_reasons || [],
+                algorithm: rec.algorithm || "generate_recom",
+              };
+            }
+          } catch (error) {
+            console.warn(`❌ Error fetching trail ${rec.trail_id}:`, error);
+            // Return with minimal trail data on error
+            return {
+              trail: {
+                id: rec.trail_id,
+                name: `Trail ${rec.trail_id}`,
+                noise: "Unknown",
+                slope: "Unknown",
+                width: "Unknown",
+                tags: "No data",
+              },
+              score: rec.score,
+              whyRecommended: rec.matched_reasons || [],
+              algorithm: rec.algorithm || "generate_recom",
+            };
+          }
+        }),
+      );
+
+      console.log(
+        `📊 Total enriched recommendations: ${enrichedRecommendations.length}`,
+      );
+      enrichedRecommendations.forEach((rec, idx) => {
+        console.log(`  [${idx + 1}] ${rec.trail.name} - ${rec.score}%`);
+      });
+
+      if (enrichedRecommendations.length > 0) {
+        allRecommendations = enrichedRecommendations;
+        displayAllRecommendations(enrichedRecommendations);
+      } else {
+        throw new Error("Could not load any recommendations");
+      }
+    } else {
+      // No matches found
+      resultSection.innerHTML = `
+        <div class="glass-card" style="padding: 2rem; text-align: center;">
+          <h3>😕 No Recommendations Found</h3>
+          <p>We couldn't find trails matching your preferences.</p>
+          <p style="margin-top: 1rem; color: #666;">
+            Recommendations must be generated first using: <code>node generate_recom.js &lt;userId&gt;</code>
+          </p>
+          <button onclick="location.reload()" class="main-button" style="margin-top: 1rem;">
+            Start Over
+          </button>
+        </div>
+      `;
+    }
+  } catch (error) {
+    console.error("❌ Error loading recommendations:", error);
+
+    const resultSection = document.getElementById("recommendation-wrapper");
+    resultSection.innerHTML = `
+      <div class="glass-card" style="padding: 2rem; text-align: center; border-left: 4px solid #ff6b6b;">
+        <h3>❌ Error</h3>
+        <p>${error.message || "Failed to load recommendations"}</p>
+        <button onclick="getRecommendation()" class="main-button" style="margin-top: 1rem;">
+          Try Again
+        </button>
+      </div>
+    `;
+    resultSection.style.display = "block";
+  }
+}
+
+async function savePreferencesDirectlyToFirebase(preferences) {
+  try {
+    const session = getSession();
+    if (!session || !session.uid) {
+      throw new Error("User not authenticated");
+    }
+
+    const userId = session.uid;
+
+    // Use setDoc with userId as document ID (this REPLACES old preferences)
     const userPrefsRef = doc(userDatabase, "user_prefs", userId);
-    await setDoc(userPrefsRef, {});
-    console.log("User preferences deleted from Firebase");
+
+    await setDoc(userPrefsRef, {
+      userId: userId,
+      noise_prefs: preferences.noise,
+      slope_prefs: preferences.slope,
+      width_prefs: preferences.width,
+      vibe_prefs: preferences.vibe,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+
+    console.log("✅ Preferences saved to Firebase (replaced old preferences)");
+    console.log("📌 User ID:", userId);
+    console.log("📌 Preferences:", preferences);
+
     return true;
   } catch (error) {
-    console.error("Error deleting user preferences:", error);
-    return false;
-  }
-}
-
-async function saveUserPreferencesInFirebase(preferences) {
-  try {
-    const session = getSession();
-    const userId = session.uid;
-
-    const docRef = await addDoc(collection(userDatabase, "user_pref"), {
-      id: null, // Will be updated with the auto-generated ID
-      userId: userId,
-      ...preferences,
-      createdAt: Date.now(),
-    });
-
-    // Update the document with its own ID
-    await updateDoc(doc(userDatabase, "user_pref", docRef.id), {
-      id: docRef.id,
-    });
-
-    console.log("Preferences saved with ID:", docRef.id);
-    return docRef.id;
-  } catch (error) {
-    console.error("Error saving user preferences:", error);
-    alert("Failed to save preferences. Please try again.");
-    return false;
-  }
-}
-
-async function saveUserRecommendationInFirebase(userPrefId, recommendations) {
-  try {
-    const docRef = await addDoc(collection(userDatabase, "recommendations"), {
-      id: null, // Will be updated with the auto-generated ID
-      userId: user.uid,
-      userPrefId: userPrefId, // Reference to the user preference document
-      recommendedTrails: recommendations,
-      createdAt: Date.now(),
-    });
-
-    console.log("Recommendations saved with ID:", docRef.id);
-    localStorage.setItem("recommendation", JSON.stringify(recommendations));
-    return docRef.id;
-  } catch (error) {
-    console.error("Error saving recommendations:", error);
+    console.error("Error saving preferences to Firebase:", error);
     throw error;
+  }
+}
+
+function selectRecommendation(index) {
+  if (allRecommendations && allRecommendations[index]) {
+    currentRecommendation = allRecommendations[index];
+
+    // Save selected trail ID to localStorage (REPLACE old one)
+    localStorage.setItem("selectedTrailId", currentRecommendation.trail.id);
+    console.log(
+      "💾 Trail ID saved to localStorage:",
+      currentRecommendation.trail.id,
+    );
+
+    displayTrailRecommendation(currentRecommendation);
   }
 }
 
 async function savePreferencesAndRecommendation() {
   try {
-    const preferences = {
-      noise: preferencesState.noise,
-      slope: preferencesState.slope,
-      vibe: preferencesState.vibe,
-      width: preferencesState.width,
-    };
-    let userPrefId = await saveUserPreferencesInFirebase(preferences);
-    let trailRecId = await saveUserRecommendationInFirebase(
-      userPrefId,
-      currentRecommendation,
-    );
-    if (userPrefId && trailRecId) {
-      window.location.href = `http://localhost:5500/web-app/src/user/user-dashboard.html?userId=${user.uid}`;
+    // Get selected trail ID from localStorage
+    const selectedTrailId = localStorage.getItem("selectedTrailId");
+    if (!selectedTrailId) {
+      alert("No trail selected. Please choose a trail.");
+      return;
     }
+
+    if (!currentRecommendation || !currentRecommendation.trail) {
+      alert("No recommendation found. Please get a recommendation first.");
+      return;
+    }
+
+    console.log("💾 Saving recommendation to Firebase...");
+    console.log("Selected Trail ID:", selectedTrailId);
+    console.log("Current Recommendation:", currentRecommendation);
+
+    const session = getSession();
+    const userId = session.uid;
+
+    // Save the recommendation with trail selection
+    const docRef = await addDoc(
+      collection(userDatabase, "user_trail_selections"),
+      {
+        id: null,
+        userId: userId,
+        trailId: currentRecommendation.trail.id,
+        trailName: currentRecommendation.trail.name,
+        score: currentRecommendation.score,
+        whyRecommended: currentRecommendation.whyRecommended || [],
+        algorithm: currentRecommendation.algorithm || "generate_recom",
+        selectedAt: new Date().toISOString(),
+        createdAt: Date.now(),
+      },
+    );
+
+    // Update the document with its own ID
+    await updateDoc(doc(userDatabase, "user_trail_selections", docRef.id), {
+      id: docRef.id,
+    });
+
+    console.log("✅ Trail selection saved to Firebase with ID:", docRef.id);
+
+    alert("Your trail selection has been saved! Redirecting to dashboard...");
+
+    // Navigate to dashboard after successful save
+    setTimeout(() => {
+      window.location.href = "/web-app/src/user/user-dashboard.html";
+    }, 1000);
   } catch (error) {
-    console.error("Error saving preferences and recommendation:", error);
+    console.error("Error saving trail selection:", error);
+    alert("Failed to save. Please try again.");
   }
 }
 
-// Update displayTrailRecommendation to fetch the full trail data
+async function displayAllRecommendations(recommendations) {
+  const resultSection = document.getElementById("recommendation-wrapper");
+
+  if (!resultSection || !recommendations || recommendations.length === 0) {
+    console.error("Cannot display recommendations");
+    return;
+  }
+
+  console.log(
+    `📌 displayAllRecommendations called with ${recommendations.length} items`,
+  );
+  recommendations.forEach((rec, idx) => {
+    console.log(
+      `  [${idx + 1}] ${rec.trail?.name || "Unknown"} - ${rec.score}%`,
+    );
+  });
+
+  // Store recommendations for later selection
+  allRecommendations = recommendations;
+
+  let recommendationsHTML = `
+    <div class="recommendations-container">
+      <div class="recommendations-header">
+        <h2>🎯 Recommended Trails</h2>
+        <p>Click any trail to see more details</p>
+      </div>
+      
+      <div class="recommendations-grid">
+  `;
+
+  recommendations.forEach((rec, index) => {
+    const { trail, score, whyRecommended } = rec;
+
+    // Handle array values from Firebase
+    const noise = Array.isArray(trail.noise) ? trail.noise[0] : trail.noise;
+    const slope = Array.isArray(trail.slope) ? trail.slope[0] : trail.slope;
+    const width = Array.isArray(trail.width) ? trail.width[0] : trail.width;
+    const tags = Array.isArray(trail.tags) ? trail.tags.join(", ") : trail.tags;
+
+    console.log(`🎨 Rendering card ${index + 1}: ${trail.name}`);
+
+    recommendationsHTML += `
+      <div class="recommendation-card" onclick="selectRecommendation(${index})">
+        <div class="recommendation-rank">#${index + 1}</div>
+        <div class="match-score">${score}% Match</div>
+        
+        <h3>${trail.name}</h3>
+        
+        <div class="trail-details-compact">
+          <div class="detail">🔊 ${noise}</div>
+          <div class="detail">⛰️ ${slope}</div>
+          <div class="detail">↔️ ${width}</div>
+          <div class="detail">✨ ${tags}</div>
+        </div>
+        
+        <div class="why-recommended-compact">
+          <strong>Why:</strong>
+          <ul>
+            ${whyRecommended.map((reason) => `<li>${reason}</li>`).join("")}
+          </ul>
+        </div>
+      </div>
+    `;
+  });
+
+  recommendationsHTML += `
+      </div>
+      
+      <div class="action-buttons">
+        <button onclick="resetPreferences()" class="btn-secondary">
+          Try Again
+        </button>
+      </div>
+    </div>
+  `;
+
+  resultSection.innerHTML = recommendationsHTML;
+  resultSection.style.display = "block";
+  resultSection.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
 async function displayTrailRecommendation(recommendation) {
   const resultSection = document.getElementById("recommendation-wrapper");
 
@@ -579,6 +748,9 @@ async function displayTrailRecommendation(recommendation) {
         <button onclick="savePreferencesAndRecommendation()" class="btn-primary">
           Start Hiking
         </button>
+        <button onclick="displayAllRecommendations(allRecommendations)" class="btn-secondary">
+          Back to Recommendations
+        </button>
         <button onclick="resetPreferences()" class="btn-secondary">
           Try Again
         </button>
@@ -620,7 +792,6 @@ async function goToHomepage() {
 }
 
 // Make functions available globally for inline onclick handlers
-window.generateMockRecommendation = generateMockRecommendation;
 window.getRecommendation = getRecommendation;
 window.goToHomepage = goToHomepage;
 window.loadSavedPreferences = loadSavedPreferences;
@@ -629,10 +800,17 @@ window.closeModal = closeModal;
 window.selectPreference = selectPreference;
 window.startPreferenceFlow = startPreferenceFlow;
 window.resetPreferences = resetPreferences;
-window.selectPreference = selectPreference;
-window.startPreferenceFlow = startPreferenceFlow;
 window.savePreferencesAndRecommendation = savePreferencesAndRecommendation;
-window.deleteUserPreferencesInFirebase = deleteUserPreferencesInFirebase;
+window.displayAllRecommendations = displayAllRecommendations;
+window.selectRecommendation = selectRecommendation;
+window.displayTrailRecommendation = displayTrailRecommendation;
+
+// Make variables available globally
+Object.defineProperty(window, "allRecommendations", {
+  get() {
+    return allRecommendations;
+  },
+});
 
 if (typeof TRAIL_PREFERENCES !== "undefined") {
   initializePreferences();

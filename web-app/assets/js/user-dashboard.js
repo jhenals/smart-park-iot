@@ -1,6 +1,8 @@
 import { getUserProfile, getSession } from "./auth.js";
+import { trackTrailVisit } from "./ml-integration.js";
 
 let trailStartTime = null;
+let currentTrailId = null;
 
 document.addEventListener("DOMContentLoaded", () => {
   loadDashboardData();
@@ -57,6 +59,12 @@ async function applyUserAndTrail(user, safety) {
 
   // Initialize trail start time for ETA calculation
   initializeTrailStart();
+
+  // Track trail visit start (ML integration)
+  if (savedTrail && savedTrail.id) {
+    currentTrailId = savedTrail.id;
+    console.log(`📍 Started tracking trail visit: ${currentTrailId}`);
+  }
 }
 
 function startGPSTracking(gpsConfig, giants, discoveryConfig) {
@@ -77,7 +85,24 @@ function startGPSTracking(gpsConfig, giants, discoveryConfig) {
   const markerStep = gpsConfig?.markerStep ?? 0.00005;
 
   setInterval(() => {
-    if (progress >= 100) return;
+    if (progress >= 100) {
+      // Trail completed - track it!
+      if (currentTrailId && trailStartTime) {
+        const durationMinutes = Math.floor(
+          (Date.now() - trailStartTime) / 60000,
+        );
+        trackTrailVisit(currentTrailId, {
+          duration: durationMinutes,
+          completed: true,
+        }).then(() => {
+          console.log(
+            `✅ Trail completion tracked: ${currentTrailId} (${durationMinutes} mins)`,
+          );
+        });
+        currentTrailId = null; // Prevent duplicate tracking
+      }
+      return;
+    }
 
     progress += step;
 
@@ -456,4 +481,19 @@ function calculateAdjustedETA(currentProgress, trail, avgSpeedPercentPerMin) {
   const remainingMinutes = remainingProgress / adjustedSpeed;
 
   return formatTime(remainingMinutes);
+}
+
+//TODO: Put this in Passport
+async function deleteUserPreferencesInFirebase() {
+  try {
+    const session = getSession();
+    const userId = session.uid;
+    const userPrefsRef = doc(userDatabase, "user_prefs", userId);
+    await setDoc(userPrefsRef, {});
+    console.log("User preferences deleted from Firebase");
+    return true;
+  } catch (error) {
+    console.error("Error deleting user preferences:", error);
+    return false;
+  }
 }

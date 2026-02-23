@@ -9,7 +9,6 @@ if (!admin.apps.length) {
 
 const db = admin.firestore();
 
-// Recommendation logic
 async function generateTop5Recommendations(userId) {
   try {
     console.log(`Starting recommendation engine for ${userId}...`);
@@ -86,9 +85,16 @@ async function generateTop5Recommendations(userId) {
 
       // Only add to the list if the score is greater than 0%
       if (finalScore > 0) {
+        // Normalize trail_id to string
+        let normalizedTrailId = trail.trail_id;
+        if (Array.isArray(normalizedTrailId)) {
+          normalizedTrailId = normalizedTrailId[0]; // Take first element if array
+        }
+        normalizedTrailId = String(normalizedTrailId); // Ensure it's a string
+
         recommendations.push({
           user_id: userId,
-          trail_id: trail.trail_id,
+          trail_id: normalizedTrailId,
           score: Math.round(finalScore),
           matched_reasons: matchedReasons,
         });
@@ -100,39 +106,41 @@ async function generateTop5Recommendations(userId) {
     let top5Recommendations = recommendations.slice(0, 5);
 
     if (top5Recommendations.length > 0) {
-      const batch = db.batch();
       const batchId = `batch_${userId}_${Date.now()}`;
       const generatedAt = new Date().toISOString();
 
-      top5Recommendations.forEach((rec, index) => {
-        const newRecRef = db.collection("recommendations").doc();
-        batch.set(newRecRef, {
+      // Create single result document with all recommendations
+      const resultDocument = {
+        success: true,
+        count: top5Recommendations.length,
+        userId: userId,
+        batchId: batchId,
+        generatedAt: generatedAt,
+        recommendations: top5Recommendations.map((rec, index) => ({
           ...rec,
-          batchId: batchId,
-          generatedAt: generatedAt,
           rank: index + 1,
-          isActive: true,
-        });
-      });
+        })),
+        isActive: true,
+      };
 
+      // Save as single document in recommendations collection
+      const batch = db.batch();
+      const newRecRef = db.collection("recommendations").doc(batchId);
+      batch.set(newRecRef, resultDocument);
       await batch.commit();
 
       console.log(
         `✅ Successfully generated ${top5Recommendations.length} recommendations for ${userId}`,
       );
+      console.log(`📌 Saved as document ID: ${batchId}`);
 
-      return {
-        success: true,
-        count: top5Recommendations.length,
-        batchId: batchId,
-        generatedAt: generatedAt,
-        recommendations: top5Recommendations,
-      };
+      return resultDocument;
     } else {
       console.log("No trails matched this user's preferences.");
       return {
         success: true,
         count: 0,
+        userId: userId,
         message: "No trails matched user preferences",
         recommendations: [],
       };
