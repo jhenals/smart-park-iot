@@ -33,7 +33,7 @@
     <script src="../../assets/constants/constants.js"></script>
     <script src="../../assets/js/dynamic-navbar.js"></script>
     <script src="../../assets/js/public-env.js"></script>
-    <script src="../../assets/js/user-dashboard.js"></script>
+    <script type="module" src="../../assets/js/user-dashboard.js"></script>
   </head>
   <body>
     <nav
@@ -57,7 +57,7 @@
           <div class="glass-header">
             <div class="user-info">
               <h1 id="active-trail"></h1>
-              <p>Welcome back, <span id="display-username">Explorer</span></p>
+              <p>Welcome, <span id="display-username">Explorer</span></p>
               <p
                 id="trail-description"
                 style="display: block; margin-top: 5px; opacity: 0.8"
@@ -140,20 +140,6 @@
               alt="ai-icon"
             />
           </button>
-        </div>
-      </div>
-
-      <h1 class="text-center mt-5">User Location Map</h1>
-      <p class="text-center subtitle">Live GPS tracking and trail guidance</p>
-      <div id="map"></div>
-
-      <div class="eta-info glass-card">
-        <h4 id="eta-label">ETA to Exit: 24 mins</h4>
-        <div id="eta-details" class="eta-details">
-          <span class="eta-item">Distance: 1.8 km</span> <br />
-          <span class="eta-item">Elevation: +120 m</span> <br />
-          <span class="eta-item">Exit: East Gate</span> <br />
-          <span class="eta-item">Pace: 4.5 km/h</span> <br />
         </div>
       </div>
     </div>

@@ -10,7 +10,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function loadPublicEnv() {
   try {
-    const response = await fetch("http://localhost:8000/api/weather/forecast/public?minutes=60");
+    const response = await fetch(
+      "http://localhost:8000/api/weather/forecast/?minutes=60",
+    );
     if (!response.ok) throw new Error("Backend unreachable");
 
     const data = await response.json();

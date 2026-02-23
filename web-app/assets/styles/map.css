@@ -17,16 +17,6 @@
   color: var(--text-light-color);
 }
 
-header h1 {
-  text-align: center;
-  color: var(--text-light-color);
-  text-shadow:
-  0 0 15px var(--primary-color),
-  0 0 30px var(--background-color);
-  margin-top: 30px;
-  width: 100vw;
-}
-
 #loading-message {
   position: absolute;
   top: 50%;

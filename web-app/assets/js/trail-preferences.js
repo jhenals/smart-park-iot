@@ -206,9 +206,14 @@ async function savePreferencesAndRecommendation() {
       selectedAt: new Date().toISOString(),
       createdAt: Date.now(),
     });
+    // Store trail info in localStorage for dashboard access
+    localStorage.setItem(
+      "recommendedTrail",
+      JSON.stringify(currentRecommendation.trail),
+    );
     alert("Your trail selection has been saved! Redirecting to dashboard...");
     setTimeout(() => {
-      window.location.href = "/web-app/src/user/user-dashboard.html";
+      window.location.href = `http://localhost/web-app/src/user/user-dashboard.html?userId=${userId}`;
     }, 1000);
   } catch (error) {
     console.error("Error saving trail selection:", error);

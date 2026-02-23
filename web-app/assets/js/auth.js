@@ -299,4 +299,6 @@ export {
   isSessionValid,
   restoreSession,
   saveSession,
+  doc,
+  getDoc,
 };

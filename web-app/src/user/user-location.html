@@ -25,7 +25,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../../assets/constants/constants.js"></script>
     <script src="../../assets/js/dynamic-navbar.js"></script>
-    <script src="../../assets/js/user-location.js"></script>
+    <script type="module" src="../../assets/js/auth.js"></script>
+    <script type="module" src="../../assets/js/user-location.js"></script>
   </head>
 
   <body>
@@ -100,6 +101,9 @@
         <button class="map-control-btn" onclick="showFullTrail()">
           🗺️ Full Trail
         </button>
+        <button class="map-control-btn" onclick="enlargeTrail()">
+          ➕ Enlarge Trail
+        </button>
       </div>
     </div>
 
@@ -107,6 +111,5 @@
       src="../../src/components/footer.html"
       style="width: 100%; border: none; display: block; height: 45px"
     ></iframe>
-    <script src="../../assets/js/user-location.js"></script>
   </body>
 </html>
