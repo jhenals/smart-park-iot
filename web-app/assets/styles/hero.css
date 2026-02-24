@@ -1,6 +1,6 @@
 .hero-section {
-  background: url("../../public/images/homepage-imgs/1.png")
-center/cover no-repeat;
+  transition: background-image 1s ease-in-out, background-color 0.5s;
+  /* background: url("../../public/images/homepage-imgs/1.png") center/cover no-repeat; */
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -8,6 +8,7 @@ center/cover no-repeat;
   padding-top: 20px;
   color: var(--text-light-color);
   height: 100vh;
+
 }
 
 .hero-section h1 {

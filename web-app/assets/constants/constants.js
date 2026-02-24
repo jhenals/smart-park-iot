@@ -1,55 +1,108 @@
 // Shared constants for Smart Park IoT application
 
+//Sila Geographic coordinates
+const SILA_LOCATION = {
+  LAT: 39.3551,
+  LON: 16.2232,
+};
+
 const API = {
   FASTAPI_URL: "http://localhost:8000/api/weather/forecast/?minutes=60",
   SENSORS_DATA_PATH: "../../../database/sensor_reponse.json",
   USER_DATA_URL: "http://localhost:8000/api/users/", //TODO: change to actual endpoint when backend is ready
-  USER_DATA_PATH: "../../../database/users.json",
   DASHBOARD_DATA_PATH: "../../../database/user-dashboard.json",
   GIANTS_DATA_PATH: "../../../database/giants-sila.json",
+  OPEN_METEO_URL: `https://api.open-meteo.com/v1/forecast?latitude=${SILA_LOCATION.LAT}&longitude=${SILA_LOCATION.LON}&hourly=temperature_2m,relative_humidity_2m,precipitation_probability,uv_index&current=apparent_temperature,wind_speed_10m,visibility&daily=sunset`,
 };
 
 const PATHS = {
   FIREBASE_CONFIG_PATH: "../../../firebase-config/firebase.js",
-};
-
-//Sila Geographic coordinates
-const SILA_LOCATION = {
-  LAT: 39.3551, // Giganti della Sila latitude
-  LON: 16.2232, // Giganti della Sila longitude
+  MAP_URL: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
 };
 
 // Weather and Trail Condition Thresholds
+
+const TEMPERATURE_RANGES = [
+  {
+    min: -50,
+    max: -5,
+    label: "EXTREME COLD",
+    description: "Dangerous mountain conditions. Risk of hypothermia.",
+  },
+  {
+    min: -5,
+    max: 5,
+    label: "ICY CONDITIONS",
+    description: "Frost or snow likely. Traction spikes and thermals required.",
+  },
+  {
+    min: 5,
+    max: 12,
+    label: "BRISK",
+    description: "Cold mountain air. Insulated jacket and gloves recommended.",
+  },
+  {
+    min: 12,
+    max: 22,
+    label: "IDEAL",
+    description: "Perfect for the Giganti trails. Light layers recommended.",
+  },
+  {
+    min: 22,
+    max: 28,
+    label: "MILD / WARM",
+    description: "Warmer than usual for Sila. Carry extra water.",
+  },
+  {
+    min: 28,
+    max: 60,
+    label: "EXCESSIVE HEAT",
+    description: "Unusually hot for this altitude. Avoid peak sun hours.",
+  },
+];
+
 const THRESHOLDS = {
   precipitation: {
     rainyIcon: 20, // % probability to show rain icon
   },
-  temperature: {
-    jacketRequired: 18, // °C - below this recommend jacket
-  },
+
   humidity: {
     dampTrails: 65, // % - above this recommend waterproof boots
     highHumidity: 75, // % - trail readiness warning
     severeWarning: 85, // % - severe safety warning
   },
   light: {
-    excellent: 15, // Above this is excellent visibility (for weather forecast scale)
-    moderate: 3, // Between moderate and excellent is shaded
-    headlampRequired: 5, // Below this recommend headlamp
-    lowVisibility: 5, // Below this is low visibility warning
-    clearSkies: 10, // Above this is clear skies
-    deepCanopy: 2, // Between deep canopy and clear skies is deep canopy/twilight
-    // Sensor scale (0-10): raw sensor readings from IoT devices
+    // Meteorological Visibility (from Open-Meteo in KM)
+    // Used to detect fog ("La Lupa") which is common in Sila
+    weatherAPI: {
+      excellent: 10000, // m Clear view of the plateau
+      hazyMistMin: 2000, // Light mountain mist
+      hazyMistMax: 5000, // Hazy conditions with reduced visibility
+      danger: 500, // DANGER: Thick Sila fog. Navigation difficult.
+      moderateFogMin: 500, // Moderate fog with limited visibility
+      moderateFogMax: 2000, // Moderate fog with limited visibility
+      dangerLupa: 500, // <500m DANGER: Thick Sila fog. Navigation difficult.
+    },
+
+    // IoT Sensor Scale (0-10): Real-time light under the pines
     sensor: {
-      deepCanopy: 2, // 0-2: Very dark, deep forest canopy (~200-300 lux)
-      moderate: 5, // 3-5: Moderate light, shaded areas (~400-600 lux)
-      bright: 10, // 6-10: Bright, open areas (~700-1000 lux)
+      bright: 8, // 8-10: Open areas/clearings (Direct sun)
+      shaded: 4, // 4-7: Standard forest floor (Filterered light)
+      deepCanopy: 2, // 1-3: Deep forest gloom (Thickest pine clusters)
+      headlampRequired: 1, // 0-1: Twilight or Night. Impossible to see roots/rocks.
     },
   },
   pressure: {
     stableDiff: 2, // Pa - pressure change less than this is stable
     stableRange: 5, // Pa - pressure change in this range is fairly stable
     falling: -15, // Pa - pressure dropping more than this is warning
+  },
+  windSpeed: {
+    calm: 8.7, // km/h - Typical August (calmest) conditions. Ideal for all trails.
+    moderate: 13.7, // km/h - Average February (windiest) conditions. Pleasant but noticeable.
+    breezy: 24, // km/h - Above seasonal averages. May feel cold on exposed ridges.
+    caution: 40, // km/h - Strong winds. Difficult walking; high wind chill risk in the Sila mountains.
+    dangerous_min: 41, // km/h - above 40 km/h,   dangerous conditions, Risk of falling branches or losing balance on narrow paths.
   },
   noise: [
     { value: "very_quiet", label: "Serene", max: 30 },

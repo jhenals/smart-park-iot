@@ -10,9 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function loadPublicEnv() {
   try {
-    const response = await fetch(
-      "http://localhost:8000/api/weather/forecast/?minutes=60",
-    );
+    const response = await fetch(API.FASTAPI_URL);
     if (!response.ok) throw new Error("Backend unreachable");
 
     const data = await response.json();
@@ -29,6 +27,7 @@ async function loadPublicEnv() {
       updateLivePulse(latest);
       updateEnvironmentalInsights(latest, previous);
       renderSensorNodes(REAL_TIME_DATA);
+      updateOutlookCard(latest);
 
       const statusEl = document.getElementById("gateway-status");
       if (statusEl) statusEl.innerText = "Active";
@@ -43,7 +42,7 @@ async function loadPublicEnv() {
 function initMap() {
   map = L.map("map").setView(gigantiDellaSilaCenter, 14);
 
-  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  L.tileLayer(PATHS.MAP_URL, {
     attribution: "&copy; OpenStreetMap contributors",
   }).addTo(map);
 
@@ -84,6 +83,50 @@ function updateLivePulse(latest) {
   if (noiseEl) noiseEl.innerText = getNoiseLabel(latest.noise);
 }
 
+function updateOutlookCard(sensorData) {
+  const predictionValue = document.getElementById("live-weather-prediction");
+  const predictionDesc = document.getElementById("outlook-desc");
+  const predictionIcon = document.getElementById("prediction-icon");
+  const confidenceBar = document.getElementById("confidence-bar");
+  const confidenceText = document.getElementById("confidence-pct");
+
+  const prediction = sensorData.weather_prediction;
+  const confidence = sensorData.prediction_confidence;
+  const confidencePct = Math.round(confidence * 100);
+
+  const iconMap = {
+    "Sun-Drenched": "☀️",
+    "Partly Cloudy": "⛅",
+    Overcast: "☁️",
+    Rainy: "🌧️",
+    Stormy: "⛈️",
+  };
+
+  if (predictionIcon) predictionIcon.innerText = iconMap[prediction] || "📡";
+  if (predictionValue) predictionValue.innerText = prediction;
+
+  // Description based on confidence level
+  if (predictionDesc) {
+    if (confidence >= 0.8) {
+      predictionDesc.innerText = "High reliability for the next 2-4 hours.";
+    } else if (confidence >= 0.5) {
+      predictionDesc.innerText = "Stable, but stay alert for Sila fog.";
+    } else {
+      predictionDesc.innerText = "Low certainty. Conditions may fluctuate.";
+    }
+  }
+
+  if (confidenceBar) {
+    confidenceBar.style.width = `${confidencePct}%`;
+    if (confidencePct < 40) {
+      confidenceBar.className = "progress-bar bg-danger";
+    } else {
+      confidenceBar.className = "progress-bar bg-emerald";
+    }
+  }
+  if (confidenceText) confidenceText.innerText = `${confidencePct}%`;
+}
+
 function updateEnvironmentalInsights(latest, previous) {
   const trendEl = document.getElementById("pressure-trend");
   const visibilityEl = document.getElementById("live-visibility");
@@ -91,18 +134,27 @@ function updateEnvironmentalInsights(latest, previous) {
   if (trendEl) {
     const diff = latest.pressure - previous.pressure;
     if (Math.abs(diff) < THRESHOLDS.pressure.stableDiff)
-      trendEl.innerText = "Stable ↔️";
-    else if (diff > 0) trendEl.innerText = "Rising ↗️";
-    else trendEl.innerText = "Falling ↘️";
+      trendEl.innerHTML = 'Stable <i class="bi bi-arrow-left-right"></i> ';
+    else if (diff > 0)
+      trendEl.innerHTML = 'Rising <i class="bi bi-arrow-up"></i>';
+    else trendEl.innerHTML = 'Falling <i class="bi bi-arrow-down"></i>';
   }
 
-  // 2. Visibility Logic (Light)
   if (visibilityEl) {
-    if (latest.light > THRESHOLDS.light.clearSkies)
-      visibilityEl.innerText = "Clear Skies";
-    else if (latest.light > THRESHOLDS.light.deepCanopy)
-      visibilityEl.innerText = "Deep Canopy / Twilight";
-    else visibilityEl.innerText = "Low Visibility";
+    if (latest.light >= THRESHOLDS.light.sensor.bright) {
+      visibilityEl.innerText = "Clear Skies (Open Area)";
+    } else if (latest.light >= THRESHOLDS.light.sensor.shaded) {
+      visibilityEl.innerText = "Shaded Forest Floor";
+    } else if (latest.light >= THRESHOLDS.light.sensor.deepCanopy) {
+      visibilityEl.innerText = "Deep Canopy (Gloom)";
+    } else if (
+      latest.light >= 0 &&
+      latest.light < THRESHOLDS.light.sensor.headlampRequired
+    ) {
+      visibilityEl.innerText = "Headlamp Required";
+    } else {
+      visibilityEl.innerText = "Low Visibility";
+    }
   }
 }
 

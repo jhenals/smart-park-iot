@@ -10,6 +10,10 @@
       rel="stylesheet"
       href="../../assets/styles/components/dynamic-navbar.css"
     />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
 
     <script src="../../assets/js/index.js"></script>
     <script src="../../assets/js/dynamic-navbar.js"></script>
@@ -19,6 +23,7 @@
       src="https://kit.fontawesome.com/fde79452b1.js"
       crossorigin="anonymous"
     ></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   </head>
   <body>
     <nav
@@ -30,67 +35,127 @@
     <header>
       <h1>Weather Forecast Giganti della Sila</h1>
     </header>
+    <div class="container py-3">
+      <div id="current-date" class="text-center mb-4"></div>
 
-    <div>
-      <div id="current-date" class="text-center mt-2 mb-4"></div>
+      <section class="glass-card glass-glow-green mb-4 overflow-hidden">
+        <div
+          class="d-flex justify-content-around align-items-center text-center py-4"
+        >
+          <div class="stat-item temp-container">
+            <div class="icon-circle mx-auto bg-emerald">
+              <i class="bi bi-thermometer-sun"></i>
+            </div>
+            <span class="d-block text-uppercase ls-1 text-green-muted mb-1"
+              >Air Temp</span
+            >
+            <strong id="current-temp-main" class="stat-value-green display-6"
+              >--°C</strong
+            >
+
+            <div class="mt-1">
+              <small class="text-green-muted">Feels like: </small>
+              <small id="stat-feels" class="fw-bold feels-like-green"
+                >--°C</small
+              >
+            </div>
+          </div>
+
+          <div class="stat-item border-start-green ps-3">
+            <div class="icon-circle mb-2 mx-auto bg-emerald">
+              <i class="bi bi-sun-fill"></i>
+            </div>
+            <span class="d-block text-uppercase ls-1 text-green-muted mb-1"
+              >UV Index</span
+            >
+            <strong id="stat-uv" class="stat-value-green">--</strong>
+          </div>
+
+          <div class="stat-item border-start-green ps-3">
+            <div class="icon-circle mb-2 mx-auto bg-forest">
+              <i class="bi bi-wind"></i>
+            </div>
+            <span class="d-block text-uppercase ls-1 text-green-muted mb-1"
+              >Wind</span
+            >
+            <strong id="stat-wind" class="stat-value-green">-- km/h</strong>
+          </div>
+
+          <div class="stat-item border-start-green ps-3">
+            <div class="icon-circle mb-2 mx-auto bg-emerald">
+              <i class="bi bi-brightness-alt-high"></i>
+            </div>
+            <span class="d-block text-uppercase ls-1 text-green-muted mb-1"
+              >Sunset</span
+            >
+            <strong id="stat-sunset" class="stat-value-green">--:--</strong>
+          </div>
+        </div>
+      </section>
 
       <div class="weather-dashboard">
         <section class="forecast-container glass-card">
-          <h3>Hourly Forecast</h3>
+          <div
+            class="d-flex flex-column justify-content-between align-items-center mb-3"
+          >
+            <h3 class="m-0">Hourly Forecast</h3>
+            <span>Next 24h</span>
+          </div>
           <ul id="forecast-list" class="list-unstyled">
-            Loading...
+            <li class="p-2 border-bottom d-flex justify-content-between">
+              <span>Loading...</span>
+            </li>
           </ul>
         </section>
+
         <section class="weather-advanced-container">
           <div class="weather-advanced-card glass-card">
             <h4>🌲 Trail Readiness</h4>
-            <div id="hike-recommendation" class="status-badge status-safe">
-              Loading...
+            <div id="hike-recommendation" class="status-badge">
+              Calculating...
             </div>
-            <p id="hike-recommendation-desc">
-              Stable pressure and low humidity detected by Node 101.
+            <p id="hike-recommendation-desc" class="small mt-2 text-secondary">
+              Awaiting Node 101 data stream...
             </p>
 
-            <div class="readiness-details">
-              <div>
-                <small>Visibility:</small>
-                <i id="readiness-light">Loading...</i>
+            <div class="readiness-details mt-2 pt-3 border-top">
+              <div class="d-flex justify-content-between">
+                <small>Visibility: </small>
+                <small id="readiness-light" class="fw-bold">--</small>
               </div>
-              <div>
-                <small>Stability:</small>
-                <i id="readiness-press">Loading...</i>
+              <div class="d-flex justify-content-between">
+                <small>Stability: </small>
+                <small id="readiness-press" class="fw-bold">--</small>
               </div>
             </div>
           </div>
 
           <div class="weather-advanced-card glass-card">
             <h4>📉 1h Pressure Trend</h4>
-            <canvas id="pressureChart">Loading...</canvas>
+            <div style="height: 135px">
+              <canvas id="pressureChart"></canvas>
+            </div>
           </div>
+
           <div class="weather-advanced-card glass-card">
             <h4>🎒 Essential Gear</h4>
-            <ul id="gear-list">
-              Loading ...
+            <ul id="gear-list" class="ps-3 mt-2">
+              <li class="text-muted">Analyzing conditions...</li>
             </ul>
           </div>
         </section>
       </div>
 
-      <div class="flex-column text-center mb-5 mt-5 forecast-calab">
-        <header>
-          <h1 class="text-center">Weather Forecast Calabria</h1>
+      <div class="flex-column text-center mb-5 mt-10 forecast-calab">
+        <header class="mt-10">
+          <h1 class="text-center">Sila National Park Official Data</h1>
         </header>
         <iframe
           src="https://www.parks.it/parco.nazionale.sila/Emeteo.php"
-          width="80%"
-          height="600"
-          style="
-            border: 5px solid var(--primary-color);
-            margin: 20px auto;
-            display: block;
-          "
-        >
-        </iframe>
+          width="100%"
+          height="500"
+          style="border: 2px solid var(--primary-color); border-radius: 15px"
+        ></iframe>
       </div>
     </div>
 
@@ -100,5 +165,4 @@
     ></iframe>
     <script src="../../assets/js/weather.js"></script>
   </body>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </html>

@@ -1,21 +1,79 @@
-// Parse coords from selected trail and render as polyline on map
-async function parseAndRenderTrailCoords() {
-  const trailId = localStorage.getItem("selectedTrailId");
-  if (!trailId) {
-    alert("No trail selected.");
-    return;
+import { getDoc, doc, userDatabase as db } from "./auth.js";
+import {
+  getDocs,
+  collection,
+} from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+
+let customTrailPolyline;
+let locationMap,
+  trailPolyline,
+  userMarker,
+  userLocationMarker,
+  accuracyCircle,
+  pathPolyline;
+let userPosition = null;
+let isFollowingUser = true;
+let watchID = null;
+let nearbyGiants = [];
+const trail = null;
+
+window.addEventListener("beforeunload", () => {
+  if (watchID) {
+    navigator.geolocation.clearWatch(watchID);
   }
-  const trailDoc = await getDoc(doc(trailDatabase, "trails", trailId));
-  if (!trailDoc.exists()) {
-    alert("Trail not found in database.");
-    return;
+});
+
+document.addEventListener("DOMContentLoaded", async () => {
+  const locUserLat = SILA_LOCATION.LAT;
+  const locUserLng = SILA_LOCATION.LON;
+  locationMap = L.map("location-map").setView([locUserLat, locUserLng], 15);
+
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "&copy; OpenStreetMap contributors",
+  }).addTo(locationMap);
+
+  userLocationMarker = L.marker([locUserLat, locUserLng]).addTo(locationMap);
+  accuracyCircle = L.circle([locUserLat, locUserLng], {
+    radius: 15,
+    color: "#3388ff",
+    fillOpacity: 0.2,
+  }).addTo(locationMap);
+
+  trail = await getCurrentTrail();
+  if (trail && trail.coords) {
+    renderTrailFromCoords(trail.coords);
+    if (trail.name) {
+      document.getElementById("current-trail").textContent = trail.name;
+    } else {
+      document.getElementById("current-trail").textContent = "Unknown";
+    }
+  } else {
+    document.getElementById("current-trail").textContent = "Not found";
   }
-  const coords = trailDoc.data().coords;
+
+  loadTrailInfo();
+  loadNearbyPoints();
+
+  startLocationTracking();
+});
+
+const trailId = localStorage.getItem("selectedTrailId");
+if (trailId) renderTrail(trailId);
+//renderUserPosition();
+
+function centerOnUser() {
+  if (userPosition) {
+    locationMap.setView([userPosition.lat, userPosition.lng], 16);
+    isFollowingUser = true;
+    document.getElementById("follow-btn").classList.add("active");
+  }
+}
+
+function renderTrailFromCoords(coords, color = "orange") {
   if (!Array.isArray(coords) || coords.length === 0) {
-    alert("Trail has no coordinates.");
+    alert("No coordinates provided for trail.");
     return;
   }
-  // Parse coords to [lat, lng] pairs
   const latlngs = coords
     .map((pt) => {
       if (pt && typeof pt.lat === "number" && typeof pt.lng === "number") {
@@ -32,18 +90,34 @@ async function parseAndRenderTrailCoords() {
     })
     .filter(Boolean);
   if (latlngs.length === 0) {
-    alert("No valid coordinates found in trail.");
+    alert("No valid coordinates found in array.");
     return;
   }
-  // Render polyline on map
-  if (trailPolyline) locationMap.removeLayer(trailPolyline);
-  trailPolyline = L.polyline(latlngs, { color: "blue" }).addTo(locationMap);
-  locationMap.fitBounds(trailPolyline.getBounds());
-  return latlngs;
+  // Add marker for starting position
+  if (window.trailStartMarker) {
+    locationMap.removeLayer(window.trailStartMarker);
+  }
+  const startLatLng = latlngs[0];
+  window.trailStartMarker = L.marker(startLatLng, {
+    icon: L.icon({
+      iconUrl: "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
+      iconSize: [32, 32],
+      iconAnchor: [16, 32],
+      popupAnchor: [0, -32],
+    }),
+  })
+    .addTo(locationMap)
+    .bindPopup("Trail Start");
+
+  if (customTrailPolyline) locationMap.removeLayer(customTrailPolyline);
+  customTrailPolyline = L.polyline(latlngs, {
+    color,
+    weight: 7,
+    opacity: 0.95,
+  }).addTo(locationMap);
+  locationMap.fitBounds(customTrailPolyline.getBounds());
 }
 
-window.parseAndRenderTrailCoords = parseAndRenderTrailCoords;
-// Set user position to the beginning of the selected trail (first coord)
 async function moveToTrailStart() {
   const trailId = localStorage.getItem("selectedTrailId");
   if (!trailId) {
@@ -84,132 +158,6 @@ async function moveToTrailStart() {
   }
 }
 
-window.moveToTrailStart = moveToTrailStart;
-// Temporarily set user location to the beginning of the current trail
-async function setLocationToTrailStart() {
-  const trailId = localStorage.getItem("selectedTrailId");
-  if (!trailId) {
-    alert("No trail selected.");
-    return;
-  }
-  const trailDoc = await getDoc(doc(trailDatabase, "trails", trailId));
-  if (trailDoc.exists()) {
-    let coords = trailDoc.data().coords;
-    if (Array.isArray(coords) && coords.length > 0) {
-      let first = coords[0];
-      let lat, lng;
-      if (
-        first &&
-        typeof first.lat === "number" &&
-        typeof first.lng === "number"
-      ) {
-        lat = first.lat;
-        lng = first.lng;
-      } else if (
-        first &&
-        typeof first.latitude === "number" &&
-        typeof first.longitude === "number"
-      ) {
-        lat = first.latitude;
-        lng = first.longitude;
-      } else {
-        alert("Invalid coordinate format in trail start.");
-        return;
-      }
-      updateUserPosition(lat, lng, 10);
-      locationMap.setView([lat, lng], 17);
-    } else {
-      alert("Trail has no coordinates.");
-    }
-  } else {
-    alert("Trail not found in database.");
-  }
-}
-
-window.setLocationToTrailStart = setLocationToTrailStart;
-import {
-  getUserProfile,
-  getSession,
-  getDoc,
-  doc,
-  userDatabase as trailDatabase,
-} from "./auth.js";
-
-let locationMap,
-  trailPolyline,
-  userMarker,
-  userLocationMarker,
-  accuracyCircle,
-  pathPolyline;
-let userPosition = null;
-let isFollowingUser = true;
-let watchID = null;
-let nearbyGiants = [];
-
-document.addEventListener("DOMContentLoaded", () => {
-  // Use SILA_LOCATION for initial center if available
-  const silaLat =
-    typeof SILA_LOCATION !== "undefined" ? SILA_LOCATION.LAT : 39.3581;
-  const silaLng =
-    typeof SILA_LOCATION !== "undefined" ? SILA_LOCATION.LON : 16.4419;
-  locationMap = L.map("location-map").setView([silaLat, silaLng], 15);
-
-  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: "&copy; OpenStreetMap contributors",
-  }).addTo(locationMap);
-
-  userLocationMarker = L.marker([silaLat, silaLng]).addTo(locationMap);
-  accuracyCircle = L.circle([silaLat, silaLng], {
-    radius: 15,
-    color: "#3388ff",
-    fillOpacity: 0.2,
-  }).addTo(locationMap);
-  pathPolyline = L.polyline([], { color: "red" }).addTo(locationMap);
-
-  loadTrailInfo();
-  loadNearbyPoints();
-  startLocationTracking();
-});
-
-async function renderTrail(trailId) {
-  const trailDoc = await getDoc(doc(trailDatabase, "trails", trailId));
-  if (trailDoc.exists()) {
-    let coords = trailDoc.data().coords;
-    // Firestore may store coords as array of objects or GeoPoints
-    if (Array.isArray(coords) && coords.length > 0) {
-      // Support both {lat, lng} and GeoPoint
-      const latlngs = coords
-        .map((pt) => {
-          if (pt && typeof pt.lat === "number" && typeof pt.lng === "number") {
-            return [pt.lat, pt.lng];
-          } else if (
-            pt &&
-            typeof pt.latitude === "number" &&
-            typeof pt.longitude === "number"
-          ) {
-            // Firestore GeoPoint
-            return [pt.latitude, pt.longitude];
-          } else {
-            console.warn("Invalid coordinate format in coords:", pt);
-            return null;
-          }
-        })
-        .filter(Boolean);
-      if (latlngs.length > 0) {
-        if (trailPolyline) locationMap.removeLayer(trailPolyline);
-        trailPolyline = L.polyline(latlngs, { color: "blue" }).addTo(
-          locationMap,
-        );
-        locationMap.fitBounds(trailPolyline.getBounds());
-      } else {
-        console.warn("No valid coordinates found in coords array:", coords);
-      }
-    } else {
-      console.warn("Trail coords missing or not an array:", coords);
-    }
-  }
-}
-
 function renderUserPosition() {
   if (!navigator.geolocation) return;
   navigator.geolocation.watchPosition(
@@ -227,20 +175,6 @@ function renderUserPosition() {
     (err) => console.error("Geolocation error:", err),
     { enableHighAccuracy: true },
   );
-}
-
-const trailId = localStorage.getItem("selectedTrailId");
-if (trailId) renderTrail(trailId);
-renderUserPosition();
-function loadTrailInfo() {
-  const trail = getCurrentTrail();
-  const trailEl = document.getElementById("current-trail");
-
-  if (trail && trail.name) {
-    trailEl.textContent = trail.name;
-  } else {
-    trailEl.textContent = "No trail selected";
-  }
 }
 
 async function loadNearbyPoints() {
@@ -304,7 +238,7 @@ function simulateLocationTracking() {
   setInterval(() => {
     let progress = parseInt(
       localStorage.getItem("sharedTrailProgress") || "0",
-      5,
+      10,
     );
     if (progress > 100) progress = 0;
 
@@ -426,14 +360,6 @@ function toggleFollow() {
   }
 }
 
-function centerOnUser() {
-  if (userPosition) {
-    locationMap.setView([userPosition.lat, userPosition.lng], 16);
-    isFollowingUser = true;
-    document.getElementById("follow-btn").classList.add("active");
-  }
-}
-
 function showFullTrail() {
   const pathCoords = pathPolyline.getLatLngs();
   if (pathCoords.length > 0) {
@@ -482,27 +408,28 @@ function shareLocation() {
   }
 }
 
-function getCurrentTrail() {
-  const savedTrailData = localStorage.getItem("recommendedTrail");
-  return savedTrailData ? JSON.parse(savedTrailData) : null;
+async function getCurrentTrail() {
+  const trailId = localStorage.getItem("selectedTrailId");
+  if (!trailId) return null;
+  try {
+    const trailDoc = await getDoc(doc(db, "trails", trailId));
+    if (trailDoc.exists()) {
+      return trailDoc.data();
+    }
+    return null;
+  } catch (error) {
+    console.error("Error fetching current trail from Firebase:", error);
+    return null;
+  }
 }
 
-window.addEventListener("beforeunload", () => {
-  if (watchID) {
-    navigator.geolocation.clearWatch(watchID);
-  }
-});
+// Zoom to trail start on load
 
+window.enlargeTrail = enlargeTrail;
+window.setLocationToTrailStart = setLocationToTrailStart;
+window.moveToTrailStart = moveToTrailStart;
 window.toggleFollow = toggleFollow;
 window.centerOnUser = centerOnUser;
 window.showFullTrail = showFullTrail;
 window.shareLocation = shareLocation;
-
-function enlargeTrail() {
-  if (trailPolyline) {
-    const currentWeight = trailPolyline.options.weight || 5;
-    trailPolyline.setStyle({ weight: currentWeight + 3 });
-  }
-}
-
-window.enlargeTrail = enlargeTrail;
+window.renderTrailFromCoords = renderTrailFromCoords;

@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
             class="logo"
             alt="Smart Trek Logo"
           />
-          <a class="navbar-brand title" href="${publicPrefix}index.html">Smart Trek</a>
+          <a class="navbar-brand title" href="${publicPrefix}index.html">Smart Park</a>
         </div>
         <button
           class="navbar-toggler"

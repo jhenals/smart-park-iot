@@ -14,14 +14,20 @@ font-family: "Roboto", sans-serif;
 
 --text-light-color: #faf3dd;
 --text-dark-color:#4a7c59;
-
 --forest-dark: #1b3022;
 --forest-light: #2e7d32;
+--forest-deep: #1b4332;
+--forest-mid: #2d6a4f;
+--sage: #95d5b2;
+--emerald: #52b788;
+--glass-green: rgba(27, 67, 50, 0.15);
 --glass-bg: rgba(255, 255, 255, 0.15);
 --glass-white: rgba(255, 255, 255, 0.1);
-
 --glass-border: rgba(255, 255, 255, 0.2);
---danger-color: #ff5252;
+
+--text-status-danger: #ff5252;
+--text-status-warning: #ffc107;
+--text-status-safe: #1b4332;
 }
 
 body {
@@ -113,7 +119,7 @@ background: var(--primary-color);
 .logo .title {
   font-family: "Orbitron", sans-serif;
   font-size: 1.5rem;
-  color: var(--color-text-light);
+  color: var(--text-light-color);
   font-weight: bold;
 }
 

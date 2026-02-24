@@ -1,10 +1,4 @@
-import {
-  getUserProfile,
-  getSession,
-  getDoc,
-  doc,
-  userDatabase as trailDatabase,
-} from "./auth.js";
+import { getDoc, doc, userDatabase as trailDatabase } from "./auth.js";
 import { trackTrailVisit } from "./ml-integration.js";
 
 let trailStartTime = null;
@@ -12,13 +6,12 @@ let currentTrailId = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
   await displayUserAndTrail();
+  fetchAndDisplayEnvironmentInfo();
 });
 
-const session = JSON.parse(localStorage.getItem("userSession"));
-const userId = session && session.uid ? session.uid : null;
-const displayName = userId ? session.displayName : "Visitor";
-
 async function displayUserAndTrail() {
+  const session = JSON.parse(localStorage.getItem("userSession"));
+  const displayName = session?.displayName || "Explorer";
   const savedTrailId = localStorage.getItem("selectedTrailId");
   let savedTrail = null;
 
@@ -27,107 +20,46 @@ async function displayUserAndTrail() {
       const trailDoc = await getDoc(doc(trailDatabase, "trails", savedTrailId));
       if (trailDoc.exists()) {
         savedTrail = trailDoc.data();
-        currentTrailId = savedTrailId;
       }
     } catch (error) {
-      console.error("Error fetching trail info:", error);
+      console.error("Error fetching trail info from Firebase:", error);
     }
   }
-
-  updateUserAndTrailUI(savedTrail);
+  updateUserAndTrailUI(savedTrail, savedTrailId, displayName);
 }
 
-function updateUserAndTrailUI(savedTrail) {
+function updateUserAndTrailUI(savedTrail, savedTrailId, displayName) {
   const userEl = document.getElementById("display-username");
   const trailEl = document.getElementById("active-trail");
   const trailDescEl = document.getElementById("trail-description");
-  const slopeEl = document.getElementById("trail-slope");
-  const widthEl = document.getElementById("trail-width");
-  const noiseEl = document.getElementById("trail-noise");
-  const tagsEl = document.getElementById("trail-tags");
-
   if (userEl) userEl.innerText = displayName;
-  if (trailEl) trailEl.innerText = savedTrail?.name || "No Trail Selected";
+  if (trailEl)
+    trailEl.innerText = savedTrail?.name || savedTrailId || "No Trail Selected";
   if (trailDescEl) trailDescEl.innerText = savedTrail?.description || "";
-  if (slopeEl) slopeEl.innerText = savedTrail?.slope || "";
-  if (widthEl) widthEl.innerText = savedTrail?.width || "";
-  if (noiseEl) noiseEl.innerText = savedTrail?.noise || "";
-  if (tagsEl)
-    tagsEl.innerText = Array.isArray(savedTrail?.tags)
-      ? savedTrail.tags.join(", ")
-      : savedTrail?.tags || "";
-
-  // Also update ETA and details dynamically when trail info is loaded
-  if (savedTrail) {
-    updateDashboardUI(savedTrail);
-  }
 }
 
-function updateDashboardUI(trail) {
-  // Always check for null/undefined and for element existence
-  const trailEl = document.getElementById("active-trail");
-  if (trailEl) trailEl.innerText = trail?.name || "No Trail Selected";
-
-  const descEl = document.getElementById("trail-description");
-  if (descEl) descEl.innerText = trail?.description || "";
-
-  const slopeEl = document.getElementById("trail-slope");
-  if (slopeEl) slopeEl.innerText = trail?.slope ?? "";
-
-  const widthEl = document.getElementById("trail-width");
-  if (widthEl) widthEl.innerText = trail?.width ?? "";
-
-  const noiseEl = document.getElementById("trail-noise");
-  if (noiseEl) noiseEl.innerText = trail?.noise ?? "";
-
-  const tagsEl = document.getElementById("trail-tags");
-  if (tagsEl)
-    tagsEl.innerText = Array.isArray(trail?.tags)
-      ? trail.tags.join(", ")
-      : trail?.tags || "";
-
-  // ETA and details
-  updateTrailInfo(trail);
-}
-
-function updateTrailInfo(trail) {
-  const etaLabelEl = document.getElementById("eta-label");
-  const etaDetailsEl = document.getElementById("eta-details");
-  let progress = parseInt(
-    localStorage.getItem("sharedTrailProgress") || "0",
-    10,
-  );
-  let eta = trail?.duration || "N/A";
-  if (progress > 0 && trail) {
-    eta = calculateDynamicETA(progress, trail);
-  }
-  if (etaLabelEl) etaLabelEl.innerText = `ETA to Complete Trail: ${eta}`;
-
-  if (etaDetailsEl && trail) {
-    etaDetailsEl.innerHTML = `
-      <span class="eta-item">Distance: ${trail.distance ?? "?"} km</span><br>
-      <span class="eta-item">Elevation: +${trail.elevation ?? "?"} m</span><br>
-      <span class="eta-item">Difficulty: ${trail.difficulty ?? "?"}</span><br>
-      <span class="eta-item">Features: ${(trail.features || []).slice(0, 3).join(", ")}</span>
-    `;
-  }
-}
-
-function setupWeather(weatherConfig) {
-  const banner = document.getElementById("weather-alert");
-  if (!banner || !weatherConfig) return;
-
-  if (weatherConfig.safe) {
-    banner.innerText = weatherConfig.safe.text;
-    banner.style.backgroundColor = weatherConfig.safe.color;
-  }
-
-  if (weatherConfig.alert) {
-    const delay = weatherConfig.alert.delayMs ?? 10000;
-    setTimeout(() => {
-      banner.innerText = weatherConfig.alert.text;
-      banner.style.backgroundColor = weatherConfig.alert.color;
-    }, delay);
+async function fetchAndDisplayEnvironmentInfo() {
+  try {
+    const response = await fetch(
+      "http://localhost:8000/api/weather/forecast/?minutes=60",
+    );
+    if (!response.ok) throw new Error("Backend unreachable");
+    const data = await response.json();
+    if (!Array.isArray(data) || data.length === 0) return;
+    const latest = data[data.length - 1];
+    const tempEl = document.getElementById("temp-val");
+    const noiseEl = document.getElementById("noise-val");
+    const lightEl = document.getElementById("light-val");
+    if (tempEl && typeof latest.temperature === "number")
+      tempEl.innerText = `${latest.temperature.toFixed(1)}°C`;
+    if (noiseEl && typeof latest.noise === "number")
+      noiseEl.innerText = `${Math.round(latest.noise)} dB`;
+    if (lightEl && typeof latest.light === "number") {
+      const estimatedLux = Math.round(latest.light * 100 + 200);
+      lightEl.innerText = `${estimatedLux} lux`;
+    }
+  } catch (error) {
+    console.error("Failed to fetch environment info from FastAPI:", error);
   }
 }
 

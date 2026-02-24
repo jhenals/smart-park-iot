@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   const dateDiv = document.getElementById("current-date");
   var now = new Date();
-  if (dateDiv) dateDiv.textContent = now.toUTCString();
+  if (dateDiv) dateDiv.textContent = now.toLocaleString();
 });
 
 function goToHomePage() {
