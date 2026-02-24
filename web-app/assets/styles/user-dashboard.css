@@ -1,7 +1,33 @@
 .user-dashboard-container {
   display: flex;
   flex-direction: column;
+  color: var(--text-light-color) !important;
+  display: block;
+  overflow-y: scroll;
   height: 100vh;
+
+}
+
+.park-insights-header{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  text-align: center;
+  width: 100%;
+  margin-top: 50px;
+  color: var(--text-light-color);
+  font-size: 2.5rem;
+  font-family: 'Orbitron', sans-serif;
+}
+.park-insights-iframe{
+  background-color: transparent;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  padding-top: 50px;
+  border-top: 1px solid var(--primary-color);
+  color: var(--text-light-color);
 }
 
 h1 {
@@ -11,6 +37,13 @@ h1 {
 
 h1 span {
   font-family: 'Orbitron', sans-serif;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
 }
 
 .user-meta{

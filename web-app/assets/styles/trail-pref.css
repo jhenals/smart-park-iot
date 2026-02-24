@@ -1,8 +1,10 @@
+.main-button{
+  color: var(--primary-color)
+}
 .preferences-container{
-  height: 100%;
+  height: 100vh;
   padding: 10px;
 }
-
 
 .preferences-container header{
   text-align: center;
@@ -10,24 +12,45 @@
 
 }
 
+.preferences-wrapper{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  gap:5px;
+  padding: 20px;
+}
+
 .glass-card:hover {
   transform: none;
 }
 
+.image-container{
+  width: 40%;
+  height: 450px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 #preferencesForm {
   margin: 0 auto;
-  padding: 20px;
+  padding: 5%;
   width: 90%;
-  max-width: 900px;
   display: flex;
+  height: 450px;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
 }
 
 .preferences-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
+  gap: 30px;
   width: 100%;
   margin-bottom: 30px;
   animation: fadeIn 0.3s ease-in;
@@ -88,7 +111,6 @@
   transform: rotateZ(-180deg);
 }
 
-/* Modal Styles */
 .modal {
   display: none;
   position: fixed;
@@ -206,7 +228,6 @@
   .recommendation-layout {
     flex-direction: column;
   }
-
   #recommendation-result,
   .recommendation-image {
     width: 100%;
@@ -224,6 +245,95 @@
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   }
 }
+
+/* Recommendations Grid */
+
+.recommendations-container {
+  width: 100%;
+  padding: 2rem;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.recommendation-list-container{
+  padding: 20px;
+}
+
+.recommendation-list-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 10px;
+}
+
+.recommendation-list-header h2 {
+  font-size: 1.5rem;
+  color: var(--text-dark-color);
+  margin-bottom: 0.5rem;
+  align-self: center;
+}
+
+.recommendation-list-header p {
+  color: var(--text-light-color);
+  font-size: 1rem;
+}
+
+.recommendations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.recommendation-rank {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #4CAF50;
+  color: white;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.recommendation-card .match-score {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  display: inline-block;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.recommendation-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.trail-details-compact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.trail-details-compact .detail {
+  background: #f5f5f5;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+}
+
+.why-recommended-compact {
+  background: #e8f5e9;
+  padding: 1rem;
+  border-radius: 8px;
+  border-left: 4px solid #4CAF50;
+}
+
 
 #recommendation-result h3 {
   color: var(--text-dark-color);
@@ -429,7 +539,7 @@ button{
   width: 80%;
   max-width: 100%;
   padding: 0;
-  margin: 0;
+  margin: 0 auto;
 }
 
 #recommendation-result {
@@ -441,12 +551,25 @@ button{
 }
 
 .recommendation-card {
-  width: 100%;
+  background: white;
   max-width: 100%;
   padding: 2rem;
   margin: 0;
-  border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.recommendation-card h3{
+  margin: 0.5rem 0 1rem 0;
+  color: var(--text-dark-color);
+  font-size: 3rem;
+  font-weight: bold;
+  align-self: center;
 }
 
 .recommendation-header {
@@ -495,105 +618,6 @@ button{
   justify-content: center;
 }
 
-/* Recommendations Grid */
-.recommendations-container {
-  width: 100%;
-  padding: 2rem;
-  animation: fadeIn 0.3s ease-in;
-}
-
-.recommendations-header {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.recommendations-header h2 {
-  font-size: 2rem;
-  color: var(--text-dark-color);
-  margin-bottom: 0.5rem;
-}
-
-.recommendations-header p {
-  color: var(--text-light-color);
-  font-size: 1rem;
-}
-
-.recommendations-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.recommendation-card {
-  background: white;
-  border: 2px solid #e0e0e0;
-  border-radius: 12px;
-  padding: 1.5rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.recommendation-card:hover {
-  transform: translateY(-5px);
-  border-color: #4CAF50;
-  box-shadow: 0 8px 16px rgba(76, 175, 80, 0.2);
-}
-
-.recommendation-rank {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: #4CAF50;
-  color: white;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-}
-
-.recommendation-card .match-score {
-  background: linear-gradient(135deg, #4CAF50, #45a049);
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  display: inline-block;
-  font-weight: bold;
-  margin-bottom: 1rem;
-}
-
-.recommendation-card h3 {
-  margin: 0.5rem 0 1rem 0;
-  color: var(--text-dark-color);
-  font-size: 1.3rem;
-}
-
-.trail-details-compact {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.trail-details-compact .detail {
-  background: #f5f5f5;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: 0.9rem;
-}
-
-.why-recommended-compact {
-  background: #e8f5e9;
-  padding: 1rem;
-  border-radius: 8px;
-  border-left: 4px solid #4CAF50;
-}
-
 .why-recommended-compact strong {
   display: block;
   margin-bottom: 0.5rem;
@@ -624,4 +648,28 @@ button{
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+.start-hiking-button {
+  background: var(--primary-color);
+  color: white;
+}
+
+.start-hiking-button:hover {
+  background: #45a049;
+}
+
+.reset-button {
+  background: rgba(220, 53, 69, 0.8) !important;
+  border-color: rgba(220, 53, 69, 1) !important;
+  color: var(--text-light-color)
+}
+
+.back-to-recommendations-button {
+  background: #757575;
+  color: white;
+}
+
+.back-to-recommendations-button:hover {
+  background: #616161;
 }

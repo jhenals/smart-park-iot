@@ -1,5 +1,0 @@
-//TODO:
-1. make one database for users and preferences (different schemas for list of user and their preferences)
-2. implement chatbot
-3. docker file
-

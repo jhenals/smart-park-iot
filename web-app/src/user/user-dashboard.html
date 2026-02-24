@@ -29,9 +29,9 @@
       crossorigin=""
     ></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../../assets/js/index.js"></script>
+    <script type="module"src="../../assets/js/index.js"></script>
     <script src="../../assets/constants/constants.js"></script>
-    <script src="../../assets/js/dynamic-navbar.js"></script>
+    <script type="module" src="../../assets/js/dynamic-navbar.js"></script>
     <script src="../../assets/js/public-env.js"></script>
     <script type="module" src="../../assets/js/user-dashboard.js"></script>
   </head>
@@ -42,7 +42,7 @@
       data-variant="auto"
       data-public-prefix="/web-app/"
     ></nav>
-    <div>
+    <div class="user-dashboard-container">
       <div id="safety-shield" class="safety-banner safe">
         <img
           src="../../public/icons/forest-icon.png"
@@ -52,100 +52,51 @@
         <span id="safety-text">Park Conditions: Optimal for Hiking</span>
       </div>
 
-      <div class="user-dashboard-container">
-        <div class="dashboard-wrapper">
-          <div class="glass-header">
-            <div class="user-info">
-              <h1 id="active-trail"></h1>
-              <p>Welcome, <span id="display-username">Explorer</span></p>
-              <p
-                id="trail-description"
-                style="display: block; margin-top: 5px; opacity: 0.8"
-              ></p>
-            </div>
-            <div class="trail-status">
-              <div class="progress-ring-container">
-                <svg width="40" height="40">
-                  <circle class="bg" cx="20" cy="20" r="18"></circle>
-                  <circle
-                    id="progress-circle"
-                    class="fg"
-                    cx="20"
-                    cy="20"
-                    r="18"
-                  ></circle>
-                </svg>
-                <span id="progress-percent">0%</span>
-              </div>
-            </div>
+      <div class="dashboard-wrapper">
+        <div class="glass-header">
+          <div class="user-info">
+            <p>Welcome, <span id="display-username">Explorer</span></p>
+            <span>Trail: <h1 id="active-trail"></h1></span>
+    
+            <p
+              id="trail-description"
+              style="display: block; margin-top: 5px; opacity: 0.8"
+            ></p>
           </div>
 
-          <div class="card-grid">
-            <div class="glass-card" id="comfort-card">
-              <div class="card-icon">🔇</div>
-              <div class="card-data">
-                <h4>Acoustic Comfort</h4>
-                <p id="noise-val">Loading...</p>
-                <div class="mini-bar">
-                  <div id="noise-fill" style="width: 80%"></div>
-                </div>
-              </div>
+          <div class="trail-info">
+            <div class="trail-info-item">
+              <span class="fa-solid fa-route"></span>
+              <span>Length:</span>
+              <span id="trail-length">-- km</span>
             </div>
-
-            <div class="glass-card">
-              <div class="card-icon">🌡️</div>
-              <div class="card-data">
-                <h4>Air Quality</h4>
-                <p id="temp-val">Loading...</p>
-                <p>Pristine Forest Air</p>
-              </div>
+            <div class="trail-info-item">
+              <span class="fa-solid fa-mountain"></span>
+              <span>Difficulty:</span>
+              <span id="trail-difficulty">--</span>
             </div>
-
-            <div class="glass-card">
-              <div class="card-icon">💡</div>
-              <div class="card-data">
-                <h4>Light Level</h4>
-                <p id="light-val">Loading...</p>
-                <p>Bright and Clear</p>
-              </div>
+            <div class="trail-info-item">
+              <span class="fa-solid fa-clock"></span>
+              <span>Estimated Time:</span>
+              <span id="trail-duration">-- mins</span>
             </div>
-
-            <div id="discovery-container" class="glass-card discovery-fixed">
-              <div id="discovery-content">
-                <div class="state-scanning">
-                  <span
-                    class="badge pulse"
-                    style="
-                      display: inline-block;
-                      width: 100%;
-
-                      margin: 10px;
-                      color: var(--dark-forest);
-                    "
-                    >📡 Scanning</span
-                  >
-                  <h4>Searching for Giants...</h4>
-                  <p>
-                    Walk through the trail to discover ancient Laricio pines.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <button class="chat-fab" onclick="toggleChat()">
-            <img
-              src="../../public/icons/chatbot-black.png"
-              class="icon"
-              alt="ai-icon"
-            />
-          </button>
         </div>
       </div>
     </div>
+
+      <h2 class="text-center park-insights-header">PARK INSIGHTS</h2>
+    
+      <iframe
+        src="../components/park-insights.html"
+        allowtransparency="true"
+        scrolling="no"
+        class="park-insights-iframe"
+        style="width: 70%; height: 100%; border: none"
+      ></iframe>
+
     <iframe
       src="../../src/components/footer.html"
-      style="width: 100%; border: none; display: block; height: 45px"
+      style="width: 100%; border: none; display: block; position: absolute; bottom: 0; height: 45px"
     ></iframe>
   </body>
 </html>

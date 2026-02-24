@@ -1,3 +1,5 @@
+import { setTimeAndDate } from "./modules/utils.js";
+
 document.addEventListener("DOMContentLoaded", () => {
   const navContainer = document.getElementById("dynamic-navbar");
   if (!navContainer) return;
@@ -81,7 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
             class="logo"
             alt="Smart Trek Logo"
           />
-          <a class="navbar-brand title" href="${userPrefix}index.html">Smart Trek</a>
+          <a class="navbar-brand title" href="${userPrefix}index.html">Smart Park</a>
         </div>
         <button
           class="navbar-toggler"
@@ -132,7 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
             class="logo"
             alt="Smart Trek Logo"
           />
-          <a class="navbar-brand title" href="${userPrefix}index.html">Smart Trek</a>
+          <a class="navbar-brand title" href="${userPrefix}index.html">Smart Park</a>
         </div>
         <button
           class="navbar-toggler"
@@ -169,8 +171,8 @@ document.addEventListener("DOMContentLoaded", () => {
           </ul>
 
           <div class="datetimeloc d-flex flex-column">
-            <span class="d-flex flex-row"
-              >DATE TIME:
+            <span class="d-flex flex-row">
+              DATE TIME:
               <div id="current-date"></div>
             </span>
             <span>LOCATION: SILA NATIONAL PARK</span>
@@ -180,6 +182,7 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
   }
   navContainer.innerHTML = navContent;
+  setTimeAndDate();
   if (effectiveVariant === "public") {
     setActivePublicLink(navContainer);
   }

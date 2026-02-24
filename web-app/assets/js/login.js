@@ -1,4 +1,5 @@
 import { signUp, signIn } from "./auth.js";
+import { goToHomepage } from "./modules/utils.js";
 
 $(document).ready(function () {
   $(".login-info-box").fadeOut();
@@ -24,7 +25,6 @@ $('.login-reg-panel input[type="radio"]').on("change", function () {
   }
 });
 
-// Authentication functions
 async function handleLogin() {
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
@@ -39,10 +39,9 @@ async function handleRegister() {
 }
 
 function goToHomePage() {
-  window.location.href = "/web-app/index.html";
+  goToHomepage();
 }
 
-// Make functions global for inline onclick handlers
 window.handleLogin = handleLogin;
 window.handleRegister = handleRegister;
 window.goToHomePage = goToHomePage;

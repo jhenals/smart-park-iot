@@ -6,6 +6,8 @@ import {
   addDoc,
   collection,
 } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+import { cycleImages } from "./modules/changingImages.js";
+import { goToHomepage } from "./modules/utils.js";
 
 const session = getSession();
 const userId = session && session.uid ? session.uid : null;
@@ -21,9 +23,20 @@ const preferencesState = {
   width: null,
 };
 
+const images = [
+  "../../public/images/trail-pref-images/1.jpg",
+  "../../public/images/trail-pref-images/2.jpg",
+  "../../public/images/trail-pref-images/3.jpg",
+  "../../public/images/trail-pref-images/4.jpg",
+  "../../public/images/trail-pref-images/5.jpg",
+];
+
 let currentRecommendation = null;
 let allRecommendations = [];
 
+function goToUserDashboard() {
+  goToHomepage();
+}
 function initializePreferences() {
   if (typeof TRAIL_PREFERENCES !== "undefined") {
     populateModalOptions("noise", TRAIL_PREFERENCES.noise);
@@ -32,6 +45,8 @@ function initializePreferences() {
     populateModalOptions("width", TRAIL_PREFERENCES.width);
   }
   loadSavedPreferences();
+  setInterval(() => cycleImages(".image-container", images), 3000); // Change every 3 seconds
+  cycleImages(".image-containerr", images);
 }
 
 function loadSavedPreferences() {
@@ -187,37 +202,6 @@ async function savePreferencesToFirebase(preferences) {
     console.log("✅ Preferences saved to Firebase");
   } catch (error) {
     console.error("Error saving preferences to Firebase:", error);
-  }
-}
-
-async function savePreferencesAndRecommendation() {
-  try {
-    if (!userId || !currentRecommendation || !currentRecommendation.trail) {
-      alert("No trail selected or user not authenticated.");
-      return;
-    }
-    await addDoc(collection(userDatabase, "user_trail_selections"), {
-      userId: userId,
-      trailId: currentRecommendation.trail.id,
-      trailName: currentRecommendation.trail.name,
-      score: currentRecommendation.score,
-      whyRecommended: currentRecommendation.whyRecommended || [],
-      algorithm: currentRecommendation.algorithm || "generate_recom",
-      selectedAt: new Date().toISOString(),
-      createdAt: Date.now(),
-    });
-    // Store trail info in localStorage for dashboard access
-    localStorage.setItem(
-      "recommendedTrail",
-      JSON.stringify(currentRecommendation.trail),
-    );
-    alert("Your trail selection has been saved! Redirecting to dashboard...");
-    setTimeout(() => {
-      window.location.href = `http://localhost/web-app/src/user/user-dashboard.html?userId=${userId}`;
-    }, 1000);
-  } catch (error) {
-    console.error("Error saving trail selection:", error);
-    alert("Failed to save. Please try again.");
   }
 }
 
@@ -426,8 +410,8 @@ async function displayAllRecommendations(recommendations) {
   allRecommendations = recommendations;
 
   let recommendationsHTML = `
-    <div class="recommendations-container">
-      <div class="recommendations-header">
+    <div class="recommendation-list-container">
+      <div class="recommendation-list-header">
         <h2>🎯 Recommended Trails</h2>
         <p>Click any trail to see more details</p>
       </div>
@@ -472,7 +456,7 @@ async function displayAllRecommendations(recommendations) {
   recommendationsHTML += `
       </div>
       
-      <div class="action-buttons">
+      <div class="action-button">
         <button onclick="resetPreferences()" class="btn-secondary">
           Try Again
         </button>
@@ -563,13 +547,13 @@ async function displayTrailRecommendation(recommendation) {
       </div>
             
       <div class="action-buttons">
-        <button onclick="savePreferencesAndRecommendation()" class="btn-primary">
+        <button onclick="savePreferencesAndRecommendation()" class="main-button start-hiking-button">
           Start Hiking
         </button>
-        <button onclick="displayAllRecommendations(allRecommendations)" class="btn-secondary">
+        <button onclick="displayAllRecommendations(allRecommendations)" class="main-button back-to-recommendations-button">
           Back to Recommendations
         </button>
-        <button onclick="resetPreferences()" class="btn-secondary">
+        <button onclick="resetPreferences()" class="main-button reset-button">
           Try Again
         </button>
       </div>
@@ -580,31 +564,35 @@ async function displayTrailRecommendation(recommendation) {
   resultSection.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
-async function goToHomepage() {
-  if (currentRecommendation.trail && currentRecommendation.score !== null) {
-    try {
-      const trailInFirebase =
-        currentRecommendation.trail.source === "firebase"
-          ? currentRecommendation.trail
-          : await verifyTrailExists(currentRecommendation.trail.id);
-
-      if (trailInFirebase) {
-        console.log("Trail verified in Firebase, saving recommendation...");
-        await saveRecommendation(
-          currentRecommendation.trail.id,
-          currentRecommendation.score,
-        );
-        console.log("Recommendation saved successfully");
-      } else {
-        console.warn("Trail not found in Firebase. Recommendation not saved.");
-      }
-    } catch (error) {
-      console.error("Error saving recommendation:", error);
+async function savePreferencesAndRecommendation() {
+  try {
+    if (!userId || !currentRecommendation || !currentRecommendation.trail) {
+      alert("No trail selected or user not authenticated.");
+      return;
     }
+    await addDoc(collection(userDatabase, "user_trail_selections"), {
+      userId: userId,
+      trailId: currentRecommendation.trail.id,
+      trailName: currentRecommendation.trail.name,
+      score: currentRecommendation.score,
+      whyRecommended: currentRecommendation.whyRecommended || [],
+      algorithm: currentRecommendation.algorithm || "generate_recom",
+      selectedAt: new Date().toISOString(),
+      createdAt: Date.now(),
+    });
+    // Store trail info in localStorage for dashboard access
+    localStorage.setItem(
+      "recommendedTrail",
+      JSON.stringify(currentRecommendation.trail),
+    );
+    alert("Your trail selection has been saved! Redirecting to dashboard...");
+    setTimeout(() => {
+      window.location.href = `http://localhost:5500/web-app/src/user/user-dashboard.html?userId=${userId}`;
+    }, 1000);
+  } catch (error) {
+    console.error("Error saving trail selection:", error);
+    alert("Failed to save. Please try again.");
   }
-
-  // Navigate to user dashboard
-  window.location.href = "/web-app/src/user/user-dashboard.html";
 }
 
 window.getRecommendation = getRecommendation;
@@ -615,6 +603,7 @@ window.selectRecommendation = selectRecommendation;
 window.displayTrailRecommendation = displayTrailRecommendation;
 window.loadSavedPreferences = loadSavedPreferences;
 window.updatePreferencesDisplay = updatePreferencesDisplay;
+window.goToUserDashboard = goToUserDashboard;
 
 Object.defineProperty(window, "allRecommendations", {
   get() {

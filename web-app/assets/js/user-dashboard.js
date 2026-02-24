@@ -1,5 +1,6 @@
 import { getDoc, doc, userDatabase as trailDatabase } from "./auth.js";
 import { trackTrailVisit } from "./ml-integration.js";
+import { cycleImages } from "./modules/changingImages.js";
 
 let trailStartTime = null;
 let currentTrailId = null;
@@ -15,11 +16,22 @@ async function displayUserAndTrail() {
   const savedTrailId = localStorage.getItem("selectedTrailId");
   let savedTrail = null;
 
+  const trailLengthEl = document.getElementById("trail-length");
+  const trailDifficultyEl = document.getElementById("trail-difficulty");
+  const trailDurationEl = document.getElementById("trail-duration");
+
   if (savedTrailId) {
     try {
       const trailDoc = await getDoc(doc(trailDatabase, "trails", savedTrailId));
       if (trailDoc.exists()) {
         savedTrail = trailDoc.data();
+        if (trailLengthEl)
+          trailLengthEl.innerText = savedTrail.length || "-- km";
+        if (trailDifficultyEl)
+          trailDifficultyEl.innerText = savedTrail.difficulty || "--";
+        if (trailDurationEl)
+          trailDurationEl.innerText = savedTrail.duration || "-- mins";
+        currentTrailId = savedTrailId; // Set current trail ID for tracking
       }
     } catch (error) {
       console.error("Error fetching trail info from Firebase:", error);
@@ -40,9 +52,7 @@ function updateUserAndTrailUI(savedTrail, savedTrailId, displayName) {
 
 async function fetchAndDisplayEnvironmentInfo() {
   try {
-    const response = await fetch(
-      "http://localhost:8000/api/weather/forecast/?minutes=60",
-    );
+    const response = await fetch(API.FASTAPI_URL);
     if (!response.ok) throw new Error("Backend unreachable");
     const data = await response.json();
     if (!Array.isArray(data) || data.length === 0) return;

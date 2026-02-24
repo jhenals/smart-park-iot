@@ -5,17 +5,15 @@ import {
 } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
 
 let customTrailPolyline;
-let locationMap,
-  trailPolyline,
-  userMarker,
-  userLocationMarker,
-  accuracyCircle,
-  pathPolyline;
+let locationMap, userMarker, userLocationMarker, accuracyCircle, pathPolyline;
 let userPosition = null;
 let isFollowingUser = true;
 let watchID = null;
 let nearbyGiants = [];
-const trail = null;
+let trail; // <-- Ensure trail is defined in the correct scope
+let trailId = localStorage.getItem("selectedTrailId") || null;
+let locUserLat = null;
+let locUserLng = null;
 
 window.addEventListener("beforeunload", () => {
   if (watchID) {
@@ -24,42 +22,135 @@ window.addEventListener("beforeunload", () => {
 });
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const locUserLat = SILA_LOCATION.LAT;
-  const locUserLng = SILA_LOCATION.LON;
-  locationMap = L.map("location-map").setView([locUserLat, locUserLng], 15);
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        locUserLat = position.coords.latitude;
+        locUserLng = position.coords.longitude;
+        locationMap = L.map("location-map").setView(
+          [locUserLat, locUserLng],
+          15,
+        );
 
-  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: "&copy; OpenStreetMap contributors",
-  }).addTo(locationMap);
+        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution: "&copy; OpenStreetMap contributors",
+        }).addTo(locationMap);
 
-  userLocationMarker = L.marker([locUserLat, locUserLng]).addTo(locationMap);
-  accuracyCircle = L.circle([locUserLat, locUserLng], {
-    radius: 15,
-    color: "#3388ff",
-    fillOpacity: 0.2,
-  }).addTo(locationMap);
+        userLocationMarker = L.marker([locUserLat, locUserLng]).addTo(
+          locationMap,
+        );
+        accuracyCircle = L.circle([locUserLat, locUserLng], {
+          radius: position.coords.accuracy || 15,
+          color: "#3388ff",
+          fillOpacity: 0.2,
+        }).addTo(locationMap);
 
-  trail = await getCurrentTrail();
-  if (trail && trail.coords) {
-    renderTrailFromCoords(trail.coords);
-    if (trail.name) {
-      document.getElementById("current-trail").textContent = trail.name;
-    } else {
-      document.getElementById("current-trail").textContent = "Unknown";
-    }
+        // Initialize pathPolyline as an empty polyline for user path
+        pathPolyline = L.polyline([], { color: "#3388ff", weight: 4 }).addTo(
+          locationMap,
+        );
+
+        trail = await getCurrentTrail();
+        if (trail && trail.coords) {
+          renderTrailFromCoords(trail.coords);
+          if (trail.name) {
+            document.getElementById("current-trail").textContent = trail.name;
+          } else {
+            document.getElementById("current-trail").textContent = "Unknown";
+          }
+        } else {
+          document.getElementById("current-trail").textContent = "Not found";
+        }
+
+        loadTrailInfo();
+        loadNearbyPoints();
+        startLocationTracking();
+      },
+      async (error) => {
+        // fallback to default SILA_LOCATION if denied
+        const locUserLat = SILA_LOCATION.LAT;
+        const locUserLng = SILA_LOCATION.LON;
+        locationMap = L.map("location-map").setView(
+          [locUserLat, locUserLng],
+          15,
+        );
+
+        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution: "&copy; OpenStreetMap contributors",
+        }).addTo(locationMap);
+
+        userLocationMarker = L.marker([locUserLat, locUserLng]).addTo(
+          locationMap,
+        );
+        accuracyCircle = L.circle([locUserLat, locUserLng], {
+          radius: 15,
+          color: "#3388ff",
+          fillOpacity: 0.2,
+        }).addTo(locationMap);
+
+        // Initialize pathPolyline as an empty polyline for user path
+        pathPolyline = L.polyline([], { color: "#3388ff", weight: 4 }).addTo(
+          locationMap,
+        );
+
+        trail = await getCurrentTrail();
+        if (trail && trail.coords) {
+          renderTrailFromCoords(trail.coords);
+          if (trail.name) {
+            document.getElementById("current-trail").textContent = trail.name;
+          } else {
+            document.getElementById("current-trail").textContent = "Unknown";
+          }
+        } else {
+          document.getElementById("current-trail").textContent = "Not found";
+        }
+
+        loadTrailInfo();
+        loadNearbyPoints();
+
+        startLocationTracking();
+      },
+      { enableHighAccuracy: true },
+    );
   } else {
-    document.getElementById("current-trail").textContent = "Not found";
+    // fallback if geolocation not available
+    const locUserLat = SILA_LOCATION.LAT;
+    const locUserLng = SILA_LOCATION.LON;
+    locationMap = L.map("location-map").setView([locUserLat, locUserLng], 15);
+
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "&copy; OpenStreetMap contributors",
+    }).addTo(locationMap);
+
+    userLocationMarker = L.marker([locUserLat, locUserLng]).addTo(locationMap);
+    accuracyCircle = L.circle([locUserLat, locUserLng], {
+      radius: 15,
+      color: "#3388ff",
+      fillOpacity: 0.2,
+    }).addTo(locationMap);
+
+    // Initialize pathPolyline as an empty polyline for user path
+    pathPolyline = L.polyline([], { color: "#3388ff", weight: 4 }).addTo(
+      locationMap,
+    );
+
+    trail = await getCurrentTrail();
+    if (trail && trail.coords) {
+      renderTrailFromCoords(trail.coords);
+      if (trail.name) {
+        document.getElementById("current-trail").textContent = trail.name;
+      } else {
+        document.getElementById("current-trail").textContent = "Unknown";
+      }
+    } else {
+      document.getElementById("current-trail").textContent = "Not found";
+    }
+
+    loadTrailInfo();
+    loadNearbyPoints();
+    startLocationTracking();
   }
-
-  loadTrailInfo();
-  loadNearbyPoints();
-
-  startLocationTracking();
 });
-
-const trailId = localStorage.getItem("selectedTrailId");
-if (trailId) renderTrail(trailId);
-//renderUserPosition();
 
 function centerOnUser() {
   if (userPosition) {
@@ -156,25 +247,6 @@ async function moveToTrailStart() {
   } else {
     alert("Trail not found in database.");
   }
-}
-
-function renderUserPosition() {
-  if (!navigator.geolocation) return;
-  navigator.geolocation.watchPosition(
-    (pos) => {
-      const { latitude, longitude } = pos.coords;
-      if (userMarker) {
-        userMarker.setLatLng([latitude, longitude]);
-      } else {
-        userMarker = L.marker([latitude, longitude])
-          .addTo(locationMap)
-          .bindPopup("You are here")
-          .openPopup();
-      }
-    },
-    (err) => console.error("Geolocation error:", err),
-    { enableHighAccuracy: true },
-  );
 }
 
 async function loadNearbyPoints() {
@@ -423,10 +495,6 @@ async function getCurrentTrail() {
   }
 }
 
-// Zoom to trail start on load
-
-window.enlargeTrail = enlargeTrail;
-window.setLocationToTrailStart = setLocationToTrailStart;
 window.moveToTrailStart = moveToTrailStart;
 window.toggleFollow = toggleFollow;
 window.centerOnUser = centerOnUser;
