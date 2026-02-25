@@ -1,0 +1,31 @@
+.hero-section {
+  transition: background-image 1s ease-in-out, background-color 0.5s;
+  /* background: url("../../public/images/homepage-imgs/1.png") center/cover no-repeat; */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding-top: 20px;
+  color: var(--text-light-color);
+  height: 100vh;
+
+}
+
+.hero-section h1 {
+font-family: "Orbitron", sans-serif;
+font-size: 5rem;
+color: var(--text-light-color);
+text-shadow:
+0 0 15px var(--primary-color),
+0 0 30px var(--background-color);
+}
+
+.hero-section button{
+  font-family: "Orbitron", sans-serif;
+}
+
+.feature-container {
+  margin: auto;
+  min-width: 70%;
+  min-height: 400px;
+}

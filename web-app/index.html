@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Smart Park - Giganti della Sila</title>
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="/web-app/public/images/logo.png"
+    />
+    <link rel="stylesheet" href="assets/styles/index.css" />
+    <link rel="stylesheet" href="assets/styles/components/dynamic-navbar.css" />
+    <link rel="stylesheet" href="assets/styles/hero.css" />
+
+    <script type="module" src="../web-app/assets/js/index.js"></script>
+    <script type="module" src="assets/js/dynamic-navbar.js"></script>
+    <script
+      src="https://kit.fontawesome.com/fde79452b1.js"
+      crossorigin="anonymous"
+    ></script>
+    <script type="module" src="assets/js/hero.js"></script>
+  </head>
+  <body>
+    <nav
+      id="dynamic-navbar"
+      class="navbar sticky-top navbar-expand-lg"
+      data-variant="public"
+      data-public-prefix="/web-app/"
+    ></nav>
+
+    <div>
+      <section class="hero-section">
+        <h3>Welcome to</h3>
+        <h1 class="mt-5 mb-5">GIGANTI DELLA SILA</h1>
+
+        <h3 class="mt-3">Experience Nature, Guided by Intelligence.</h3>
+
+        <button
+          onclick="location.href = 'src/login.html'"
+          class="main-button mt-5 mb-5"
+        >
+          Begin Exploration
+        </button>
+      </section>
+
+      <section class="card-grid feature-container">
+        <div class="glass-card">
+          <div class="card-icon">🌲</div>
+          <div class="card-data">
+            <h4>Real-time Monitoring</h4>
+            <small>Live data on air quality and conditions</small>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <div class="card-icon">🤖</div>
+          <div class="card-data">
+            <h4>AI Virtual Assistant</h4>
+            <small>Instant guidance and park info</small>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <div class="card-icon">🚶</div>
+          <div class="card-data">
+            <h4>Smart Trail Recommendations</h4>
+            <small>Personalized routes based on weather and crowd levels</small>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <iframe
+      src="src/components/footer.html"
+      style="width: 100%; border: none; display: block; height: 45px"
+    ></iframe>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

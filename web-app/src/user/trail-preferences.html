@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Sila Park - Tailor Your Visit</title>
+    <link rel="stylesheet" href="../../assets/styles/index.css" />
+    <link rel="stylesheet" href="../../assets/styles/trail-pref.css" />
+    <script
+      src="https://kit.fontawesome.com/fde79452b1.js"
+      crossorigin="anonymous"
+    ></script>
+    <link
+      href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+      rel="stylesheet"
+      id="bootstrap-css"
+    />
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script src="../../assets/constants/constants.js"></script>
+    <script type="module" src="../../assets/js/auth.js" defer></script>
+    <script type="module" src="../../assets/js/trail-preferences.js" defer></script>
+  </head>
+  <body>
+    <section class="preferences-container">
+      <button id="home-btn" class="main-button" onclick="goToUserDashboard()">
+        <span class="fa-sharp fa-solid fa-house"></span>
+      </button>
+      <header>
+        <h1>
+          Welcome, <span id="welcome-message">Explorer </span>! </br> How do you
+          want to experience the Park today?
+        </h1>
+        <p>
+          <strong>Tailor your visit!</strong> Our AI will suggest the best trail based on real-time sensor data.
+        </p>
+        <div
+          id="saved-prefs-indicator"
+          style="
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(76, 175, 80, 0.2);
+            border-radius: 8px;
+            color: #4caf50;
+          "
+        >
+          ✓ Your saved preferences have been loaded
+        </div>
+      </header>
+
+      <div class="d-flex flex-row preferences-wrapper">
+        <div class="image-container glass-card"></div>
+
+        <form id="preferencesForm" class="glass-card">
+        <div class="preferences-grid">
+          <div class="preference-category">
+            <label>Noise Level</label>
+            <button type="button" class="modal-trigger" data-modal="noiseModal" onclick="openModal('noiseModal')">
+              <span id="noise-display">Select</span>
+              <span class="chevron">▼</span>
+            </button>
+          </div>
+
+          <div class="preference-category">
+            <label>Trail Slope</label>
+            <button type="button" class="modal-trigger" data-modal="slopeModal" onclick="openModal('slopeModal')">
+              <span id="slope-display">Select</span>
+              <span class="chevron">▼</span>
+            </button>
+          </div>
+
+          <div class="preference-category">
+            <label>Trail Width</label>
+            <button type="button" class="modal-trigger" data-modal="widthModal" onclick="openModal('widthModal')">
+              <span id="width-display">Select</span>
+              <span class="chevron">▼</span>
+            </button>
+          </div>
+
+          
+          <div class="preference-category">
+            <label>Preferred Vibe</label>
+            <button type="button" class="modal-trigger" data-modal="vibeModal" onclick="openModal('vibeModal')">
+              <span id="vibe-display">Select</span>
+              <span class="chevron">▼</span>
+            </button>
+          </div>
+        </div>
+
+        <div>
+           <button
+          type="button"
+          class="main-button start-hiking-button"
+          onclick="
+            (async () => {
+              await getRecommendation();
+              setTimeout(() => {
+                document
+                  .getElementById('recommendation-wrapper')
+                  .scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }, 100);
+            })()
+          "
+        >
+          Get Recommendation
+        </button>
+
+      
+        <button
+          type="button"
+          class="main-button reset-button"
+          onclick="resetPreferences()"
+        >
+          Reset
+        </button>
+          
+        </div>  
+      </form>
+        
+      </div>
+    </section>
+
+    <div id="noiseModal" class="modal">
+      <div class="modal-overlay" onclick="closeModal('noiseModal')"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Select Noise Level</h2>
+          <button class="close-btn" onclick="closeModal('noiseModal')">&times;</button>
+        </div>
+        <div id="noiseOptions" class="options-grid"></div>
+      </div>
+    </div>
+
+    <div id="slopeModal" class="modal">
+      <div class="modal-overlay" onclick="closeModal('slopeModal')"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Select Trail Slope</h2>
+          <button class="close-btn" onclick="closeModal('slopeModal')">&times;</button>
+        </div>
+        <div id="slopeOptions" class="options-grid"></div>
+      </div>
+    </div>
+
+    <div id="vibeModal" class="modal">
+      <div class="modal-overlay" onclick="closeModal('vibeModal')"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Select Vibe</h2>
+          <button class="close-btn" onclick="closeModal('vibeModal')">&times;</button>
+        </div>
+        <div id="vibeOptions" class="options-grid"></div>
+      </div>
+    </div>
+
+    <div id="widthModal" class="modal">
+      <div class="modal-overlay" onclick="closeModal('widthModal')"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Select Trail Width</h2>
+          <button class="close-btn" onclick="closeModal('widthModal')">&times;</button>
+        </div>
+        <div id="widthOptions" class="options-grid"></div>
+      </div>
+    </div>
+
+    <section>
+      <div
+        id="recommendation-wrapper"
+        class="recommendation-layout glass-card"
+        style="display: none; margin-top: 50px"
+      >
+      </div>
+    </section>
+
+    <script type="module" src="../../assets/js/trail-preferences.js"></script>
+  </body>
+</html>

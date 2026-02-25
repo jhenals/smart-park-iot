@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Park - User Dashboard</title>
+
+    <link rel="stylesheet" href="../../assets/styles/index.css" />
+    <link
+      rel="stylesheet"
+      href="../../assets/styles/components/dynamic-navbar.css"
+    />
+    <link rel="stylesheet" href="../../assets/styles/map.css" />
+    <link rel="stylesheet" href="../../assets/styles/user-dashboard.css" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <link
+      rel="stylesheet"
+      href="../../assets/styles/components/dynamic-navbar.css"
+    />
+
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module"src="../../assets/js/index.js"></script>
+    <script src="../../assets/constants/constants.js"></script>
+    <script type="module" src="../../assets/js/dynamic-navbar.js"></script>
+    <script src="../../assets/js/public-env.js"></script>
+    <script type="module" src="../../assets/js/user-dashboard.js"></script>
+  </head>
+  <body>
+    <nav
+      id="dynamic-navbar"
+      class="navbar sticky-top navbar-expand-lg"
+      data-variant="auto"
+      data-public-prefix="/web-app/"
+    ></nav>
+    <div class="user-dashboard-container">
+      <div id="safety-shield" class="safety-banner safe">
+        <img
+          src="../../public/icons/forest-icon.png"
+          class="icon"
+          alt="forest-icon"
+        />
+        <span id="safety-text">Park Conditions: Optimal for Hiking</span>
+      </div>
+
+      <div class="dashboard-wrapper">
+        <div class="glass-header">
+          <div class="user-info">
+            <p>Welcome, <span id="display-username">Explorer</span></p>
+            <span>Trail: <h1 id="active-trail"></h1></span>
+    
+            <p
+              id="trail-description"
+              style="display: block; margin-top: 5px; opacity: 0.8"
+            ></p>
+          </div>
+
+          <div class="trail-info">
+            <div class="trail-info-item">
+              <span class="fa-solid fa-route"></span>
+              <span>Length:</span>
+              <span id="trail-length">-- km</span>
+            </div>
+            <div class="trail-info-item">
+              <span class="fa-solid fa-mountain"></span>
+              <span>Difficulty:</span>
+              <span id="trail-difficulty">--</span>
+            </div>
+            <div class="trail-info-item">
+              <span class="fa-solid fa-clock"></span>
+              <span>Estimated Time:</span>
+              <span id="trail-duration">-- mins</span>
+            </div>
+        </div>
+      </div>
+    </div>
+
+      <h2 class="text-center park-insights-header">PARK INSIGHTS</h2>
+    
+      <iframe
+        src="../components/park-insights.html"
+        allowtransparency="true"
+        scrolling="no"
+        class="park-insights-iframe"
+        style="width: 70%; height: 100%; border: none"
+      ></iframe>
+
+    <iframe
+      src="../../src/components/footer.html"
+      style="width: 100%; border: none; display: block; position: absolute; bottom: 0; height: 45px"
+    ></iframe>
+  </body>
+</html>

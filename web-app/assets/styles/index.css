@@ -1,0 +1,172 @@
+@import url('https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&family=Roboto&display=swap');
+
+/* Global Styles */
+* {
+margin: 0;
+padding: 0;
+font-family: "Roboto", sans-serif;
+
+--primary-color: #4a7c59;
+--secondary-color: #8fc0a9;
+--tertiary-color: #c8d5a9;
+--background-color: #faf3dd;
+
+--text-light-color: #faf3dd;
+--text-dark-color:#4a7c59;
+--forest-dark: #1b3022;
+--forest-light: #2e7d32;
+--forest-deep: #1b4332;
+--forest-mid: #2d6a4f;
+--sage: #95d5b2;
+--emerald: #52b788;
+--glass-green: rgba(27, 67, 50, 0.15);
+--glass-bg: rgba(255, 255, 255, 0.15);
+--glass-white: rgba(255, 255, 255, 0.1);
+--glass-border: rgba(255, 255, 255, 0.2);
+
+--text-status-danger: #ff5252;
+--text-status-warning: #ffc107;
+--text-status-safe: #1b4332;
+}
+
+body {
+  background: linear-gradient(135deg, var(--background-color) 0%, var(--forest-light) 100%);
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+* {
+  scrollbar-width: none;
+}
+
+nav{
+  background: #4a7c59;
+  opacity: 0.80;
+  color: var(--text-light-color);
+}
+
+nav span{
+  color: var(--text-light-color);
+}
+
+section {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  align-items: center;
+}
+
+header{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 40px 0;
+}
+
+header h1{
+    font-size: 2.5rem;
+    color: var(--text-dark-color);
+    font-family: 'Orbitron', sans-serif;
+}
+
+header p{
+  color: var(--text-dark-color);
+  text-align: center;
+  margin-top: 10px;
+  font-size: 1.1rem;
+}
+ 
+#home-btn{
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 1000;
+}
+
+.main-button {
+color: var(--text-light-color);
+background: transparent;
+border: 2px solid var(--background-color);
+border-radius: 8px;
+cursor: pointer;
+transition: 0.3s;
+width: fit-content;
+height: fit-content;
+padding: 10px 20px;
+}
+
+.main-button:hover {
+background: var(--primary-color);  
+}
+
+
+.logo {
+  display: flex;
+  align-items: center;
+}
+
+.logo img {
+  width: 50px;
+  margin-top: 2px;
+  margin-left: 2px;
+  margin-bottom: 2px;
+  margin-right: 10px;
+}
+
+.logo .title {
+  font-family: "Orbitron", sans-serif;
+  font-size: 1.5rem;
+  color: var(--text-light-color);
+  font-weight: bold;
+}
+
+
+footer {
+  font-size: x-small;
+  padding: 15px 0;
+  text-align: center;
+  color: var(--text-light-color);
+  background-color: var(--primary-color);
+
+}
+
+.glass-header {
+  width: 90%;
+  max-width: 1200px;
+  margin: 10px auto;
+  text-align: center;
+}
+
+.card-icon {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+}
+
+.glass-card, .glass-header, .discovery-card {
+  background: var(--glass-white);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+}
+
+.glass-card:hover {
+    transform: translateY(-5px);
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 15px;
+  padding: 10px;
+  width: 90%;
+}
