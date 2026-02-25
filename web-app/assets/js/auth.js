@@ -67,7 +67,7 @@ async function signUp(email, password, confirmPassword) {
       user.uid,
     );
     alert("Registration successful! You can now log in with your credentials.");
-    window.location.href = "http://localhost:5500/web-app/src/login.html";
+    window.location.href = `${userPrefix}/web-app/src/login.html`;
   } catch (error) {
     const errorCode = error.code;
     const errorMessage = error.message;
@@ -114,7 +114,7 @@ async function signIn(email, password) {
     if (!userDocSnapshot.exists()) {
       alert("User account not found in database. Please register first.");
       console.error("No user document found for UID:", user.uid);
-      window.location.href = "http://localhost:5500/web-app/src/login.html";
+      window.location.href = `${userPrefix}/web-app/src/login.html`;
       return;
     }
 
@@ -128,7 +128,7 @@ async function signIn(email, password) {
       displayName: userData.displayName,
       role: userData.role,
       token: idToken,
-      tokenExpiration: tokenResult.expirationTime, 
+      tokenExpiration: tokenResult.expirationTime,
     });
 
     if (isSessionValid()) {
@@ -139,7 +139,7 @@ async function signIn(email, password) {
         window.location.href = `http://localhost:5173/admin?token=${encodedToken}`;
       } else {
         console.log("Login successful for user:", user.uid, userData.role);
-        window.location.href = `http://localhost:5500/web-app/src/user/trail-preferences.html?userId=${user.uid}`;
+        window.location.href = `${userPrefix}/web-app/src/user/trail-preferences.html?userId=${user.uid}`;
       }
     } else {
       console.error("Session validation failed");
@@ -248,11 +248,11 @@ function logout() {
     .signOut()
     .then(() => {
       console.log("User signed out from Firebase");
-      window.location.href = "http://localhost:5500/web-app/src/login.html";
+      window.location.href = `${userPrefix}/web-app/src/login.html`;
     })
     .catch((error) => {
       console.error("Error signing out:", error);
-      window.location.href = "http://localhost:5500/web-app/src/login.html";
+      window.location.href = `${userPrefix}/web-app/src/login.html`;
     });
 }
 

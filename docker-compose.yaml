@@ -6,14 +6,18 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
-    env_file:
-      - ./IoT_ProjectWeatherForcast/.env
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
     volumes:
       - ./database:/app/database
+      - ./web-app:/app/static/web-app
       - ./IoT_ProjectWeatherForcast:/app/IoT_ProjectWeatherForcast
       - ./firebase-config:/app/firebase-config
       - ./ml-engines:/app/ml-engines
       - ./docs:/app/docs
+      - ./Robustel EG5120:/app/Robustel_EG5120
+      - ./Robustel EG5120 ML:/app/Robustel_EG5120_ML
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
@@ -22,27 +26,7 @@ services:
       start_period: 5s
     restart: unless-stopped
 
-  adminfrontend:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: admin-frontend
-    ports:
-      - "5173:5173"
-    environment:
-      - VITE_BACKEND_URL=http://localhost:8000
-    command: npm run dev -- --host
-    restart: unless-stopped
-
-  webapp:
-    build:
-      context: ./web-app
-      dockerfile: Dockerfile
-    ports:
-      - "8081:8081"
-    restart: unless-stopped
-
-  mlengine:
+  ml-engine:
     build:
       context: ./ml-engines
       dockerfile: Dockerfile

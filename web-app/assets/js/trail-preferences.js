@@ -587,7 +587,7 @@ async function savePreferencesAndRecommendation() {
     );
     alert("Your trail selection has been saved! Redirecting to dashboard...");
     setTimeout(() => {
-      window.location.href = `http://localhost:5500/web-app/src/user/user-dashboard.html?userId=${userId}`;
+      window.location.href = `${userPrefix}/web-app/src/user/user-dashboard.html?userId=${userId}`;
     }, 1000);
   } catch (error) {
     console.error("Error saving trail selection:", error);

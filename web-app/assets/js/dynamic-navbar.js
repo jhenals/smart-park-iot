@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
     variant === "auto" && !isLoggedIn ? "public" : variant;
 
   const publicPrefix = normalizePrefix(
-    navContainer.dataset.publicPrefix || "/web-app/",
+    navContainer.dataset.publicPrefix || "/",
   );
   const userPrefix = normalizePrefix(
     navContainer.dataset.userPrefix || "../../",
@@ -28,11 +28,11 @@ document.addEventListener("DOMContentLoaded", () => {
       <div class="container-fluid">
         <div class="logo">
           <img
-            src="${publicPrefix}public/images/logo.png"
+            src="/public/images/logo.png"
             class="logo"
             alt="Smart Trek Logo"
           />
-          <a class="navbar-brand title" href="${publicPrefix}index.html">Smart Park</a>
+          <a class="navbar-brand title" href="/index.html">Smart Park</a>
         </div>
         <button
           class="navbar-toggler"
@@ -48,19 +48,19 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="collapse navbar-collapse" id="navbarText">
           <ul class="navbar-nav m-auto mb-2 mb-lg-0">
             <li class="nav-item">
-              <a class="nav-link" href="${publicPrefix}index.html">Home</a>
+              <a class="nav-link" href="/index.html">Home</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="${publicPrefix}src/public-env.html">Environment</a>
+              <a class="nav-link" href="/src/public-env.html">Environment</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="${publicPrefix}src/components/weather.html">Weather</a>
+              <a class="nav-link" href="/src/components/weather.html">Weather</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="${publicPrefix}src/discover.html">Discover</a>
+              <a class="nav-link" href="/src/discover.html">Discover</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="${publicPrefix}src/login.html">Sign In</a>
+              <a class="nav-link" href="/src/login.html">Sign In</a>
             </li>
           </ul>
 
