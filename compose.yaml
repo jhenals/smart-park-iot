@@ -1,13 +1,13 @@
 version: '3.8'
 
 services:
-  # FastAPI Backend + Frontend
-  smartparkiot:
+  # FastAPI Backend
+  backend:
     container_name: smart-park-api
-    image: smartparkiot:latest
     build:
       context: .
       dockerfile: ./Dockerfile
+      target: backend
     env_file:
       - ./IoT_ProjectWeatherForcast/.env
     ports:
@@ -15,7 +15,9 @@ services:
     environment:
       - ALLOWED_ORIGINS=http://localhost:8000,http://localhost:5173,http://127.0.0.1:8000,http://127.0.0.1:5500
     volumes:
-      - ./database:/app/database:ro  # Read-only mount for database files
+      - ./IoT_ProjectWeatherForcast/app:/app/app
+      - ./database:/app/database@
+      - ./IoT_ProjectWeatherForcast/requirements.txt:/app/requirements.txt
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -23,6 +25,52 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+
+  # Admin Frontend (Vite)
+  admin-frontend:
+    container_name: smart-park-admin
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      target: frontend-builder
+    env_file:
+      - ./IoT_ProjectWeatherForcast/.env
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_BACKEND_URL=http://localhost:8000
+    volumes:
+      - ./IoT_ProjectWeatherForcast/admin:/admin
+    restart: unless-stopped
+
+  # ML Engine (Node.js)
+  ml-engine:
+    image: node:20-alpine
+    container_name: smart-park-ml-engine
+    working_dir: /ml-engines
+    volumes:
+      - ./ml-engines:/ml-engines
+      - ./firebase-config:/ml-engines/firebase-config
+    command: sh -c "npm install && node server.js"
+    ports:
+      - "3100:3100"
+    environment:
+      - NODE_ENV=development
+    restart: unless-stopped
+
+  # Static Web App
+  web-app:
+    image: node:20-alpine
+    container_name: smart-park-web-app
+    working_dir: /web-app
+    volumes:
+      - ./web-app:/web-app
+    command: npx http-server -p 8081
+    ports:
+      - "8081:8081"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
 
   # InfluxDB Time-Series Database
   influxdb:
@@ -39,6 +87,7 @@ services:
       - DOCKER_INFLUXDB_INIT_ORG=${INFLUXDB_ORG:-smart-park}
       - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUXDB_BUCKET:-iot-data}
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXDB_TOKEN}
+      - INFLUXDB_MEASUREMENT=${INFLUXDB_MEASUREMENT}
     volumes:
       - influxdb-data:/var/lib/influxdb2
       - influxdb-config:/etc/influxdb2

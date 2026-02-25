@@ -19,7 +19,7 @@ app.post("/generate", async (req, res) => {
   }
 });
 
-const PORT = 3000;
+const PORT = 3100;
 app.listen(PORT, () => {
   console.log(`Recommendation API running at http://localhost:${PORT}`);
 });

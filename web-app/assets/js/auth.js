@@ -120,7 +120,6 @@ async function signIn(email, password) {
 
     const userData = userDocSnapshot.data();
 
-    // Get Firebase ID token (JWT)
     const idToken = await user.getIdToken();
     const tokenResult = await user.getIdTokenResult();
     saveSession({
@@ -129,7 +128,7 @@ async function signIn(email, password) {
       displayName: userData.displayName,
       role: userData.role,
       token: idToken,
-      tokenExpiration: tokenResult.expirationTime, // Firebase default duration: 1 hour
+      tokenExpiration: tokenResult.expirationTime, 
     });
 
     if (isSessionValid()) {

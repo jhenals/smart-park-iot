@@ -1,3 +1,4 @@
+
 // Utility to ensure value is always an array
 function toArray(val) {
   if (Array.isArray(val)) return val;
@@ -6,7 +7,7 @@ function toArray(val) {
 }
 const admin = require("firebase-admin");
 
-const serviceAccount = require("./../firebase-config/iot-project-49099-firebase-adminsdk-fbsvc-9db98decb5.json");
+const serviceAccount = require("./firebase-config/iot-project-49099-firebase-adminsdk-fbsvc-9db98decb5.json");
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),

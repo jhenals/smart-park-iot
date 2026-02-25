@@ -7,12 +7,18 @@ WORKDIR /frontend
 
 # Copy package files
 COPY IoT_ProjectWeatherForcast/weather/package*.json ./
+COPY firebase-config/iot-project-49099-firebase-adminsdk-fbsvc-9db98decb5.json /ml-engines/firebase-config/iot-project-49099-firebase-adminsdk-fbsvc-9db98decb5.json
+COPY firebase-config/smart-park-iot-d7743-firebase-adminsdk-fbsvc-2938d538d4.json /ml-engines/firebase-config/smart-park-iot-d7743-firebase-adminsdk-fbsvc-2938d538d4.json
+
 
 # Install dependencies (including devDependencies for build)
 RUN npm ci
 
 # Copy frontend source code
+COPY firebase-config/firebase.js /frontend/src/utils/firebase.js
 COPY IoT_ProjectWeatherForcast/weather/ ./
+# Copy firebase-config directly to /frontend/firebase-config/
+COPY firebase-config/ /frontend/IoT_ProjectWeatherForcast/firebase-config/
 
 # Build the Vue.js app
 RUN npm run build

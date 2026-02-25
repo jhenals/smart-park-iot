@@ -107,40 +107,6 @@ async function getTrailById(trailId) {
   }
 }
 
-/**
-export async function savePreferencesForGenerateRecom(preferences) {
-  try {
-    const session = getSession();
-    if (!session || !session.uid) {
-      throw new Error("User not authenticated");
-    }
-
-    const userId = session.uid;
-
-    const userPrefsRef = doc(userDatabase, "user_prefs", userId);
-    await setDoc(userPrefsRef, {
-      userId: userId,
-      noise_prefs: preferences.noise,
-      slope_prefs: preferences.slope,
-      width_prefs: preferences.width,
-      vibe_prefs: preferences.vibe,
-      createdAt: new Date(),
-    });
-
-    console.log("✅ Preferences saved for generate_recom.js");
-    console.log("📌 Next step: Run: node generate_recom.js", userId);
-
-    return true;
-  } catch (error) {
-    console.error("Error saving preferences:", error);
-    throw error;
-  }
-}
-*/
-
-/**
- * Track trail interaction
- */
 export async function trackTrailVisit(trailId, metadata = {}) {
   try {
     const session = getSession();
