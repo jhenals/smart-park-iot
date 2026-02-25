@@ -186,25 +186,6 @@ function selectPreference(category, value, label) {
   }
 }
 
-async function savePreferencesToFirebase(preferences) {
-  try {
-    if (!userId) return;
-    const userPrefsRef = doc(userDatabase, "user_prefs", userId);
-    await setDoc(userPrefsRef, {
-      userId: userId,
-      noise_prefs: preferences.noise,
-      slope_prefs: preferences.slope,
-      width_prefs: preferences.width,
-      vibe_prefs: preferences.vibe,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
-    console.log("✅ Preferences saved to Firebase");
-  } catch (error) {
-    console.error("Error saving preferences to Firebase:", error);
-  }
-}
-
 function updateSelectedState(category, selectedValue) {
   const optionsContainer = document.getElementById(`${category}Options`);
   if (!optionsContainer) return;
@@ -279,6 +260,25 @@ function resetPreferences() {
   console.log("Preferences reset");
 }
 
+async function savePreferencesToFirebase(preferences) {
+  try {
+    if (!userId) return;
+    const userPrefsRef = doc(userDatabase, "user_prefs", userId);
+    await setDoc(userPrefsRef, {
+      userId: userId,
+      noise_prefs: preferences.noise,
+      slope_prefs: preferences.slope,
+      width_prefs: preferences.width,
+      vibe_prefs: preferences.vibe,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+    console.log("✅ Preferences saved to Firebase");
+  } catch (error) {
+    console.error("Error saving preferences to Firebase:", error);
+  }
+}
+
 async function getRecommendation() {
   try {
     const allSelected = Object.values(preferencesState).every(
@@ -299,7 +299,7 @@ async function getRecommendation() {
     `;
     resultSection.style.display = "block";
 
-    const response = await fetch("http://localhost:3000/generate", {
+    const response = await fetch("http://localhost:3100/generate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId }),
@@ -587,7 +587,7 @@ async function savePreferencesAndRecommendation() {
     );
     alert("Your trail selection has been saved! Redirecting to dashboard...");
     setTimeout(() => {
-      window.location.href = `${userPrefix}/web-app/src/user/user-dashboard.html?userId=${userId}`;
+      window.location.href = `${userPrefix}/src/user/user-dashboard.html?userId=${userId}`;
     }, 1000);
   } catch (error) {
     console.error("Error saving trail selection:", error);

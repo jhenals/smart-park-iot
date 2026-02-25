@@ -3,7 +3,7 @@ async function loadWeather() {
   const forecastList = document.getElementById("forecast-list");
 
   try {
-    const sensorRes = await fetch(API.FASTAPI_URL); //TODO: Change this to API.FASTAPI_URL to fetch from backend
+    const sensorRes = await fetch("http://localhost:8000/api/weather/forecast/?minutes=60");
     const sensorDataArray = await sensorRes.json();
     const latestSensorData = sensorDataArray[sensorDataArray.length - 1];
 

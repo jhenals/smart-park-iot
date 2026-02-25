@@ -1,0 +1,16 @@
+# Firebase Configuration - NEVER commit sensitive credentials!
+# Copy the .example files and fill in your actual values
+
+# Actual credentials (DO NOT COMMIT)
+firebase.js
+service-account.js
+*-firebase-adminsdk-*.json
+
+# Example/Template files (SAFE to commit)
+*.example.js
+*.example.json
+
+# Environment files
+.env
+.env.local
+.env.*.local

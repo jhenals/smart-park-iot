@@ -1,3 +1,6 @@
+window.userPrefix = window.WEBAPP_PUBLIC_PREFIX || "http://localhost:8081";
+const userPrefix = window.userPrefix;
+
 export function setTimeAndDate() {
   const dateDiv = document.getElementById("current-date");
   if (dateDiv) {
@@ -9,11 +12,10 @@ export function setTimeAndDate() {
 }
 
 export function goToHomepage() {
-  // Assume login status is stored in localStorage as 'isLoggedIn' (string 'true' or 'false')
   const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
   if (isLoggedIn) {
-    window.location.href = `${userPrefix}/web-app/src/user/user-dashboard.html`;
+    window.location.href = `${userPrefix}/src/user/user-dashboard.html`;
   } else {
-    window.location.href = `${userPrefix}/web-app/index.html`;
+    window.location.href = `${userPrefix}/index.html`;
   }
 }
