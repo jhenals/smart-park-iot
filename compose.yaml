@@ -40,8 +40,9 @@ services:
     environment:
       - VITE_BACKEND_URL=http://localhost:8000
     volumes:
-      - ./IoT_ProjectWeatherForcast/admin:/admin
+      - ./IoT_ProjectWeatherForcast/weather:/admin
     restart: unless-stopped
+    command: sh -c "cd /admin && npm install && npm run dev -- --host"
 
   # ML Engine (Node.js)
   ml-engine:
