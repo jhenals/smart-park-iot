@@ -140,9 +140,7 @@ async function signIn(email, password) {
         window.location.href = `http://localhost:5173/admin?token=${encodedToken}`;
       } else {
         console.log("Login successful for user:", user.uid, userData.role);
-        console.log("userPrefix", userPrefix);
         window.location.href = `${userPrefix}/src/user/trail-preferences.html?userId=${user.uid}`;
-
       }
     } else {
       console.error("Session validation failed");
