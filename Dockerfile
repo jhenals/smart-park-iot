@@ -1,7 +1,3 @@
-
-
-
-
 # Stage 1: Admin Dashboard Dev Server (Vue.js)
 FROM node:20-alpine AS admin-frontend
 WORKDIR /admin

@@ -4,8 +4,6 @@ import {
   userDatabase,
 } from "../../../firebase-config/firebase.js";
 
-// Use global WEBAPP_PUBLIC_PREFIX if set, otherwise fallback to current origin
-const userPrefix = window.WEBAPP_PUBLIC_PREFIX || window.location.origin;
 import {
   setDoc,
   doc,
@@ -21,6 +19,7 @@ console.log(
   firebaseConfig.projectId,
 );
 
+const userPrefix = window.origin;
 const API_BASE_URL = "http://localhost:8000";
 
 async function signUp(email, password, confirmPassword) {
@@ -75,7 +74,6 @@ async function signUp(email, password, confirmPassword) {
     const errorCode = error.code;
     const errorMessage = error.message;
 
-    // Handle specific Firebase errors
     if (errorCode === "auth/email-already-in-use") {
       alert(
         "This email is already registered. Please log in or use a different email.",
@@ -142,7 +140,9 @@ async function signIn(email, password) {
         window.location.href = `http://localhost:5173/admin?token=${encodedToken}`;
       } else {
         console.log("Login successful for user:", user.uid, userData.role);
-        window.location.href = `${userPrefix}/web-app/src/user/trail-preferences.html?userId=${user.uid}`;
+        console.log("userPrefix", userPrefix);
+        window.location.href = `${userPrefix}/src/user/trail-preferences.html?userId=${user.uid}`;
+
       }
     } else {
       console.error("Session validation failed");
@@ -237,7 +237,6 @@ function isSessionValid() {
 function restoreSession() {
   if (isSessionValid()) {
     const session = getSession();
-    //console.log("Session restored from localStorage:", session);
     return session;
   }
   return null;
