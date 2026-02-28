@@ -186,3 +186,5 @@ credentials.json
 # Backup Files
 *.backup
 *~
+ml-engines/firebase-config/iot-project-49099-firebase-adminsdk-fbsvc-9db98decb5.json
+.gitignore

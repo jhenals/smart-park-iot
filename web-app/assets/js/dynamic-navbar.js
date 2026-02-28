@@ -74,57 +74,6 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
       </div>
     `;
-  } else if (role === "admin") {
-    navContent = `
-         <div class="container-fluid">
-        <div class="logo">
-          <img
-            src="${userPrefix}public/images/logo.png"
-            class="logo"
-            alt="Smart Trek Logo"
-          />
-          <a class="navbar-brand title" href="${userPrefix}index.html">Smart Park</a>
-        </div>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarText"
-          aria-controls="navbarText"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarText">
-          <ul class="navbar-nav m-auto mb-2 mb-lg-0">
-            <li class="nav-item">
-        <a href="/admin.html">Fleet</a>
-            </li>
-            <li class="nav-item">
-        <a href="/admin.html">Fleet</a>
-            </li>
-            <li class="nav-item">
-        <a href="/gateway-status.html">Gateway</a>
-            </li>
-            <li class="nav-item">
-        <a href="/analytics.html">Stats</a>
-            </li>
-            <li class="nav-item">
-        <button onclick="logout()" class="logout-btn">Exit</button>
-            </li>
-          </ul>
-
-          <div class="datetimeloc d-flex flex-column">
-            <span class="d-flex flex-row"
-              >DATE TIME:
-              <div id="current-date"></div>
-            </span>
-            <span>LOCATION: SILA NATIONAL PARK</span>
-          </div>
-        </div>
-      </div>
-    `;
   } else {
     navContent = `
         <div class="container-fluid">
@@ -185,7 +134,27 @@ document.addEventListener("DOMContentLoaded", () => {
   setTimeAndDate();
   if (effectiveVariant === "public") {
     setActivePublicLink(navContainer);
+  } else if (role === "visitor" || isLoggedIn) {
+    setActiveUserLink(navContainer);
   }
+function setActiveUserLink(navContainer) {
+  const currentPath = window.location.pathname.replace(/\/index\.html$/, "/");
+  const links = navContainer.querySelectorAll(".nav-link");
+
+  links.forEach((link) => {
+    link.classList.remove("active");
+    link.removeAttribute("aria-current");
+
+    const linkPath = new URL(
+      link.href,
+      window.location.origin,
+    ).pathname.replace(/\/index\.html$/, "/");
+    if (linkPath === currentPath) {
+      link.classList.add("active");
+      link.setAttribute("aria-current", "page");
+    }
+  });
+}
 });
 
 function normalizePrefix(prefix) {
