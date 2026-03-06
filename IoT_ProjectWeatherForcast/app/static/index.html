@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Weather — Temperature</title>
+    <style>
+      body{font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:2rem}
+      .card{padding:1.5rem;border-radius:8px;border:1px solid #e6e6e6;max-width:420px}
+      .value{font-size:3rem;font-weight:600}
+      .meta{color:#666}
+    </style>
+  </head>
+  <body>
+    <h1>Current Temperature</h1>
+    <div class="card">
+      <div id="temp" class="value">—</div>
+      <div id="time" class="meta">waiting for data…</div>
+    </div>
+
+    <script>
+      const tempEl = document.getElementById('temp');
+      const timeEl = document.getElementById('time');
+
+      async function fetchTemp(){
+        try{
+          const res = await fetch('/api/weather/forecast/?minutes=60');
+          if(!res.ok) throw new Error('HTTP '+res.status);
+          const data = await res.json();
+          if(!Array.isArray(data) || data.length===0){
+            tempEl.textContent = 'no data';
+            timeEl.textContent = '';
+            return;
+          }
+          // Use the most recent point
+          const last = data[data.length-1];
+          const t = last.temperature;
+          const ts = last.time || last.time;
+          tempEl.textContent = (t===null || t===undefined) ? '—' : `${t.toFixed ? t.toFixed(2) : t} °C`;
+          timeEl.textContent = ts ? new Date(ts).toLocaleString() : '';
+        }catch(e){
+          tempEl.textContent = 'error';
+          timeEl.textContent = e.message;
+        }
+      }
+
+      fetchTemp();
+      // refresh periodically
+      setInterval(fetchTemp, 10000);
+    </script>
+  </body>
+</html>

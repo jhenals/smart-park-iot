@@ -136,12 +136,11 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
   }
   
-  // Insert HTML first
   navContainer.innerHTML = navContent;
-  
-  // Then initialize date/time for BOTH variants
   setTimeAndDate('current-date', 1000);
-  
+window.logout = logout;
+
+
   // Set active links
   if (effectiveVariant === "public") {
     setActivePublicLink(navContainer);
@@ -193,3 +192,4 @@ function setActivePublicLink(navContainer) {
     }
   });
 }
+
