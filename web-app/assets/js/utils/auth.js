@@ -19,10 +19,9 @@ console.log(
   firebaseConfig.projectId,
 );
 
-const userPrefix = window.origin;
-const API_BASE_URL = "http://localhost:8000";
+const windowPrefix = window.location.origin;
 
-async function signUp(email, password, confirmPassword) {
+export async function signUp(email, password, confirmPassword) {
   if (!email || !password || !confirmPassword) {
     alert("Please fill up all fields to continue.");
     return;
@@ -63,12 +62,6 @@ async function signUp(email, password, confirmPassword) {
 
     const userDocRef = doc(userDatabase, "users", user.uid);
     await setDoc(userDocRef, userData);
-
-    console.log(
-      "User registered and data stored in database with ID:",
-      user.uid,
-    );
-    alert("Registration successful! You can now log in with your credentials.");
     window.location.href = `${userPrefix}/src/login.html`;
   } catch (error) {
     const errorCode = error.code;
@@ -83,14 +76,11 @@ async function signUp(email, password, confirmPassword) {
     } else {
       alert(`Registration failed: ${errorMessage}`);
     }
-
     console.error("Registration error:", errorCode, errorMessage);
   }
 }
 
-//TODO: Instead of an alert, consider using a modal or inline error message for better UX. Also, add loading indicators during async operations for improved user feedback.
-
-async function signIn(email, password) {
+export async function signIn(email, password) {
   if (!email || !password) {
     alert("Please enter email and password to continue.");
     return;
@@ -120,7 +110,6 @@ async function signIn(email, password) {
     }
 
     const userData = userDocSnapshot.data();
-
     const idToken = await user.getIdToken();
     const tokenResult = await user.getIdTokenResult();
     saveSession({
@@ -133,17 +122,13 @@ async function signIn(email, password) {
     });
 
     if (isSessionValid()) {
-      console.log("Session validation passed for role:", userData.role);
       if (userData.role === "admin") {
-        console.log("Admin detected, redirecting to weather app with token");
         const encodedToken = encodeURIComponent(idToken);
         window.location.href = `http://localhost:5173/admin?token=${encodedToken}`;
       } else {
-        console.log("Login successful for user:", user.uid, userData.role);
         window.location.href = `${userPrefix}/src/user/trail-preferences.html?userId=${user.uid}`;
       }
     } else {
-      console.error("Session validation failed");
       alert("Error: Session could not be saved. Please try again.");
       console.error("Session validation failed after save");
     }
@@ -162,41 +147,16 @@ async function signIn(email, password) {
   }
 }
 
-export async function getUserProfile(uid) {
-  try {
-    const cached = localStorage.getItem(`userProfile_${uid}`);
-    const cacheTime = localStorage.getItem(`userProfile_${uid}_time`);
-    const oneHour = 60 * 60 * 1000;
-
-    if (cached && cacheTime && Date.now() - parseInt(cacheTime) < oneHour) {
-      return JSON.parse(cached);
-    }
-
-    const userDocRef = doc(userDatabase, "users", uid);
-    const userDoc = await getDoc(userDocRef);
-
-    if (userDoc.exists()) {
-      const userData = userDoc.data();
-      localStorage.setItem(`userProfile_${uid}`, JSON.stringify(userData));
-      localStorage.setItem(`userProfile_${uid}_time`, Date.now().toString());
-      return userData;
-    }
-  } catch (error) {
-    console.error("Error fetching user profile:", error);
-  }
-  return null;
-}
-
-function getSession() {
+export function getSession() {
   const session = localStorage.getItem("userSession");
   return session ? JSON.parse(session) : null;
 }
 
-function setLoggedInFlags(value) {
+export function setLoggedInFlags(value) {
   localStorage.setItem("isLoggedIn", value ? "true" : "false");
 }
 
-function saveSession({
+export function saveSession({
   email,
   displayName,
   uid,
@@ -224,7 +184,7 @@ function saveSession({
   return sessionData;
 }
 
-function isSessionValid() {
+export function isSessionValid() {
   const session = getSession();
   if (!session) return false;
   const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
@@ -232,7 +192,7 @@ function isSessionValid() {
   return !!(session.isActive && isLoggedIn && hasToken);
 }
 
-function restoreSession() {
+export function restoreSession() {
   if (isSessionValid()) {
     const session = getSession();
     return session;
@@ -240,20 +200,19 @@ function restoreSession() {
   return null;
 }
 
-function logout() {
-  localStorage.clear();
-  console.log("All local storage cleared");
-
+export function logout() {
   auth
     .signOut()
     .then(() => {
       console.log("User signed out from Firebase");
-      window.location.href = `${userPrefix}/src/login.html`;
+      window.location.href = `${windowPrefix}/src/login.html`;
     })
     .catch((error) => {
       console.error("Error signing out:", error);
-      window.location.href = `${userPrefix}/src/login.html`;
+      window.location.href = `${windowPrefix}/src/login.html`;
     });
+      localStorage.clear();
+
 }
 
 /**
@@ -271,7 +230,6 @@ window.addEventListener("message", (event) => {
 // Expose functions to global scope for inline onclick handlers
 window.signIn = signIn;
 window.signUp = signUp;
-window.getUserProfile = getUserProfile;
 window.logout = logout;
 window.getSession = getSession;
 window.isSessionValid = isSessionValid;
@@ -282,22 +240,5 @@ document.addEventListener("DOMContentLoaded", function () {
   const session = restoreSession();
   if (session) {
     console.log("Session restored on page load:", session);
-    // You can use the session data here if needed
   }
 });
-
-// Export Firebase instances and functions for use in other modules
-export {
-  auth,
-  userDatabase,
-  firebaseConfig,
-  signIn,
-  signUp,
-  logout,
-  getSession,
-  isSessionValid,
-  restoreSession,
-  saveSession,
-  doc,
-  getDoc,
-};
