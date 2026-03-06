@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <a class="nav-link" href="/src/public-env.html">Environment</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/src/components/weather.html">Weather</a>
+              <a class="nav-link" href="/src/weather.html">Weather</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="/src/discover.html">Discover</a>
@@ -109,7 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <a class="nav-link" href="${userPrefix}src/user/trail-preferences.html">Change Trail</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="${userPrefix}src/components/weather.html">Weather</a>
+              <a class="nav-link" href="${userPrefix}src/weather.html">Weather</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" onclick="toggleChat()"">Guide</a>
@@ -130,9 +130,9 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
       </div>
     `;
+    setTimeAndDate();
   }
   navContainer.innerHTML = navContent;
-  setTimeAndDate();
   if (effectiveVariant === "public") {
     setActivePublicLink(navContainer);
   } else if (role === "visitor" || isLoggedIn) {
