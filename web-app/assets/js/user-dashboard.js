@@ -1,8 +1,5 @@
-import { getDoc, doc, userDatabase as trailDatabase } from "./auth.js";
-import { SILA_LOCATION, API } from "./utils/constants.js";
+import { THRESHOLDS,SILA_LOCATION, API } from "./utils/constants.js";
 import { trackTrailVisit } from "./ml-integration.js";
-import { cycleImages } from "./modules/changingImages.js";
-import { THRESHOLDS } from "./utils/constants.js";
 
 let trailStartTime = null;
 let currentTrailId = null;

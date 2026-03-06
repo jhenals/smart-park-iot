@@ -1,7 +1,7 @@
   .login-container{
 	height:100vh;
 	min-height:550px;
-	background-image: url(/public/images/homepage-imgs/1.png);
+	background-image: url(../../public/images/homepage-imgs/1.png);
 	background-repeat: no-repeat;
 	background-size:cover;
 	background-position:center;

@@ -1,5 +1,15 @@
-window.userPrefix = window.WEBAPP_PUBLIC_PREFIX || "http://localhost:8081";
+window.userPrefix = (() => {
+  const origin = window.location.origin; // e.g., http://127.0.0.1:5500
+  const pathname = window.location.pathname; // e.g., /web-app/src/weather.html
+  
+  if (pathname.includes('/web-app/')) {
+    return `${origin}/web-app/`;
+  }
+    return `${origin}/`;
+})();
+
 const userPrefix = window.userPrefix;
+
 
 export function setTimeAndDate(elementId = "current-date", interval = 1000) {
   const dateDiv = document.getElementById(elementId);
@@ -19,13 +29,18 @@ export function setTimeAndDate(elementId = "current-date", interval = 1000) {
   setInterval(updateDateTime, interval);
 }
 
+
 export function goToHomepage() {
   const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+  let targetUrl = "";
+  
   if (isLoggedIn) {
-    window.location.href = `${userPrefix}/src/user/user-dashboard.html`;
+    targetUrl = `${userPrefix}src/user/user-dashboard.html`;
   } else {
-    window.location.href = `${userPrefix}/index.html`;
+    targetUrl = `${userPrefix}index.html`;
   }
+  
+  window.location.href = targetUrl;
 }
 
 let imgIndex = 0;

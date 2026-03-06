@@ -1,4 +1,5 @@
-import { getUserProfile, getSession } from "./auth.js";
+import { getSession } from "./utils/auth.js";
+import { goToHomepage, carouselImages } from "./utils/utils.js";
 import { userDatabase } from "../../../firebase-config/firebase.js";
 import {
   setDoc,
@@ -6,14 +7,10 @@ import {
   addDoc,
   collection,
 } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
-import { cycleImages } from "./utils/changingImages.js";
-import { goToHomepage } from "./utils/utils.js";
 
 const session = getSession();
 const userId = session && session.uid ? session.uid : null;
-const displayName = userId
-  ? (await getUserProfile(userId)).displayName
-  : "Visitor";
+const displayName = session.displayName || "Explorer";
 document.getElementById("welcome-message").innerText = displayName;
 
 const preferencesState = {
@@ -89,8 +86,8 @@ function initializePreferences() {
     populateModalOptions("width", TRAIL_PREFERENCES.width);
   }
   loadSavedPreferences();
-  setInterval(() => cycleImages(".image-container", images), 3000); // Change every 3 seconds
-  cycleImages(".image-containerr", images);
+  setInterval(() => carouselImages(".image-container", images), 3000); // Change every 3 seconds
+  carouselImages(".image-container", images);
 }
 
 function loadSavedPreferences() {

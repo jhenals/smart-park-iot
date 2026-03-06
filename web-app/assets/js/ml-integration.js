@@ -1,4 +1,4 @@
-import { getSession } from "./auth.js";
+import { getSession } from "./utils/auth.js";
 import { userDatabase } from "../../../firebase-config/firebase.js";
 import {
   collection,
