@@ -6,10 +6,6 @@ firebase.js
 service-account.js
 *-firebase-adminsdk-*.json
 
-# Example/Template files (SAFE to commit)
-*.example.js
-*.example.json
-
 # Environment files
 .env
 .env.local
