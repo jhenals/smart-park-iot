@@ -1,80 +1,55 @@
-# ================================
-# Stage 1: Build Vue.js Frontend
-# ================================
-FROM node:20-alpine AS frontend-builder
-
-WORKDIR /frontend
-
-# Copy package files
+# Stage 1: Admin Dashboard Dev Server (Vue.js)
+FROM node:20-alpine AS admin-frontend
+WORKDIR /admin
 COPY IoT_ProjectWeatherForcast/weather/package*.json ./
-COPY firebase-config/iot-project-49099-firebase-adminsdk-fbsvc-9db98decb5.json /ml-engines/firebase-config/iot-project-49099-firebase-adminsdk-fbsvc-9db98decb5.json
-COPY firebase-config/smart-park-iot-d7743-firebase-adminsdk-fbsvc-2938d538d4.json /ml-engines/firebase-config/smart-park-iot-d7743-firebase-adminsdk-fbsvc-2938d538d4.json
-
-
-# Install dependencies (including devDependencies for build)
 RUN npm ci
-
-# Copy frontend source code
-COPY firebase-config/firebase.js /frontend/src/utils/firebase.js
 COPY IoT_ProjectWeatherForcast/weather/ ./
-# Copy firebase-config directly to /frontend/firebase-config/
-COPY firebase-config/ /frontend/IoT_ProjectWeatherForcast/firebase-config/
+EXPOSE 5173
+CMD ["npm", "run", "dev", "--", "--host"]
 
-# Build the Vue.js app
-RUN npm run build
-
-# ================================
-# Stage 2: Python FastAPI Backend
-# ================================
+# Stage 2: FastAPI Backend
 FROM python:3.11-slim AS backend
-
-# Set environment variables
 ENV PYTHONUNBUFFERED=1 \
   PYTHONDONTWRITEBYTECODE=1 \
   PIP_NO_CACHE_DIR=1 \
   PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# Install system dependencies (if needed)
 RUN apt-get update && \
-  apt-get install -y --no-install-recommends \
-  curl \
-  && rm -rf /var/lib/apt/lists/*
+  apt-get install -y --no-install-recommends curl && \
+  rm -rf /var/lib/apt/lists/*
 
-# Set working directory
 WORKDIR /app
 
-# Copy requirements file
 COPY IoT_ProjectWeatherForcast/requirements.txt .
-
-# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy backend application code
 COPY IoT_ProjectWeatherForcast/app/ ./app/
+COPY firebase-config/ ./firebase-config/
+COPY ml-engines/ ./ml-engines/
 
-# Copy database files
-COPY database/ ./database/
+# Optional Robustel folders
+# COPY Robustel\ EG5120/ ./Robustel_EG5120/
+# COPY Robustel\ EG5120\ ML/ ./Robustel_EG5120_ML/
 
-# Copy built frontend from stage 1
-COPY --from=frontend-builder /frontend/dist ./static/weather
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 
-# Copy static web-app files
-COPY web-app/ ./static/web-app/
-
-# Create a non-root user for security
-RUN useradd -m -u 1000 appuser && \
-  chown -R appuser:appuser /app
-
-# Switch to non-root user
-USER appuser
-
-# Expose the port FastAPI runs on
 EXPOSE 8000
 
-# Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:8000/health || exit 1
 
-# Run the application from project root so package imports resolve
-WORKDIR /app
+USER appuser
+
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+
+# Stage 3: Web App Server (Nginx)
+FROM nginx:alpine AS webapp
+COPY web-app/ /usr/share/nginx/html/
+COPY firebase-config/ /usr/share/nginx/html/firebase-config/
+COPY ml-engines/ /usr/share/nginx/html/ml-engines/
+COPY IoT_ProjectWeatherForcast/ /usr/share/nginx/html/IoT_ProjectWeatherForcast/
+
+COPY nginx.conf /etc/nginx/nginx.conf
+EXPOSE 8081
+CMD ["nginx", "-g", "daemon off;"]

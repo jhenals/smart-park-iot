@@ -1,5 +1,5 @@
-import { signUp, signIn } from "./auth.js";
-import { goToHomepage } from "./modules/utils.js";
+import { signUp, signIn } from "../js/utils/auth.js";
+import { goToHomepage } from "./utils/utils.js";
 
 $(document).ready(function () {
   $(".login-info-box").fadeOut();

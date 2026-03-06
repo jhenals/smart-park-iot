@@ -1,19 +1,17 @@
-import { getUserProfile, getSession } from "./auth.js";
-import { userDatabase } from "../../../firebase-config/firebase.js";
+import { getSession } from "./utils/auth.js";
+import { goToHomepage, carouselImages } from "./utils/utils.js";
+import {TRAIL_PREFERENCES} from "./utils/constants.js";
+import { firestoreDatabase } from "../../../firebase-config/firebase.js";
 import {
   setDoc,
   doc,
   addDoc,
   collection,
 } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
-import { cycleImages } from "./modules/changingImages.js";
-import { goToHomepage } from "./modules/utils.js";
 
 const session = getSession();
 const userId = session && session.uid ? session.uid : null;
-const displayName = userId
-  ? (await getUserProfile(userId)).displayName
-  : "Visitor";
+const displayName = session.displayName || "Explorer";
 document.getElementById("welcome-message").innerText = displayName;
 
 const preferencesState = {
@@ -35,8 +33,52 @@ let currentRecommendation = null;
 let allRecommendations = [];
 
 function goToUserDashboard() {
-  goToHomepage();
+  const selectedTrailId = localStorage.getItem("selectedTrailId");
+  
+  if (selectedTrailId) {
+    goToHomepage();
+  }else{
+    const modal = document.createElement("div");
+    modal.id = "confirmModal";
+    modal.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    `;
+    
+    modal.innerHTML = `
+      <div class="glass-card" style="padding: 2rem; text-align: center; max-width: 400px;">
+        <h3>No Trail Selected</h3>
+        <p>Do you want to continue to the dashboard without choosing a recommendation?</p>
+        <div style="display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: center;">
+          <button id="confirmYes" class="main-button" style="flex: 1;">Yes</button>
+          <button id="confirmNo" class="main-button" style="flex: 1; background-color: #666;">No</button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    document.getElementById("confirmYes").onclick = () => {
+      modal.remove();
+      goToHomepage();
+    };
+    
+    document.getElementById("confirmNo").onclick = () => {
+      modal.remove();
+    };
+  }
 }
+window.goToUserDashboard = goToUserDashboard;
+
+
 function initializePreferences() {
   if (typeof TRAIL_PREFERENCES !== "undefined") {
     populateModalOptions("noise", TRAIL_PREFERENCES.noise);
@@ -45,8 +87,8 @@ function initializePreferences() {
     populateModalOptions("width", TRAIL_PREFERENCES.width);
   }
   loadSavedPreferences();
-  setInterval(() => cycleImages(".image-container", images), 3000); // Change every 3 seconds
-  cycleImages(".image-containerr", images);
+  setInterval(() => carouselImages(".image-container", images), 3000); // Change every 3 seconds
+  carouselImages(".image-container", images);
 }
 
 function loadSavedPreferences() {
@@ -186,25 +228,6 @@ function selectPreference(category, value, label) {
   }
 }
 
-async function savePreferencesToFirebase(preferences) {
-  try {
-    if (!userId) return;
-    const userPrefsRef = doc(userDatabase, "user_prefs", userId);
-    await setDoc(userPrefsRef, {
-      userId: userId,
-      noise_prefs: preferences.noise,
-      slope_prefs: preferences.slope,
-      width_prefs: preferences.width,
-      vibe_prefs: preferences.vibe,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
-    console.log("✅ Preferences saved to Firebase");
-  } catch (error) {
-    console.error("Error saving preferences to Firebase:", error);
-  }
-}
-
 function updateSelectedState(category, selectedValue) {
   const optionsContainer = document.getElementById(`${category}Options`);
   if (!optionsContainer) return;
@@ -279,6 +302,25 @@ function resetPreferences() {
   console.log("Preferences reset");
 }
 
+async function savePreferencesToFirebase(preferences) {
+  try {
+    if (!userId) return;
+    const userPrefsRef = doc(firestoreDatabase, "user_prefs", userId);
+    await setDoc(userPrefsRef, {
+      userId: userId,
+      noise_prefs: preferences.noise,
+      slope_prefs: preferences.slope,
+      width_prefs: preferences.width,
+      vibe_prefs: preferences.vibe,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+    console.log("✅ Preferences saved to Firebase");
+  } catch (error) {
+    console.error("Error saving preferences to Firebase:", error);
+  }
+}
+
 async function getRecommendation() {
   try {
     const allSelected = Object.values(preferencesState).every(
@@ -299,7 +341,7 @@ async function getRecommendation() {
     `;
     resultSection.style.display = "block";
 
-    const response = await fetch("http://localhost:3000/generate", {
+    const response = await fetch("http://localhost:3100/generate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId }),
@@ -351,7 +393,7 @@ async function getRecommendation() {
       try {
         const { getDoc, doc } =
           await import("https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js");
-        const trailDoc = await getDoc(doc(userDatabase, "trails", trailId));
+        const trailDoc = await getDoc(doc(firestoreDatabase, "trails", trailId));
         if (trailDoc.exists()) {
           return { id: trailDoc.id, ...trailDoc.data() };
         }
@@ -570,7 +612,7 @@ async function savePreferencesAndRecommendation() {
       alert("No trail selected or user not authenticated.");
       return;
     }
-    await addDoc(collection(userDatabase, "user_trail_selections"), {
+    await addDoc(collection(firestoreDatabase, "user_trail_selections"), {
       userId: userId,
       trailId: currentRecommendation.trail.id,
       trailName: currentRecommendation.trail.name,
@@ -587,7 +629,7 @@ async function savePreferencesAndRecommendation() {
     );
     alert("Your trail selection has been saved! Redirecting to dashboard...");
     setTimeout(() => {
-      window.location.href = `http://localhost:5500/web-app/src/user/user-dashboard.html?userId=${userId}`;
+      window.location.href = `${userPrefix}/src/user/user-dashboard.html?userId=${userId}`;
     }, 1000);
   } catch (error) {
     console.error("Error saving trail selection:", error);
@@ -603,8 +645,6 @@ window.selectRecommendation = selectRecommendation;
 window.displayTrailRecommendation = displayTrailRecommendation;
 window.loadSavedPreferences = loadSavedPreferences;
 window.updatePreferencesDisplay = updatePreferencesDisplay;
-window.goToUserDashboard = goToUserDashboard;
-
 Object.defineProperty(window, "allRecommendations", {
   get() {
     return allRecommendations;

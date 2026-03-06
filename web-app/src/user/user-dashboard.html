@@ -29,10 +29,7 @@
       crossorigin=""
     ></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="module"src="../../assets/js/index.js"></script>
-    <script src="../../assets/constants/constants.js"></script>
     <script type="module" src="../../assets/js/dynamic-navbar.js"></script>
-    <script src="../../assets/js/public-env.js"></script>
     <script type="module" src="../../assets/js/user-dashboard.js"></script>
   </head>
   <body>
@@ -43,13 +40,15 @@
       data-public-prefix="/web-app/"
     ></nav>
     <div class="user-dashboard-container">
+      
       <div id="safety-shield" class="safety-banner safe">
         <img
+          id="safety-icon"
           src="../../public/icons/forest-icon.png"
           class="icon"
           alt="forest-icon"
         />
-        <span id="safety-text">Park Conditions: Optimal for Hiking</span>
+        <span id="safety-text"></span>
       </div>
 
       <div class="dashboard-wrapper">
@@ -72,8 +71,8 @@
             </div>
             <div class="trail-info-item">
               <span class="fa-solid fa-mountain"></span>
-              <span>Difficulty:</span>
-              <span id="trail-difficulty">--</span>
+              <span>Description:</span>
+              <span id="trail-description">--</span>
             </div>
             <div class="trail-info-item">
               <span class="fa-solid fa-clock"></span>
@@ -91,12 +90,11 @@
         allowtransparency="true"
         scrolling="no"
         class="park-insights-iframe"
-        style="width: 70%; height: 100%; border: none"
       ></iframe>
 
     <iframe
       src="../../src/components/footer.html"
-      style="width: 100%; border: none; display: block; position: absolute; bottom: 0; height: 45px"
+      style="width: 100%; border: none; display: block; height: 45px"
     ></iframe>
   </body>
 </html>

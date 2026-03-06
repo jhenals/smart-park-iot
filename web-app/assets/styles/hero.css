@@ -1,6 +1,5 @@
 .hero-section {
   transition: background-image 1s ease-in-out, background-color 0.5s;
-  /* background: url("../../public/images/homepage-imgs/1.png") center/cover no-repeat; */
   display: flex;
   flex-direction: column;
   justify-content: center;

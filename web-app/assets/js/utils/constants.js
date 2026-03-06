@@ -7,7 +7,7 @@ const SILA_LOCATION = {
 };
 
 const API = {
-  FASTAPI_URL: "http://localhost:8000/api/weather/forecast/?minutes=60",
+  FASTAPI_URL: "http://localhost:8000/api/weather/forecast/?minutes=60&measurement=Sensor_S6000U_data2",
   SENSORS_DATA_PATH: "../../../database/sensor_reponse.json",
   USER_DATA_URL: "http://localhost:8000/api/users/", //TODO: change to actual endpoint when backend is ready
   DASHBOARD_DATA_PATH: "../../../database/user-dashboard.json",
@@ -19,6 +19,7 @@ const PATHS = {
   FIREBASE_CONFIG_PATH: "../../../firebase-config/firebase.js",
   MAP_URL: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
 };
+
 
 // Weather and Trail Condition Thresholds
 
@@ -295,4 +296,16 @@ const TRAIL_RECOMMENDATIONS = {
   hard_quiet_botany: "deepSilaRidge",
   hard_bright_history: "peakOfGiants",
   hard_bright_botany: "peakOfGiants",
+};
+
+
+export {
+  SILA_LOCATION,
+  API,
+  PATHS,
+  TEMPERATURE_RANGES,
+  THRESHOLDS,
+  TRAIL_PREFERENCES,
+  TRAILS,
+  TRAIL_RECOMMENDATIONS,
 };
