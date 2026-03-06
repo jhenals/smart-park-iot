@@ -1,4 +1,3 @@
-import { getDoc, doc, userDatabase as db } from "./utils/auth.js";
 import { API } from "./utils/constants.js";
 import { createBaseMap, createMarker, createAccuracyCircle } from "./utils/mapsUtils.js";
 import {

@@ -5,7 +5,7 @@ async function loadWeather() {
   const forecastList = document.getElementById("forecast-list");
 
   try {
-    const sensorRes = await fetch(API.SENSORS_DATA_PATH); // Change this to actual API endpoint API.FASTAPI_URL
+    const sensorRes = await fetch(API.FASTAPI_URL);
     const sensorDataArray = await sensorRes.json();
     const latestSensorData = sensorDataArray[sensorDataArray.length - 1];
 

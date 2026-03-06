@@ -1,5 +1,6 @@
 import { getSession } from "./utils/auth.js";
 import { goToHomepage, carouselImages } from "./utils/utils.js";
+import {TRAIL_PREFERENCES} from "./utils/constants.js";
 import { userDatabase } from "../../../firebase-config/firebase.js";
 import {
   setDoc,
