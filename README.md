@@ -26,18 +26,23 @@ The system collects real-time environmental and weather data from IoT sensors de
 ## System Overview
 
 ```
-IoT Sensors (field hardware)
+IoT Sensors / Robustel EG5120 (field hardware)
         │
         ▼  (weather & environmental data)
 FastAPI Backend  ──►  InfluxDB (time-series data)
         │                    │
-        ▼                    ▼
-  ML Engine            Grafana (monitoring)
+        │            Firebase (auth & config)
+        │                    │
+        ├────────────────────┤
+        │   FastAPI +        │
+        │   InfluxDB +       ▼
+        │   Grafana   ──►  Admin Dashboard (Vue.js)  ◄──►  Administrator
         │
         ▼
-  Web App (Nginx)  ◄──►  Visitor / Tourist
+  ML Engine
         │
-  Admin Dashboard (Vue.js)  ◄──►  Administrator
+        ▼  (FastAPI + Firebase)
+  Web App (Nginx)  ◄──►  Visitor / Tourist
 ```
 
 ---
@@ -54,7 +59,23 @@ smart-park-iot/
 │   .gitignore
 │   README.md                   # This file
 │
-├── IoT_ProjectWeatherForcast/  # FastAPI backend + Vue.js admin dashboard
+├── IoT_ProjectWeatherForcast/  # Backend + Admin Dashboard
+│   ├── app/                    # FastAPI backend (Python)
+│   ├── weather/                # Admin dashboard (Vue.js + Vite)
+│   │   └── src/
+│   │       ├── assets/
+│   │       ├── components/
+│   │       ├── LogInPage/
+│   │       ├── pages/
+│   │       ├── utils/
+│   │       ├── App.vue
+│   │       └── main.js
+│   ├── Robustel EG5120/        # Robustel IoT gateway configuration
+│   ├── Robustel EG5120 ML/     # Robustel gateway ML configuration
+│   ├── requirements.txt        # Python dependencies
+│   ├── .env.example            # Environment variable template
+│   └── README.md
+│
 ├── database/                   # Database schemas and seed data
 ├── docs/                       # Project documentation
 ├── firebase-config/            # Firebase configuration files
@@ -201,7 +222,11 @@ VITE_BACKEND_URL=http://localhost:8000
 The visitor-facing web application, served by Nginx. Displays real-time weather and environmental conditions at the reserve, and provides personalised trail recommendations based on visitor preferences. Built with plain HTML, CSS, and JavaScript. See [`web-app/README.md`](./web-app/README.md) for details.
 
 ### ⚡ [`IoT_ProjectWeatherForcast/`](./IoT_ProjectWeatherForcast)
-Contains the **FastAPI backend** (Python) responsible for data ingestion from IoT sensors, REST API endpoints, and the **Vue.js admin dashboard** for reserve staff. Environmental data is stored in InfluxDB.
+Contains two sub-modules:
+
+- **`app/`** — the **FastAPI backend** (Python) responsible for data ingestion from IoT sensors and REST API endpoints. Dependencies are listed in `requirements.txt`. Runtime configuration is managed via `.env` (see `.env.example`).
+- **`weather/`** — the **Admin Dashboard**, a Vue.js + Vite single-page application for reserve staff. It is structured as a standard Vite project with `src/` (containing `components/`, `pages/`, `LogInPage/`, `utils/`, `assets/`, `App.vue`, and `main.js`), `public/`, `index.html`, and `vite.config.js`.
+- **`Robustel EG5120/`** and **`Robustel EG5120 ML/`** — configuration and ML-related files for the Robustel EG5120 IoT gateway hardware used to collect field data.
 
 ### 🤖 [`ml-engines/`](./ml-engines)
 Node.js-based machine learning engine that powers the trail recommendation system, analysing user preferences and current environmental conditions to suggest the most suitable trails.
