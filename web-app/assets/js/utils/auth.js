@@ -19,7 +19,7 @@ console.log(
   firebaseConfig.projectId,
 );
 
-const windowPrefix = window.location.origin;
+const windowPrefix ="http://localhost:8081";
 
 export async function signUp(email, password, confirmPassword) {
   if (!email || !password || !confirmPassword) {
@@ -226,14 +226,6 @@ window.addEventListener("message", (event) => {
     console.log("Local storage cleared from cross-port logout");
   }
 });
-
-// Expose functions to global scope for inline onclick handlers
-window.signIn = signIn;
-window.signUp = signUp;
-window.logout = logout;
-window.getSession = getSession;
-window.isSessionValid = isSessionValid;
-window.restoreSession = restoreSession;
 
 // Initialize session on page load
 document.addEventListener("DOMContentLoaded", function () {

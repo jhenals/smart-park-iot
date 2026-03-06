@@ -9,7 +9,6 @@ services:
     env_file:
       - ./IoT_ProjectWeatherForcast/.env
     volumes:
-      - ./database:/app/database
       - ./IoT_ProjectWeatherForcast:/app/IoT_ProjectWeatherForcast
       - ./firebase-config:/app/firebase-config
       - ./ml-engines:/app/ml-engines
@@ -36,10 +35,16 @@ services:
 
   webapp:
     build:
-      context: ./web-app
+      context: .
       dockerfile: Dockerfile
     ports:
       - "8081:8081"
+    env_file:
+      - ./IoT_ProjectWeatherForcast/.env
+    volumes:
+      - ./IoT_ProjectWeatherForcast:/app/IoT_ProjectWeatherForcast
+      - ./firebase-config:/app/firebase-config
+      - ./ml-engines:/app/ml-engines
     restart: unless-stopped
 
   mlengine:

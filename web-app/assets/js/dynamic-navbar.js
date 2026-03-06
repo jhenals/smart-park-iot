@@ -5,35 +5,40 @@ document.addEventListener("DOMContentLoaded", () => {
   const navContainer = document.getElementById("dynamic-navbar");
   if (!navContainer) return;
 
-  const role = localStorage.getItem("userRole"); // 'admin' or 'visitor'
+  const role = localStorage.getItem("userRole");
   const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
   const user = JSON.parse(localStorage.getItem("userSession")) || {
     displayName: "Explorer",
   };
-  console.log("User:", user);
+  
   const variant = navContainer.dataset.variant || "";
   const effectiveVariant =
     variant === "auto" && !isLoggedIn ? "public" : variant;
 
-  const publicPrefix = normalizePrefix(
-    navContainer.dataset.publicPrefix || "/",
+   const publicPrefix = normalizePrefix(
+    navContainer.dataset.publicPrefix || window.userPrefix || "/",
   );
   const userPrefix = normalizePrefix(
-    navContainer.dataset.userPrefix || "../../",
+    navContainer.dataset.userPrefix || window.userPrefix || "../../",
   );
 
   let navContent = "";
 
   if (effectiveVariant === "public") {
+   const currentPath = window.location.pathname;
+    const isSubpage = currentPath.includes('/src/');
+    const logoPath = isSubpage ? '../public/images/logo.png' : './public/images/logo.png';
+    const homeLink = isSubpage ? '../index.html' : './index.html';
+    
     navContent = `
       <div class="container-fluid">
         <div class="logo">
           <img
-            src="/public/images/logo.png"
+            src="${logoPath}"
             class="logo"
-            alt="Smart Trek Logo"
+            alt="Logo"
           />
-          <a class="navbar-brand title" href="/index.html">Smart Park</a>
+          <a class="navbar-brand title" href="${homeLink}">Smart Park</a>
         </div>
         <button
           class="navbar-toggler"
@@ -49,19 +54,19 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="collapse navbar-collapse" id="navbarText">
           <ul class="navbar-nav m-auto mb-2 mb-lg-0">
             <li class="nav-item">
-              <a class="nav-link" href="/index.html">Home</a>
+              <a class="nav-link" href="${homeLink}">Home</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/src/public-env.html">Environment</a>
+              <a class="nav-link" href="${isSubpage ? './' : './src/'}public-env.html">Environment</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/src/weather.html">Weather</a>
+              <a class="nav-link" href="${isSubpage ? './' : './src/'}weather.html">Weather</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/src/discover.html">Discover</a>
+              <a class="nav-link" href="${isSubpage ? './' : './src/'}discover.html">Discover</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/src/login.html">Sign In</a>
+              <a class="nav-link" href="${isSubpage ? './' : './src/'}login.html">Sign In</a>
             </li>
           </ul>
 
@@ -112,11 +117,10 @@ document.addEventListener("DOMContentLoaded", () => {
               <a class="nav-link" href="${userPrefix}src/weather.html">Weather</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" onclick="toggleChat()"">Guide</a>
+              <a class="nav-link" onclick="toggleChat()">Guide</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" onclick="logout()"">Exit (${user.displayName})</a>
-
+              <a class="nav-link" onclick="logout()">Exit (${user.displayName})</a>
             </li>
           </ul>
 
@@ -130,14 +134,22 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
       </div>
     `;
-    setTimeAndDate();
   }
+  
+  // Insert HTML first
   navContainer.innerHTML = navContent;
+  
+  // Then initialize date/time for BOTH variants
+  setTimeAndDate('current-date', 1000);
+  
+  // Set active links
   if (effectiveVariant === "public") {
     setActivePublicLink(navContainer);
   } else if (role === "visitor" || isLoggedIn) {
     setActiveUserLink(navContainer);
   }
+});
+
 function setActiveUserLink(navContainer) {
   const currentPath = window.location.pathname.replace(/\/index\.html$/, "/");
   const links = navContainer.querySelectorAll(".nav-link");
@@ -156,11 +168,11 @@ function setActiveUserLink(navContainer) {
     }
   });
 }
-});
 
 function normalizePrefix(prefix) {
   if (!prefix) return "";
-  return prefix.endsWith("/") ? prefix : `${prefix}/`;
+  const trimmed = prefix.replace(/\/+$/, '');
+  return trimmed ? `${trimmed}/` : "";
 }
 
 function setActivePublicLink(navContainer) {

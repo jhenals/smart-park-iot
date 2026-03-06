@@ -22,12 +22,24 @@ WORKDIR /app
 COPY IoT_ProjectWeatherForcast/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY IoT_ProjectWeatherForcast/app/ ./app/
+
 COPY database/ ./database/
 COPY --from=admin-frontend /admin/dist ./static/admin/
-COPY web-app/ ./static/web-app/
+
+# Copy web-app contents
+COPY web-app/assets/ ./static/web-app/assets/
+COPY web-app/public/ ./static/web-app/public/
+COPY web-app/src/ ./static/web-app/src/
+COPY web-app/index.html ./static/web-app/
+
+# Copy firebase contents
 COPY firebase-config/ ./firebase-config/
+
+# Copy ml-engines contents
 COPY ml-engines/ ./ml-engines/
+
 COPY docs/ ./docs/
+
 # Robustel folders are optional, comment out if not present
 # COPY Robustel EG5120/ ./Robustel_EG5120/
 # COPY Robustel EG5120 ML/ ./Robustel_EG5120_ML/

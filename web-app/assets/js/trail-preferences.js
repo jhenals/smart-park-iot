@@ -35,8 +35,52 @@ let currentRecommendation = null;
 let allRecommendations = [];
 
 function goToUserDashboard() {
-  goToHomepage();
+  const selectedTrailId = localStorage.getItem("selectedTrailId");
+  
+  if (selectedTrailId) {
+    goToHomepage();
+  }else{
+    const modal = document.createElement("div");
+    modal.id = "confirmModal";
+    modal.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    `;
+    
+    modal.innerHTML = `
+      <div class="glass-card" style="padding: 2rem; text-align: center; max-width: 400px;">
+        <h3>No Trail Selected</h3>
+        <p>Do you want to continue to the dashboard without choosing a recommendation?</p>
+        <div style="display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: center;">
+          <button id="confirmYes" class="main-button" style="flex: 1;">Yes</button>
+          <button id="confirmNo" class="main-button" style="flex: 1; background-color: #666;">No</button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    document.getElementById("confirmYes").onclick = () => {
+      modal.remove();
+      goToHomepage();
+    };
+    
+    document.getElementById("confirmNo").onclick = () => {
+      modal.remove();
+    };
+  }
 }
+window.goToUserDashboard = goToUserDashboard;
+
+
 function initializePreferences() {
   if (typeof TRAIL_PREFERENCES !== "undefined") {
     populateModalOptions("noise", TRAIL_PREFERENCES.noise);
@@ -603,8 +647,6 @@ window.selectRecommendation = selectRecommendation;
 window.displayTrailRecommendation = displayTrailRecommendation;
 window.loadSavedPreferences = loadSavedPreferences;
 window.updatePreferencesDisplay = updatePreferencesDisplay;
-window.goToUserDashboard = goToUserDashboard;
-
 Object.defineProperty(window, "allRecommendations", {
   get() {
     return allRecommendations;

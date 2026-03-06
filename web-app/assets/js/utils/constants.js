@@ -20,6 +20,7 @@ const PATHS = {
   MAP_URL: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
 };
 
+
 // Weather and Trail Condition Thresholds
 
 const TEMPERATURE_RANGES = [

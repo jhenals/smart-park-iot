@@ -17,6 +17,7 @@
     />
 
     <script type="module" src="../assets/js/dynamic-navbar.js"></script>
+    <script type="module" src="../assets/js/index.js"></script>
     <script type="module" src="../assets/js/weather.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script
@@ -36,7 +37,7 @@
       <h1>Weather Forecast Giganti della Sila</h1>
     </header>
     <div class="container py-3">
-      <div id="current-date" class="text-center mb-4"></div>
+      <div id="weather-current-date" class="text-center mb-4"></div>
 
       <section class="glass-card glass-glow-green mb-4 overflow-hidden">
         <div
@@ -163,5 +164,12 @@
       src="../src/components/footer.html"
       style="width: 100%; border: none; display: block; height: 45px"
     ></iframe>
+       <script type="module">
+      import { setTimeAndDate } from "../assets/js/utils/utils.js";
+      
+      document.addEventListener("DOMContentLoaded", () => {
+        setTimeAndDate('weather-current-date', 1000);
+      });
+    </script>
   </body>
 </html>
