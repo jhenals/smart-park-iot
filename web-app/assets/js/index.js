@@ -1,5 +1,5 @@
 import { setTimeAndDate } from "./time-date.js";
-import { goToHomepage } from "./modules/utils.js";
+import { goToHomepage } from "./utils/utils.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   setTimeAndDate();

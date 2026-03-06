@@ -29,8 +29,6 @@
       crossorigin=""
     ></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="module"src="../../assets/js/index.js"></script>
-    <script src="../../assets/constants/constants.js"></script>
     <script type="module" src="../../assets/js/dynamic-navbar.js"></script>
     <script src="../../assets/js/public-env.js"></script>
     <script type="module" src="../../assets/js/user-dashboard.js"></script>
@@ -43,13 +41,15 @@
       data-public-prefix="/web-app/"
     ></nav>
     <div class="user-dashboard-container">
+      
       <div id="safety-shield" class="safety-banner safe">
         <img
+          id="safety-icon"
           src="../../public/icons/forest-icon.png"
           class="icon"
           alt="forest-icon"
         />
-        <span id="safety-text">Park Conditions: Optimal for Hiking</span>
+        <span id="safety-text"></span>
       </div>
 
       <div class="dashboard-wrapper">
@@ -95,7 +95,7 @@
 
     <iframe
       src="../../src/components/footer.html"
-      style="width: 100%; border: none; display: block; bottom: 0; height: 45px"
+      style="width: 100%; border: none; display: block; height: 45px"
     ></iframe>
   </body>
 </html>

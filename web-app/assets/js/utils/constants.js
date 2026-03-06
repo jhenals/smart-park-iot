@@ -296,3 +296,15 @@ const TRAIL_RECOMMENDATIONS = {
   hard_bright_history: "peakOfGiants",
   hard_bright_botany: "peakOfGiants",
 };
+
+
+export {
+  SILA_LOCATION,
+  API,
+  PATHS,
+  TEMPERATURE_RANGES,
+  THRESHOLDS,
+  TRAIL_PREFERENCES,
+  TRAILS,
+  TRAIL_RECOMMENDATIONS,
+};

@@ -1,4 +1,5 @@
-import { setTimeAndDate } from "./modules/utils.js";
+import { setTimeAndDate } from "./utils/utils.js";
+import { logout } from "./utils/auth.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const navContainer = document.getElementById("dynamic-navbar");
@@ -179,9 +180,4 @@ function setActivePublicLink(navContainer) {
       link.setAttribute("aria-current", "page");
     }
   });
-}
-
-function logout() {
-  localStorage.clear();
-  window.location.href = "/web-app/index.html";
 }

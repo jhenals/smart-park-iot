@@ -1,141 +1,196 @@
 .location-container {
-        display: flex;
-        flex-direction: column;
-        height: 100vh;
-        padding: 0;
-      }
-      .stats-container{
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 10px 20px;
-        background: var(--glass-bg);
-        border-bottom: 1px solid var(--primary-color);
-      }
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: 0;
+}
+.stats-container{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 20px;
+  background: var(--glass-bg);
+  border-bottom: 1px solid var(--primary-color);
+}
 
-      .user-stats {
-        display: flex;
-        font-size: 0.9rem;
-      }
+.user-stats {
+  display: flex;
+  font-size: 0.9rem;
+}
 
-      .stat-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin: 0 15px;
-      }
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 15px;
+}
 
-      .map-loc-container {
-        padding: 20px;
-        display: flex;
-        width: 100vw;
-        height: auto;
-      }
+.map-loc-container {
+  padding: 20px;
+  display: flex;
+  width: 100vw;
+  height: auto;
+}
 
-      #location-map {
-        width: 70%;
-        border: none;
-        height: calc(100vh - 160px);
-      }
+.map-panel{
+  width: 70%;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
 
-      .location-panel {
-        padding: 10px;
-        width:35%;
-        margin-left: 10px;
-      }
+#location-map {
+  width: 100%;
+  border: none;
+  min-height: 300px;
+  height: calc(100vh - 160px);
+}
 
-      .location-panel h3 {
-        margin-top: 0;
-        color: var(--primary-color);
-        font-size: 1.2rem;
-      }
+.control-buttons {
+  display: flex;
+  gap: 10px;
+  padding: 15px;
+  border-top: 1px solid #e0e0e0;
+  flex-wrap: wrap;
+  justify-content: center;
+}
 
-      .coord-display {
-        background: rgba(255, 255, 255, 0.1);
-        padding: 10px;
-        border-radius: 5px;
-        margin: 10px 0;
-        font-family: monospace;
-      }
+.map-control-btn {
+  flex: 1;
+  min-width: 100px;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 8px;
+  background-color: var(--primary-color);
+  color: #333;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
 
-      .nearby-list {
-        list-style: none;
-        padding: 0;
-        margin: 10px 0;
-      }
+.map-control-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border: 2px solid var(--primary-color);
+  background-color: transparent;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
 
-      .nearby-item {
-        padding: 8px;
-        margin: 5px 0;
-        background: rgba(255, 193, 7, 0.2);
-        border-radius: 5px;
-        cursor: pointer;
-        transition: all 0.3s;
-      }
+.map-control-btn.active {
+  background-color: var(--secondary-color);
+  color: white;
+}
 
-      .nearby-item:hover {
-        background: rgba(255, 193, 7, 0.4);
-        transform: translateX(5px);
-      }
+.map-control-btn.active:hover {
+  background-color: var(--secondary-color);
+}
 
-      .distance-badge {
-        float: right;
-        background: var(--primary-color);
-        color: var(--text-light-color);
-        padding: 2px 8px;
-        border-radius: 10px;
-        font-size: 0.8rem;
-        font-weight: bold;
-  
-      }
+.map-control-btn:disabled,
+.map-control-btn.inactive {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #ccc;
+  color: #999;
+}
 
-      .control-buttons {
-        position: relative;
-        bottom: 0;
-        left: 50%;
-        transform: translateX(-50%);
-        display: flex;
-        gap: 10px;
-        z-index: 1000;
-      }
+.map-control-btn:disabled:hover {
+  background-color: #ccc;
+  transform: none;
+}
 
-      .map-control-btn {
-        background: var(--glass-bg);
-        backdrop-filter: blur(10px);
-        border: 2px solid var(--primary-color);
-        color: var(--text-dark-color);
-        padding: 12px 20px;
-        border-radius: 25px;
-        cursor: pointer;
-        font-weight: bold;
-        transition: all 0.3s;
-      }
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .control-buttons {
+    padding: 10px;
+    gap: 8px;
+  }
 
-      .map-control-btn:hover {
-        background: var(--primary-color);
-        color: var(--text-light-color);
-        transform: scale(1.05);
-      }
+  .map-control-btn {
+    min-width: 80px;
+    padding: 10px 12px;
+    font-size: 0.85rem;
+  }
+}
 
-      .map-control-btn.active {
-        background: var(--primary-color);
-        color: var(--text-light-color);
-      }
+#show-full-trail-btn:disabled,
+#show-full-trail-btn.inactive {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #ccc;
+  color: #999;
+}
 
-      .accuracy-indicator {
-        display: inline-block;
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        margin-right: 5px;
-      }
+#show-full-trail-btn:disabled:hover {
+  background-color: #ccc;
+}
 
-      .accuracy-high {
-        background: #4caf50;
-      }
-      .accuracy-medium {
-        background: #ffc107;
-      }
-      .accuracy-low {
-        background: #ff5252;
-      }
+.location-panel {
+  padding: 10px;
+  width:35%;
+  margin-left: 10px;
+}
+
+.location-panel h3 {
+  margin-top: 0;
+  color: var(--primary-color);
+  font-size: 1.2rem;
+}
+
+.coord-display {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 10px;
+  border-radius: 5px;
+  margin: 10px 0;
+  font-family: monospace;
+}
+
+.nearby-list {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0;
+}
+
+  .nearby-item {
+    padding: 8px;
+    margin: 5px 0;
+    background: rgba(255, 193, 7, 0.2);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .nearby-item:hover {
+    background: rgba(255, 193, 7, 0.4);
+    transform: translateX(5px);
+  }
+
+  .distance-badge {
+    float: right;
+    background: var(--primary-color);
+    color: var(--text-light-color);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: bold;
+
+  }
+
+
+  .accuracy-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 5px;
+  }
+
+  .accuracy-high {
+    background: #4caf50;
+  }
+  .accuracy-medium {
+    background: #ffc107;
+  }
+  .accuracy-low {
+    background: #ff5252;
+  }

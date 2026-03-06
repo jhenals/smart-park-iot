@@ -1,9 +1,11 @@
+import { API, THRESHOLDS, TEMPERATURE_RANGES } from "../js/utils/constants.js";
+
 async function loadWeather() {
   const container = document.getElementById("weather");
   const forecastList = document.getElementById("forecast-list");
 
   try {
-    const sensorRes = await fetch("http://localhost:8000/api/weather/forecast/?minutes=60");
+    const sensorRes = await fetch(API.SENSORS_DATA_PATH); // Change this to actual API endpoint API.FASTAPI_URL
     const sensorDataArray = await sensorRes.json();
     const latestSensorData = sensorDataArray[sensorDataArray.length - 1];
 
@@ -97,6 +99,7 @@ function getTemperatureReadinessRange(temp) {
 function updateTrailReadinessBadge(openMeteoData, sensorData) {
   const badge = document.getElementById("hike-recommendation");
   const desc = document.getElementById("hike-recommendation-desc");
+  const temp = sensorData.temperature || openMeteoData.current.temperature_2m;
 
   // PRIORITY 1: Storm/Wind Risk (Safety override)
   if (
@@ -111,7 +114,7 @@ function updateTrailReadinessBadge(openMeteoData, sensorData) {
   // PRIORITY 2: Temperature Logic (Using temp Constant)
   else {
     const tempReadinessIndex = getTemperatureReadinessRange(
-      sensorData.temperature,
+      temp,
     );
     const tempRange = TEMPERATURE_RANGES[tempReadinessIndex] || {
       label: "Unknown",

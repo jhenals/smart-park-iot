@@ -6,8 +6,8 @@ import {
   addDoc,
   collection,
 } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
-import { cycleImages } from "./modules/changingImages.js";
-import { goToHomepage } from "./modules/utils.js";
+import { cycleImages } from "./utils/changingImages.js";
+import { goToHomepage } from "./utils/utils.js";
 
 const session = getSession();
 const userId = session && session.uid ? session.uid : null;

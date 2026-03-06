@@ -2,7 +2,7 @@ import {
   firebaseConfig,
   auth,
   userDatabase,
-} from "../../../firebase-config/firebase.js";
+} from "../../../../firebase-config/firebase.js";
 
 import {
   setDoc,

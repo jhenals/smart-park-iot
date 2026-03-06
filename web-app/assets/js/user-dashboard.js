@@ -1,12 +1,15 @@
 import { getDoc, doc, userDatabase as trailDatabase } from "./auth.js";
+import { SILA_LOCATION, API } from "./utils/constants.js";
 import { trackTrailVisit } from "./ml-integration.js";
 import { cycleImages } from "./modules/changingImages.js";
+import { THRESHOLDS } from "./utils/constants.js";
 
 let trailStartTime = null;
 let currentTrailId = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
   await displayUserAndTrail();
+  updateSafetyBanner("safe"); // Default to safe, will be updated by config
   fetchAndDisplayEnvironmentInfo();
 });
 
@@ -39,6 +42,25 @@ async function displayUserAndTrail() {
   }
   updateUserAndTrailUI(savedTrail, savedTrailId, displayName);
 }
+
+
+//TODO: Change status based on real-time config from backend (e.g. weather alerts, ranger updates)
+function updateSafetyBanner(status) {
+          const shield = document.getElementById('safety-shield');
+          const text = document.getElementById('safety-text');
+          const icon = document.getElementById('safety-icon');
+          if (status === 'danger') {
+            shield.className = 'safety-banner danger';
+            text.textContent = 'Warning: Unsafe Park Conditions!';
+            icon.src = '../../public/icons/warning-icon.png';
+            icon.alt = 'warning-icon';
+          } else {
+            shield.className = 'safety-banner safe';
+            text.textContent = 'Park Conditions: Optimal for Hiking';
+            icon.src = '../../public/icons/forest-icon.png';
+            icon.alt = 'forest-icon';
+          }
+        }
 
 function updateUserAndTrailUI(savedTrail, savedTrailId, displayName) {
   const userEl = document.getElementById("display-username");

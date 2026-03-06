@@ -1,3 +1,5 @@
+import { API, SILA_LOCATION, THRESHOLDS, PATHS } from "./utils/constants.js";
+
 const gigantiDellaSilaCenter = [SILA_LOCATION.LAT, SILA_LOCATION.LON];
 let map, userMarker;
 let REAL_TIME_DATA = [];

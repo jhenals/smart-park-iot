@@ -27,7 +27,6 @@
       crossorigin=""
     />
 
-    <script src="../assets/constants/constants.js"></script>
     <script
       src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
@@ -52,93 +51,11 @@
     </header>
 
     <div class="public-env-container">
-      <section class="park-insights">
-        <div class="insight-card glass-card">
-          <div class="insight-header">
-            <i class="bi bi-thermometer-sun insight-icon"></i>
-            <h4>Temperature</h4>
-          </div>
-          <div id="live-temp" class="insight-value">--°C</div>
-          <p id="temp-desc">Real-time temperature levels.</p>
-        </div>
 
-        <div class="insight-card glass-card">
-          <div class="insight-header">
-            <i class="bi bi-brightness-high insight-icon"></i>
-            <h4>Weather Outlook</h4>
-          </div>
-
-          <div id="live-weather-prediction" class="insight-value">
-            Calculating...
-          </div>
-          <p id="outlook-desc" class="mb-2">Analyzing S6000 sensor data...</p>
-          <div class="confidence-container mt-2">
-            <div class="d-flex justify-content-between align-items-center mb-1">
-              <small class="text-green-muted" style="font-size: 0.7rem"
-                >CERTAINTY:
-              </small>
-              <small
-                id="confidence-pct"
-                class="fw-bold"
-                style="font-size: 0.7rem"
-                >--%</small
-              >
-            </div>
-            <div
-              class="progress bg-dark"
-              style="
-                height: 4px;
-                border-radius: 10px;
-                border: 1px solid rgba(255, 255, 255, 0.1);
-              "
-            >
-              <div
-                id="confidence-bar"
-                class="progress-bar bg-emerald"
-                role="progressbar"
-                style="width: 0%; transition: width 1s ease-in-out"
-              ></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="insight-card glass-card">
-          <div class="insight-header">
-            <i class="bi bi-megaphone insight-icon"></i>
-            <h4>Soundscape</h4>
-          </div>
-          <div id="live-noise" class="insight-value">Analyzing...</div>
-          <p id="noise-desc">Real-time sound levels.</p>
-        </div>
-
-        <div class="insight-card glass-card">
-          <div class="insight-header">
-            <i class="bi bi-droplet insight-icon"></i>
-            <h4>Humidity</h4>
-          </div>
-          <div id="live-humidity" class="insight-value">--%</div>
-          <p id="humidity-desc">Real-time humidity levels.</p>
-        </div>
-
-        <div class="insight-card glass-card">
-          <div class="insight-header">
-            <i class="bi bi-eye insight-icon"></i>
-            <h4>Trail Visibility</h4>
-          </div>
-          <div id="live-visibility" class="insight-value">Calculating...</div>
-          <p id="visibility-desc">Real-time light levels under the canopy.</p>
-        </div>
-
-        <div class="insight-card glass-card">
-          <div class="insight-header">
-            <i class="bi bi-graph-up insight-icon"></i>
-            <h4>Atmospheric Stability</h4>
-          </div>
-          <div id="pressure-trend" class="insight-value">--</div>
-          <p id="pressure-desc">Barometric trends for safe hiking.</p>
-        </div>
-      </section>
-
+      <iframe src="../src/components/park-insights.html" 
+      frameborder="0"
+      class="public-insights-iframe"></iframe>
+     
       <section class="public-env-section">
         <div class="public-env-header">
           <h3><strong>Monitoring Network</strong></h3>
@@ -164,9 +81,8 @@
             Discovery Passport.
           </p>
         </div>
-        <div class="cta-buttons">
-          <a href="login.html" class="main-button">Login / Register</a>
-        </div>
+        
+        <a href="login.html" class="main-button">Login / Register</a>
       </section>
     </div>
 
