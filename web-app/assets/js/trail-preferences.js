@@ -1,7 +1,7 @@
 import { getSession } from "./utils/auth.js";
 import { goToHomepage, carouselImages } from "./utils/utils.js";
 import {TRAIL_PREFERENCES} from "./utils/constants.js";
-import { userDatabase } from "../../../firebase-config/firebase.js";
+import { firestoreDatabase } from "../../../firebase-config/firebase.js";
 import {
   setDoc,
   doc,
@@ -305,7 +305,7 @@ function resetPreferences() {
 async function savePreferencesToFirebase(preferences) {
   try {
     if (!userId) return;
-    const userPrefsRef = doc(userDatabase, "user_prefs", userId);
+    const userPrefsRef = doc(firestoreDatabase, "user_prefs", userId);
     await setDoc(userPrefsRef, {
       userId: userId,
       noise_prefs: preferences.noise,
@@ -393,7 +393,7 @@ async function getRecommendation() {
       try {
         const { getDoc, doc } =
           await import("https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js");
-        const trailDoc = await getDoc(doc(userDatabase, "trails", trailId));
+        const trailDoc = await getDoc(doc(firestoreDatabase, "trails", trailId));
         if (trailDoc.exists()) {
           return { id: trailDoc.id, ...trailDoc.data() };
         }
@@ -612,7 +612,7 @@ async function savePreferencesAndRecommendation() {
       alert("No trail selected or user not authenticated.");
       return;
     }
-    await addDoc(collection(userDatabase, "user_trail_selections"), {
+    await addDoc(collection(firestoreDatabase, "user_trail_selections"), {
       userId: userId,
       trailId: currentRecommendation.trail.id,
       trailName: currentRecommendation.trail.name,

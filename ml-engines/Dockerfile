@@ -1,7 +1,11 @@
 FROM node:20-alpine
+
 WORKDIR /usr/src/app
-COPY package*.json ./
+
+COPY ml-engines/package*.json ./
 RUN npm ci
-COPY . .
-EXPOSE 3100
+
+COPY ml-engines/ ./
+COPY firebase-config/ ./firebase-config/
+
 CMD ["node", "server.js"]

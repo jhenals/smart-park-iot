@@ -7,8 +7,11 @@ function toArray(val) {
 }
 const admin = require("firebase-admin");
 
-const serviceAccount = require("./firebase-config/iot-project-49099-firebase-adminsdk-fbsvc-9db98decb5.json");
-if (!admin.apps.length) {
+const path = require("path");
+
+const serviceAccount = require(
+  path.join(__dirname, "firebase-config", "iot-project-49099-firebase-adminsdk-fbsvc-9db98decb5.json")
+);if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
   });

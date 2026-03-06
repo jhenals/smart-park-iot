@@ -1,5 +1,11 @@
 import { THRESHOLDS,SILA_LOCATION, API } from "./utils/constants.js";
 import { trackTrailVisit } from "./ml-integration.js";
+import { firestoreDatabase } from "../../../firebase-config/firebase.js";
+import {
+  doc,
+  getDoc,
+} from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+
 
 let trailStartTime = null;
 let currentTrailId = null;
@@ -17,18 +23,19 @@ async function displayUserAndTrail() {
   let savedTrail = null;
 
   const trailLengthEl = document.getElementById("trail-length");
-  const trailDifficultyEl = document.getElementById("trail-difficulty");
+  const trailDescEl = document.getElementById("trail-description");
   const trailDurationEl = document.getElementById("trail-duration");
 
   if (savedTrailId) {
     try {
-      const trailDoc = await getDoc(doc(trailDatabase, "trails", savedTrailId));
+      const trailDoc = await getDoc(doc(firestoreDatabase, "trails", savedTrailId));
+      console.log("Fetched trail document:", trailDoc.id, trailDoc.data());
       if (trailDoc.exists()) {
         savedTrail = trailDoc.data();
         if (trailLengthEl)
           trailLengthEl.innerText = savedTrail.length || "-- km";
-        if (trailDifficultyEl)
-          trailDifficultyEl.innerText = savedTrail.difficulty || "--";
+        if (trailDescEl)
+          trailDescEl.innerText = savedTrail.description || "--";
         if (trailDurationEl)
           trailDurationEl.innerText = savedTrail.duration || "-- mins";
         currentTrailId = savedTrailId; // Set current trail ID for tracking
@@ -353,7 +360,7 @@ async function deleteUserPreferencesInFirebase() {
   try {
     const session = getSession();
     const userId = session.uid;
-    const userPrefsRef = doc(userDatabase, "user_prefs", userId);
+    const userPrefsRef = doc(firestoreDatabase, "user_prefs", userId);
     await setDoc(userPrefsRef, {});
     console.log("User preferences deleted from Firebase");
     return true;

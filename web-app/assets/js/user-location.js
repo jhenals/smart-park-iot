@@ -1,6 +1,9 @@
-import { API } from "./utils/constants.js";
 import { createBaseMap, createMarker, createAccuracyCircle } from "./utils/mapsUtils.js";
+import { firestoreDatabase } from "../../../firebase-config/firebase.js";
+
 import {
+   doc,
+  getDoc,
   getDocs,
   collection,
 } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
@@ -68,7 +71,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         loadNearbyPoints();
-        updateTrailProgress(progress)
+        updateTrailProgress(0)
         startLocationTracking();
       },
       (error) => {
@@ -87,11 +90,51 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
+window.addEventListener("storage", (e) => {
+  if (e.key === "selectedTrailId" && e.newValue) {
+    reloadTrail();
+  }
+});
+
+window.addEventListener("trailSelected", () => {
+  reloadTrail();
+});
+
 window.addEventListener("beforeunload", () => {
   if (watchID) {
     navigator.geolocation.clearWatch(watchID);
   }
 });
+
+async function reloadTrail() {
+  trail = await getCurrentTrail();
+  console.log("Reloading trail:", trail);
+  
+  if (customTrailPolyline && locationMap.hasLayer(customTrailPolyline)) {
+    locationMap.removeLayer(customTrailPolyline);
+  }
+  if (window.trailStartMarker && locationMap.hasLayer(window.trailStartMarker)) {
+    locationMap.removeLayer(window.trailStartMarker);
+  }
+  if (window.trailEndMarker && locationMap.hasLayer(window.trailEndMarker)) {
+    locationMap.removeLayer(window.trailEndMarker);
+  }
+
+  if (trail && trail.coords) {
+    renderTrailFromCoords(trail.coords);
+    document.getElementById("current-trail").textContent = trail.name || "Trail Loaded";
+    setShowFullTrailButtonState(true);
+    
+    if (userPosition) {
+      const p = calculateTrailProgress(userPosition.lat, userPosition.lng, trail.coords);
+      updateTrailProgress(p);
+    }
+  } else {
+    document.getElementById("current-trail").textContent = "No Current Trail.. Choose one!";
+    setShowFullTrailButtonState(false);
+    updateTrailProgress(0);
+  }
+}
 
 function showGPSModal() {
   const modal = document.createElement("div");
@@ -267,13 +310,13 @@ async function loadNearbyPoints() {
     const listEl = document.getElementById("nearby-points");
     if (listEl) listEl.innerHTML = `<li class="nearby-item"><span>Loading nearby giants...</span></li>`;
 
-    // 1) Load giants from Firestore
-    const snap = await getDocs(collection(db, "giants"));
+    const snap = await getDocs(collection(firestoreDatabase, "giants"));
     const loadedGiants = snap.docs
       .map((docSnap) => {
         const data = docSnap.data();
         const pos = normalizePointLocation(data.location);
         if (!pos) return null;
+        console.log("Loaded giant:", { id: docSnap.id, ...data, pos });
 
         return {
           id: docSnap.id,
@@ -286,7 +329,6 @@ async function loadNearbyPoints() {
       })
       .filter(Boolean);
 
-    // 2) Remove old markers (if reloading)
     nearbyGiants.forEach((g) => {
       if (g.marker && locationMap?.hasLayer(g.marker)) {
         locationMap.removeLayer(g.marker);
@@ -393,12 +435,43 @@ function updateUserPosition(lat, lng, accuracy = 15) {
   accuracyCircle.setLatLng([lat, lng]);
   accuracyCircle.setRadius(accuracy);
 
+   // keep global position updated
+  userPosition = { lat, lng, accuracy };
+
+
   if (isFollowingUser) {
     locationMap.setView([lat, lng], locationMap.getZoom());
   }
 
+   if (trail?.coords?.length > 1) {
+    const p = calculateTrailProgress(lat, lng, trail.coords);
+    updateTrailProgress(p);
+  }
+
   updateNearbyPoints(lat, lng);
 }
+
+function calculateTrailProgress(userLat, userLng, coords) {
+  if (!Array.isArray(coords) || coords.length < 2) return 0;
+
+  let nearestIndex = 0;
+  let minDist = Infinity;
+
+  coords.forEach((pt, i) => {
+    const lat = pt.lat ?? pt.latitude;
+    const lng = pt.lng ?? pt.longitude;
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+    const d = calculateDistance(userLat, userLng, lat, lng);
+    if (d < minDist) {
+      minDist = d;
+      nearestIndex = i;
+    }
+  });
+
+  return Math.round((nearestIndex / (coords.length - 1)) * 100);
+}
+
 
 function updateAccuracyDisplay(accuracy) {
   const indicator = document.getElementById("accuracy-indicator");
@@ -467,8 +540,10 @@ function formatDistance(meters) {
 }
 
 function updateTrailProgress(progress) {
-  document.getElementById("trail-progress").textContent = `${progress}%`;
-}
+ const el = document.getElementById("trail-progress");
+  if (!el) return;
+  const safe = Math.max(0, Math.min(100, Math.round(progress || 0)));
+  el.textContent = `${safe}%`;}
 
 function shareLocation() {
   if (!userPosition) {
@@ -497,10 +572,10 @@ function shareLocation() {
 }
 
 async function getCurrentTrail() {
-  const trailId = localStorage.getItem("selectedTrailId");
+   const trailId = localStorage.getItem("selectedTrailId");
   if (!trailId) return null;
   try {
-    const trailDoc = await getDoc(doc(db, "trails", trailId));
+    const trailDoc = await getDoc(doc(firestoreDatabase, "trails", trailId));
     if (trailDoc.exists()) {
       return trailDoc.data();
     }

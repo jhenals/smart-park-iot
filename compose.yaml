@@ -55,8 +55,8 @@ services:
 
   mlengine:
     build:
-      context: ./ml-engines
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ml-engines/Dockerfile
     ports:
       - "3100:3100"
     volumes:

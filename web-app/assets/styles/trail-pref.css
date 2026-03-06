@@ -249,12 +249,8 @@
 
 .recommendations-container {
   width: 100%;
-  padding: 2rem;
+  padding: 1rem;
   animation: fadeIn 0.3s ease-in;
-}
-
-.recommendation-list-container{
-  padding: 20px;
 }
 
 .recommendation-list-header {

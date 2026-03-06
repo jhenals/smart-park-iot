@@ -1,7 +1,7 @@
 import {
   firebaseConfig,
   auth,
-  userDatabase,
+  firestoreDatabase,
 } from "../../../../firebase-config/firebase.js";
 
 import {
@@ -60,7 +60,7 @@ export async function signUp(email, password, confirmPassword) {
       uid: user.uid,
     };
 
-    const userDocRef = doc(userDatabase, "users", user.uid);
+    const userDocRef = doc(firestoreDatabase, "users", user.uid);
     await setDoc(userDocRef, userData);
     window.location.href = `${userPrefix}/src/login.html`;
   } catch (error) {
@@ -99,7 +99,7 @@ export async function signIn(email, password) {
     );
 
     const user = userCredential.user;
-    const userDocRef = doc(userDatabase, "users", user.uid);
+    const userDocRef = doc(firestoreDatabase, "users", user.uid);
     const userDocSnapshot = await getDoc(userDocRef);
 
     if (!userDocSnapshot.exists()) {

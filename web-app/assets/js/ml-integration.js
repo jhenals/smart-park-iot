@@ -1,5 +1,5 @@
 import { getSession } from "./utils/auth.js";
-import { userDatabase } from "../../../firebase-config/firebase.js";
+import { firestoreDatabase } from "../../../firebase-config/firebase.js";
 import {
   collection,
   addDoc,
@@ -23,7 +23,7 @@ export async function getMLRecommendations(topN = 5) {
     const userId = session.uid;
     console.log("🔍 Fetching generate_recom.js results for:", userId);
 
-    const recsRef = collection(userDatabase, "recommendations");
+    const recsRef = collection(firestoreDatabase, "recommendations");
     const q = query(recsRef, where("user_id", "==", userId), limit(topN));
 
     const snapshot = await getDocs(q);
@@ -84,14 +84,14 @@ export async function getMLRecommendations(topN = 5) {
 
 async function getTrailById(trailId) {
   try {
-    const trailDocRef = doc(userDatabase, "trails", trailId);
+    const trailDocRef = doc(firestoreDatabase, "trails", trailId);
     const trailDoc = await getDoc(trailDocRef);
 
     if (trailDoc.exists()) {
       return { id: trailId, ...trailDoc.data() };
     }
 
-    const trailsRef = collection(userDatabase, "trails");
+    const trailsRef = collection(firestoreDatabase, "trails");
     const q = query(trailsRef, where("trail_id", "==", trailId), limit(1));
     const snapshot = await getDocs(q);
 
@@ -116,7 +116,7 @@ export async function trackTrailVisit(trailId, metadata = {}) {
     }
 
     const userId = session.uid;
-    const interactionRef = collection(userDatabase, "user_interactions");
+    const interactionRef = collection(firestoreDatabase, "user_interactions");
 
     await addDoc(interactionRef, {
       user_id: userId,
@@ -143,7 +143,7 @@ export async function trackTrailRating(trailId, rating) {
       return;
     }
 
-    await addDoc(collection(userDatabase, "user_interactions"), {
+    await addDoc(collection(firestoreDatabase, "user_interactions"), {
       user_id: session.uid,
       trail_id: trailId,
       type: "rating",
@@ -168,7 +168,7 @@ export async function trackTrailFavorite(trailId) {
       return;
     }
 
-    await addDoc(collection(userDatabase, "user_interactions"), {
+    await addDoc(collection(firestoreDatabase, "user_interactions"), {
       user_id: session.uid,
       trail_id: trailId,
       type: "favorite",
